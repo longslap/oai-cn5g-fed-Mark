@@ -198,7 +198,7 @@ oai-upf:
 #    upfIpadd: 172.21.6.95
 #    noOfIperf3Server: 10
 oai-smf:
-  enabled: # true # false
+  enabled: false # true # for demo
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-smf           ## The image will be pulled from dockerhub
