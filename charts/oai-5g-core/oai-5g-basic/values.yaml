@@ -27,7 +27,7 @@ oai-nrf:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-udr:
-  enabled: true
+  enabled: false #true # for demo
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udr           ## The image will be pulled from dockerhub
@@ -41,7 +41,7 @@ oai-udr:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-udm:
-  enabled: true
+  enabled: false # true # for demo
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udm           ## The image will be pulled from dockerhub
@@ -55,7 +55,7 @@ oai-udm:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-ausf:
-  enabled: true
+  enabled: false # true # for demo
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-ausf           ## The image will be pulled from dockerhub
@@ -75,7 +75,7 @@ oai-ausf:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-amf:
-  enabled: true
+  enabled: false # true # for demo
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-amf           ## The image will be pulled from dockerhub
@@ -198,7 +198,7 @@ oai-upf:
 #    upfIpadd: 172.21.6.95
 #    noOfIperf3Server: 10
 oai-smf:
-  enabled: true
+  enabled: # true # false
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-smf           ## The image will be pulled from dockerhub
