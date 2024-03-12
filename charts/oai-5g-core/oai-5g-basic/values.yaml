@@ -105,7 +105,7 @@ oai-amf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_AMF_N2@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_AMF_N2@"
+      routes: @ROUTES_AMF_N2@
       hostInterface: "@IF_NAME_AMF_N2@" # Interface of the host machine on which this pod will be scheduled
   nodeSelector: {}
   nodeName: @NODE_AMF@
@@ -145,7 +145,7 @@ oai-upf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_UPF_N3@"
       ## If you don't want to add a default route in your pod then replace this field with ""
-      routes: "@ROUTES_UPF_N3@"
+      routes: @ROUTES_UPF_N3@
       hostInterface: "@IF_NAME_UPF_N3@"
     ## For n4 it is better to re-use eth0 interface inside the pod (primary CNI of Kubernetes)
     n4Interface:
@@ -159,7 +159,7 @@ oai-upf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_UPF_N4@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_UPF_N4@"
+      routes: @ROUTES_UPF_N4@
       hostInterface: "@IF_NAME_UPF_N4@"
     n6Interface:
       create: @MULTUS_UPF_N6@
@@ -172,7 +172,7 @@ oai-upf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_UPF_N6@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_UPF_N6@"
+      routes: @ROUTES_UPF_N6@
       hostInterface: "@IF_NAME_UPF_N6@"
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
   nodeSelector: {}
@@ -220,7 +220,7 @@ oai-smf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_SMF_N4@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_SMF_N4@"
+      routes: @ROUTES_SMF_N4@
       hostInterface: "@IF_NAME_SMF_N4@"
   nodeSelector: {}
   imagePullSecrets:
