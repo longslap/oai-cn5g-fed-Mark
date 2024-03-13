@@ -1,7 +1,7 @@
 global:
   nfConfigurationConfigMap: oai-5g-basic
   clusterIpServiceIpAllocation: true #this will allocate ip-address to cluster Ip service
-  waitForNRF: true
+  waitForNRF: false
   http2Param: "--http2-prior-knowledge"  # if waitForNRF is true and http2 is used for all NF then this param is needed
   timeout: 1
 mysql:
