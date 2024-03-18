@@ -10,6 +10,6 @@ data:
       key = "{{ .Values.config.fullKey }}";
       opc= "{{ .Values.config.opc }}";
       dnn= "{{ .Values.config.dnn }}";
-      nssai_sst="{{ .Values.config.sst }}";
+      nssai_sst={{ .Values.config.sst }};
       nssai_sd={{ .Values.config.sd }};
       }
