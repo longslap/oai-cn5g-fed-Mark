@@ -1,9 +1,9 @@
 decision_supi1:
-  supi_imsi: "208950000000032"
+  supi_imsi: "001010000059449"
   pcc_rules: 
     - steering-rule-primary
 
 decision_supi2:
-  supi_imsi: "208950000000033"
+  supi_imsi: "001010000059450"
   pcc_rules: 
     - steering-rule-secondary

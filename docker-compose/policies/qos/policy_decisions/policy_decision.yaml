@@ -1,32 +1,36 @@
 decision_supi1:
   supi_imsi: "001010000059449"
   pcc_rules: 
-    - internet-rule
-    - edge-rule-restricted
+    - non-gbr-rule-5qi-9
+    - gbr-rule-5qi-1
 
 decision_supi2:
   supi_imsi: "001010000059450"
   pcc_rules:
-    - edge-rule-all
+    - non-gbr-rule-5qi-9
+    - gbr-rule-5qi-5
 
 decision_supi3:
   supi_imsi: "001010000059445"
   pcc_rules:
-    - internet-rule
+    - gbr-rule-5qi-1
 
 decision_dnn:
   dnn: default
   pcc_rules:
-    - internet-rule
+    - non-gbr-rule-5qi-9
+    - gbr-rule-5qi-1
 
 decision_default:
   default: true
   pcc_rules:
-    - internet-rule
+    - non-gbr-rule-5qi-9
+    - gbr-rule-5qi-1
 
 decision_slice:
   slice: 
     sst: 1
     sd: 000001
   pcc_rules:
-    - internet-rule
+    - non-gbr-rule-5qi-9
+    - gbr-rule-5qi-1
