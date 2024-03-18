@@ -15,6 +15,7 @@ http_version: 2
 snssais:
   - &embb_slice1
     sst: 1
+    sd: 000002 # demo
   - &embb_slice2
     sst: 1
     sd: FFFFFF # in hex
