@@ -72,7 +72,7 @@ spec:
           command: 
             - /bin/sh
             - -c
-            - until curl --connect-timeout {{ .Values.global.timeout }} --head -X GET http://{{ .Values.multus.n3Interface.Ipadd }}/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.global.http2Param }}; do echo waiting for oai-nrf; sleep 1; done
+            - until curl --connect-timeout {{ .Values.global.timeout }} --head -X GET http://{{ .Config.nfs.smf.host }}/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.global.http2Param }}; do echo waiting for oai-nrf; sleep 1; done
     {{- end }}{{ end }}
       containers:
     {{- if .Values.includeTcpDumpContainer }}
