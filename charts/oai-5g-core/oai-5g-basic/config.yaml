@@ -158,13 +158,13 @@ smf:
     - single_nssai: *embb_slice1
       dnn: "@DNN0@"
       qos_profile:
-        5qi: 5
+        5qi: 1
         session_ambr_ul: "200Mbps"
         session_ambr_dl: "400Mbps"
     - single_nssai: *embb_slice2
-      dnn: "ims"
+      dnn: "internet"
       qos_profile:
-        5qi: 2
+        5qi: 1
         session_ambr_ul: "100Mbps"
         session_ambr_dl: "200Mbps"
 

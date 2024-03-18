@@ -17,7 +17,8 @@ data:
         gNB_name  =  "{{ .Values.config.gnbName}}";
         // Tracking area code, 0x0000 and 0xfffe are reserved values
         tracking_area_code  = {{ .Values.config.tac}} ;
-        plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}} }) });
+	plmn_list = ({ mcc = {{- if .Values.global }}{{ .Values.global.ranConfig.mcc}}{{- else}}{{ .Values.config.mcc}}{{- end}} ; mnc = {{- if .Values.global }}{{ .Values.global.ranConfig.mnc}}{{- else}}{{ .Values.config.mnc}}{{- end}}; mnc_length = 2; snssaiList = ({ sst = {{- if .Values.global }}{{ .Values.global.ranConfig.sst}}{{- else}}{{ .Values.config.sst}}{{- end}}; sd = {{- if .Values.global }}{{ .Values.global.ranConfig.sd}}{{- else}}{{ .Values.config.sd}}{{- end}}; }) });
+        #plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}} }) });
 
         nr_cellid = 12345678L
 
