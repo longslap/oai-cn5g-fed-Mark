@@ -39,10 +39,10 @@ Note: In case readers are interested in deploying debuggers/developers core netw
 
 | CNF Name    | Branch Name             | tag      | Ubuntu 22.04 | RHEL8          |
 | ----------- |:----------------------- | ---------| ------------ | ---------------|
-| AMF         | `master`                | `v2.0.0` | X            | X              |
-| SMF         | `master`                | `v2.0.0` | X            | X              |
-| NRF         | `master`                | `v2.0.0` | X            | X              |
-| UPF         | `master`                | `v2.0.0` | X            | X              |
+| AMF         | `master`                | `v2.0.1` | X            | X              |
+| SMF         | `master`                | `v2.0.1` | X            | X              |
+| NRF         | `master`                | `v2.0.1` | X            | X              |
+| UPF         | `master`                | `v2.0.1` | X            | X              |
 
 <br/>
 

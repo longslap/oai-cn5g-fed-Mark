@@ -103,7 +103,7 @@ In previous tutorials, we were using the `oai-spgwu-tiny` implementation as UPF.
 
   - `Simple Switch` Mode: is reusing the code from the `oai-spgwu-tiny` to do simple UPF features. The purpose of using this mode is first to show the functioning of the entire OAI 5G setup (RAN & CN), but also enable some functionalities that are not yet implemented within the eBPF-XDP deplyment mode. Please notice that this mode is hidden in Figure 1 for the sake of understanding and providing too much details. By default this mode (i.e., `Simple Switch`) is the one running.
 
-  - `eBPF-XDP` Mode: The main goal of using this mode is to seek for throughput and high UPF performance. This first release of UPF (v2.0.0) is offering yet basic features including (PDRs and FARs). In the upcoming versions we will implement additional features (such as QERs, MARs, and URRs). This mode is shown in Figure 1, and to be activated you have to use the line `enable_bpf_datapath: yes` in the config file `conf/basic_nrf_config_ebpf.yaml`. To disable the `eBPF-XDP` mode, you have to put the value of `enable_bpf_datapath` to `no`.
+  - `eBPF-XDP` Mode: The main goal of using this mode is to seek for throughput and high UPF performance. This first release of UPF (v2.0.1) is offering yet basic features including (PDRs and FARs). In the upcoming versions we will implement additional features (such as QERs, MARs, and URRs). This mode is shown in Figure 1, and to be activated you have to use the line `enable_bpf_datapath: yes` in the config file `conf/basic_nrf_config_ebpf.yaml`. To disable the `eBPF-XDP` mode, you have to put the value of `enable_bpf_datapath` to `no`.
 
 The two modes are independent, therefore if you want to switch between these two modes, you will have to restart the setup after updating the `enable_bpf_datapath` feature.
 
@@ -136,13 +136,13 @@ You can also retrieve the images from `docker-hub`. See [Retrieving images](./RE
 
 | CNF Name    | Branch Name    | Tag used at time of writing   | Ubuntu 20.04 | Ubuntu 22.04  | RHEL8        |
 | ----------- |:-------------- | ----------------------------- | ------------ | --------------|------------- |
-| AMF         | `master`       | `v2.0.0`                      | x            | X             | x            |
-| AUSF        | `master`       | `v2.0.0`                      | x            | X             | x            |
-| NRF         | `master`       | `v2.0.0`                      | x            | X             | x            |
-| SMF         | `master`       | `v2.0.0`                      | x            | X             | x            |
-| UDR         | `master`       | `v2.0.0`                      | x            | X             | x            |
-| UDM         | `master`       | `v2.0.0`                      | x            | X             | x            |
-| UPF         | `master`       | `v2.0.0`                      | X            | X             |              |
+| AMF         | `master`       | `v2.0.1`                      | x            | X             | x            |
+| AUSF        | `master`       | `v2.0.1`                      | x            | X             | x            |
+| NRF         | `master`       | `v2.0.1`                      | x            | X             | x            |
+| SMF         | `master`       | `v2.0.1`                      | x            | X             | x            |
+| UDR         | `master`       | `v2.0.1`                      | x            | X             | x            |
+| UDM         | `master`       | `v2.0.1`                      | x            | X             | x            |
+| UPF         | `master`       | `v2.0.1`                      | X            | X             |              |
 
 
 <br/>
