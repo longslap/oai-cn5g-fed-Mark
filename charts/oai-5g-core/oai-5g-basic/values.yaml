@@ -2,10 +2,11 @@ global:
   nfConfigurationConfigMap: oai-5g-basic
   clusterIpServiceIpAllocation: true #this will allocate ip-address to cluster Ip service
   waitForNRF: true
+  IP_NRF: @IP_NRF@ #172.21.10.203
   http2Param: "--http2-prior-knowledge"  # if waitForNRF is true and http2 is used for all NF then this param is needed
   timeout: 1
 mysql:
-  enabled: true
+  enabled: @ENABLED_MYSQL@ #true
   imagePullPolicy: IfNotPresent
   oai5gdatabase: basic
   imagePullSecrets:
@@ -13,7 +14,7 @@ mysql:
   persistence:
     enabled: false
 oai-nrf:
-  enabled: true
+  enabled: @ENABLED_NRF@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-nrf          ## The image will be pulled from dockerhub
@@ -27,7 +28,7 @@ oai-nrf:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-udr:
-  enabled: true
+  enabled: @ENABLED_UDR@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udr           ## The image will be pulled from dockerhub
@@ -41,7 +42,7 @@ oai-udr:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-udm:
-  enabled: true
+  enabled: @ENABLED_UDM@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udm           ## The image will be pulled from dockerhub
@@ -55,7 +56,7 @@ oai-udm:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-ausf:
-  enabled: true
+  enabled: @ENABLED_AUSF@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-ausf           ## The image will be pulled from dockerhub
@@ -75,7 +76,7 @@ oai-ausf:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
 oai-amf:
-  enabled: true
+  enabled: @ENABLED_AMF@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-amf           ## The image will be pulled from dockerhub
@@ -105,12 +106,12 @@ oai-amf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_AMF_N2@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_AMF_N2@"
+      routes: @ROUTES_AMF_N2@
       hostInterface: "@IF_NAME_AMF_N2@" # Interface of the host machine on which this pod will be scheduled
   nodeSelector: {}
   nodeName: @NODE_AMF@
 oai-upf:
-  enabled: true
+  enabled: @ENABLED_UPF@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     #repository: docker.io/r2labuser/oai-upf    ## The image will be pulled from dockerhub
@@ -145,7 +146,7 @@ oai-upf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_UPF_N3@"
       ## If you don't want to add a default route in your pod then replace this field with ""
-      routes: "@ROUTES_UPF_N3@"
+      routes: @ROUTES_UPF_N3@
       hostInterface: "@IF_NAME_UPF_N3@"
     ## For n4 it is better to re-use eth0 interface inside the pod (primary CNI of Kubernetes)
     n4Interface:
@@ -159,7 +160,7 @@ oai-upf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_UPF_N4@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_UPF_N4@"
+      routes: @ROUTES_UPF_N4@
       hostInterface: "@IF_NAME_UPF_N4@"
     n6Interface:
       create: @MULTUS_UPF_N6@
@@ -172,7 +173,7 @@ oai-upf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_UPF_N6@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_UPF_N6@"
+      routes: @ROUTES_UPF_N6@
       hostInterface: "@IF_NAME_UPF_N6@"
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
   nodeSelector: {}
@@ -198,7 +199,7 @@ oai-upf:
 #    upfIpadd: 172.21.6.95
 #    noOfIperf3Server: 10
 oai-smf:
-  enabled: true
+  enabled: @ENABLED_SMF@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-smf           ## The image will be pulled from dockerhub
@@ -220,7 +221,7 @@ oai-smf:
       ## If you do not have a gateway leave the field empty
       Gateway: "@GW_SMF_N4@"
       ## If you do not want to add any routes in your pod then leave this field empty
-      routes: "@ROUTES_SMF_N4@"
+      routes: @ROUTES_SMF_N4@
       hostInterface: "@IF_NAME_SMF_N4@"
   nodeSelector: {}
   imagePullSecrets:
