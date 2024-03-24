@@ -160,14 +160,14 @@ smf:
       dnn: "@DNN0@"
       qos_profile:
         5qi: @SLICE1_5QI@ #5
-        session_ambr_ul: "200Mbps"
-        session_ambr_dl: "400Mbps"
+        session_ambr_ul: "@SLICE1_UPLINK@" # "200Mbps"
+        session_ambr_dl: "@SLICE1_DOWNLINK@" # "400Mbps"
     - single_nssai: *embb_slice2
       dnn: "@DNN1@"
       qos_profile:
         5qi: @SLICE2_5QI@ #2
-        session_ambr_ul: "100Mbps"
-        session_ambr_dl: "200Mbps"
+        session_ambr_ul: "@SLICE2_UPLINK@" # "100Mbps"
+        session_ambr_dl: "@SLICE2_DOWNLINK@" # "200Mbps"
 
 upf:
   support_features:
