@@ -126,7 +126,7 @@ oai-upf:
   imagePullSecrets:
     - name: "regcred"
   securityContext:
-    privileged: @PRIVILEGED@
+    privileged: true # @PRIVILEGED@ # upf fails without privilege mode on rocky
   persistent:
     sharedvolume: @SHAREDVOLUME@
   # create an extra interface for N3 incase the gNB is outside the cluster network or there is a need to have dedicated interface for N3
