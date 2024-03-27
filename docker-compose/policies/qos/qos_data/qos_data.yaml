@@ -6,9 +6,9 @@
     preemptVuln: PREEMPTABLE
   priorityLevel: 10
 
- gbr-rule-5qi-1:
+ gbr-qos-5qi-1:
   5qi: 1
-  maxbrUl: 100 Mbps
+  maxbrUl: 70000 Kbps
   maxbrDl: 100 Mbps
   gbrUl: 50 Mbps
   gbrDl: 50 Mbps
@@ -18,9 +18,9 @@
     preemptVuln: NOT_PREEMPTABLE
   priorityLevel: 9
 
- gbr-rule-5qi-5:
+ gbr-qos-5qi-5:
    5qi: 5
-   maxbrUl: 100 Mbps
+   maxbrUl: 60 Mbps
    maxbrDl: 100 Mbps
    gbrUl: 50 Mbps
    gbrDl: 50 Mbps
