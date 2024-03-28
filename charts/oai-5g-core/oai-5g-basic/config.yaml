@@ -154,7 +154,7 @@ smf:
           - dnn: "@DNN0@"
       - sNssai: *embb_slice2
         dnnSmfInfoList:
-          - dnn: "@DNN1"
+          - dnn: "@DNN1@"
   local_subscription_infos:
     - single_nssai: *embb_slice1
       dnn: "@DNN0@"
@@ -163,7 +163,7 @@ smf:
         session_ambr_ul: "@SLICE1_UPLINK@" # "200Mbps"
         session_ambr_dl: "@SLICE1_DOWNLINK@" # "400Mbps"
     - single_nssai: *embb_slice2
-      dnn: "@DNN1"
+      dnn: "@DNN1@"
       qos_profile:
         5qi: @SLICE2_5QI@ #2
         session_ambr_ul: "@SLICE2_UPLINK@" # "100Mbps"
