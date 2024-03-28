@@ -39,15 +39,15 @@ For this demo, all the images which use the `develop` branch have been retrieved
 
 | NF Name | Branch Name | Tag used at time of writing | Ubuntu 22.04 | RHEL8 |
 |----------|:------------|-----------------------------|--------------|-------|
-| NSSF     | `develop`    | `v2.0.0`                    | X            | -     |
-| AMF      | `develop`    | `v2.0.0`                    | X            | -     |
-| AUSF     | `develop`    | `v2.0.0`                    | X            | -     |
-| NRF      | `develop`    | `v2.0.0`                    | X            | -     |
-| SMF      | `develop`    | `v2.0.0`                    | X            | -     |
-| UDR      | `develop`    | `v2.0.0`                    | X            | -     |
-| UDM      | `develop`    | `v2.0.0`                    | X            | -     |
-| PCF      | `develop`    | `v2.0.0`                    | X            | -     |
-| UPF-VPP  | `develop`    | `v2.0.0`                    | X            | -     |
+| NSSF     | `develop`    | `v2.0.1`                    | X            | -     |
+| AMF      | `develop`    | `v2.0.1`                    | X            | -     |
+| AUSF     | `develop`    | `v2.0.1`                    | X            | -     |
+| NRF      | `develop`    | `v2.0.1`                    | X            | -     |
+| SMF      | `develop`    | `v2.0.1`                    | X            | -     |
+| UDR      | `develop`    | `v2.0.1`                    | X            | -     |
+| UDM      | `develop`    | `v2.0.1`                    | X            | -     |
+| PCF      | `develop`    | `v2.0.1`                    | X            | -     |
+| UPF-VPP  | `develop`    | `v2.0.1`                    | X            | -     |
 
 <br/>
 

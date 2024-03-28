@@ -2,7 +2,7 @@ kubernetesType: Vanilla  # Vanilla (Community Kubernetes) or Openshift (For RedH
 
 nfimage:
   repository: docker.io/oaisoftwarealliance/oai-nssf # image name either locally present or in a public/private repository
-  version: v2.0.0 #image tag, develop tag for experimental features 
+  version: v2.0.1 #image tag, develop tag for experimental features 
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 

@@ -123,24 +123,9 @@ pipeline {
             }
             if ((branchNames[ii] == "develop") && (baseTags[ii] == "develop")) {
               destTags[ii] = getLastCommitFromBranch(ii, repoNames[ii], branchNames[ii])
-              baseTags[ii] = getCorrectBaseTag(imageNames[ii], destTags[ii])
             } else {
               destTags[ii] = baseTags[ii]
             }
-          }
-          // Checking if all needed images are on cetautomatix to be pushed
-          imageStatus = 0
-          for (ii = 0; ii < imageNames.size(); ii++) {
-            imageStatus += checkImageInfo(imageNames[ii], baseTags[ii])
-          }
-          if (imageStatus > 0) {
-            coreDeploy   = false
-            gnbDeploy    = false
-            testStart0   = false
-            testStart1   = false
-            testStop0    = false
-            testStop1    = false
-            error ("Some images are not present!")
           }
         }
       }
@@ -153,17 +138,11 @@ pipeline {
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.cn_oc_credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
             sh "oc login -u ${OC_Username} -p ${OC_Password}"
-            sh "oc whoami -t | sudo podman login -u ${OC_Username} --password-stdin ${oc_registry_url} --tls-verify=false"
             logoutToDo = true
-          }
-          sh "oc project ${oc_project_name}"
-          for (ii = 0; ii < imageNames.size(); ii++) {
-            pushToOpenshiftRegistry (imageNames[ii], baseTags[ii], destTags[ii])
-            appendImageInfo(imageNames[ii], destTags[ii])
-          }
-          // Checking that will-be-used tags have been pushed
-          for (ii = 0; ii < imageNames.size(); ii++) {
-            sh "oc describe is ${imageNames[ii]} | grep ${destTags[ii]}"
+            sh "oc project ${oc_project_name}"
+            for (ii = 0; ii < imageNames.size(); ii++) {
+              sh "./ci-scripts/checkOcRegistry.py --image-name ${imageNames[ii]} --tag ${destTags[ii]} --project ${oc_project_name} -u ${OC_Username}"
+            }
           }
           // Putting the new tags in charts
           // Let's work now in the basic chart folder
@@ -386,7 +365,6 @@ pipeline {
             sh "oc get pods -o wide"
             deployedCore = false
           }
-          sh "sudo podman logout ${oc_registry_url}"
           sh 'oc logout'
           logoutToDo = false
         }
@@ -445,7 +423,6 @@ pipeline {
           }
         }
         if (logoutToDo) {
-          sh "sudo podman logout ${oc_registry_url}"
           sh 'oc logout'
         }
         sh 'zip -r cn5g_cots_ue_test_logs.zip archives'
@@ -493,54 +470,6 @@ def getLastCommitFromBranch(index, repoName, branchName) {
   shaone = shaone.replaceAll('"','')
   shaone = shaone.take(8)
   return "${branchName}-${shaone}"
-}
-
-def getCorrectBaseTag(imageName, destTag) {
-  baseTag = "develop"
-  try {
-    sh "sudo podman images | grep ${imageName} | grep ${destTag}"
-    baseTag = destTag
-  } catch (Exception e) {
-    echo "Still using develop as base tag"
-  }
-  return baseTag
-}
-
-def checkImageInfo (imageName, origTag) {
-  status = 0
-  sh "echo 'Tested Tag is ${imageName}:${origTag}' > archives/${imageName}-image-info.log"
-  try {
-    sh "sudo podman image inspect --format='Size = {{.Size}} bytes' ${imageName}:${origTag} >> archives/${imageName}-image-info.log"
-    sh "sudo podman image inspect --format='Date = {{.Created}}' ${imageName}:${origTag} >> archives/${imageName}-image-info.log"
-  } catch (Exception e) {
-    echo "${imageName} Image tag to test (${imageName}:${origTag} does not exist!"
-    status = 1
-  }
-  return status
-}
-
-def appendImageInfo (imageName, destTag) {
-  sh "echo 'OC Pushed Tag is ${imageName}:${destTag}' >> archives/${imageName}-image-info.log"
-}
-
-def pushToOpenshiftRegistry (imageName, origTag, destTag) {
-  noHttpsURL = oc_registry_url.replaceAll("https://", "")
-  sh "sudo podman rmi ${noHttpsURL}/${oc_project_name}/${imageName}:${destTag} || true"
-  sh "sudo podman image tag ${imageName}:${origTag} ${noHttpsURL}/${oc_project_name}/${imageName}:${destTag}"
-  cnt = 0
-  while (cnt < 4) {
-    try {
-      sh "sudo podman push --tls-verify=false ${noHttpsURL}/${oc_project_name}/${imageName}:${destTag}"
-      cnt = 10
-    } catch (Exception e) {
-      echo "Network issue when pushing? Trying again!"
-      cnt += 1
-    }
-  }
-  sh "sudo podman rmi ${noHttpsURL}/${oc_project_name}/${imageName}:${destTag} || true"
-  if (cnt != 10) {
-    error "Could not push"
-  }
 }
 
 def checkCoreNetworkDeployment() {
