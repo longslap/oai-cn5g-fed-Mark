@@ -176,10 +176,17 @@ def nfDetails(nfName):
                     size = f'{(sizeInt/1000000000):.3f} Gbytes'
                 else:
                     size = f'{(sizeInt/1000000):.1f} Mbytes'
+            result = re.search('Image Size:\\t*(?P<imageSize>[0-9\.]+)MB', line)
+            if result is not None:
+                sizeInt = float(result.group('imageSize')) * 2.6
+                size = f'{sizeInt:.1f} Mbytes'
             result = re.search('Date = (?P<imageDate>[0-9\-]+ [0-9\:]+)', line)
             if result is not None:
                 creationDate = result.group('imageDate')
             result = re.search('Date = (?P<imageDate>[0-9\-]+T[0-9\:]+)', line)
+            if result is not None:
+                creationDate = re.sub('T', ' ', result.group('imageDate'))
+            result = re.search('"(?P<imageDate>[0-9\-]+T[0-9\:]+)Z"', line)
             if result is not None:
                 creationDate = re.sub('T', ' ', result.group('imageDate'))
 

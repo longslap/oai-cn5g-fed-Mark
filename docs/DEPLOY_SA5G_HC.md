@@ -28,13 +28,13 @@ OAI 5G core network have different network functions which can be used invidiual
 
 ### Pre-requisite
 
-1. Minimum 4 CPU (Threaded), 16GBi RAM and 50G storage
+1. Minimum 4 CPU (Threaded), 16GBi RAM and 50G storage required by NFs
 2. (Optional) Multus CNI if using multiple interfaces for NFs
 
 Clone the git repository 
 
 ```console 
-$: git clone -b <Branch> https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed
+git clone -b <Branch> https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed
 ```
 
 ## 1. Description
@@ -429,6 +429,7 @@ NOTES:
 4. In case you want to test these charts with USRP then make sure your CPU sleep states are off```
 </details>
 ```
+</details>
 
 Wait for the NR-UE to start
 

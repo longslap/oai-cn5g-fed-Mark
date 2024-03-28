@@ -4,7 +4,7 @@ kubernetesType: Vanilla  #Vanilla for community kubernetes distribution else Ope
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:
   repository: docker.io/oaisoftwarealliance/oai-udm         
-  version: v2.0.0                        #image tag, develop tag for experimental features 
+  version: v2.0.1                        #image tag, develop tag for experimental features 
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 

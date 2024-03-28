@@ -1,5 +1,36 @@
 # RELEASE NOTES: #
 
+## v2.0.1 -- January 2024 ##
+
+* `AMF` changes:
+  * Features
+    - NGAP AMF status indication
+    - Add UE Retention Information support
+    - Update NAS with Rel 16.14.0 IEs
+      *  Refactoring code for Encode/Decode functions
+      *  Cleanup NAS lib
+  * Fixes
+    - Fix typo for N1N2MessageSubscribe
+    - Fix issue when receiving PDU session reject from SMF
+  * Tech debt
+    - Reformating of the SCTP code
+    - Refactor promise handling
+    - Removing dependencies to libconfig++ (Only YAML file can be read as configuration)
+* `SMF` changes:
+  * Features
+    - Add N1/N2 info in the message response to AMF if available
+  * Fixes
+    - Remove NRF dependency from SMF
+  * Tech debt
+    - Refactor SMF PFCP associations to always use UPF info
+* `UDM` changes:
+  * Fixes
+    - Remove NRF dependency from SMF
+* `UDR` changes:
+  * Tech debt
+    - Fixed builds
+    - Refactor mongoDB
+
 ## v2.0.0 -- December 2023 ##
 
 * 2 new Network Functions:

@@ -94,7 +94,7 @@ Process is explained in [CONTRIBUTING](CONTRIBUTING.md) file.
 
 If you wish to discuss development topics, we have a weekly one-hour meeting every Tuesday at 11AM CET.
 
-The meeting details are available through this [ics file](./docs/meeting_invitations/invite-2023.ics).
+The meeting details are available through this [ics file](./docs/meeting_invitations/invite-2024.ics).
 
 # Contribution requests
 
