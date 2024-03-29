@@ -148,13 +148,13 @@ amf:
         - *embb_slice2
         - *custom_slice
   supported_integrity_algorithms:
-    - "NIA0"
     - "NIA1"
     - "NIA2"
+    - "NIA0"
   supported_encryption_algorithms:
-    - "NEA0"
     - "NEA1"
     - "NEA2"
+    - "NEA0"
 
 smf:
   ue_mtu: 1500

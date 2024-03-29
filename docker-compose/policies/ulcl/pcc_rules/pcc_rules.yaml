@@ -1,20 +1,29 @@
 internet-rule:
   flowInfos:
     - flowDescription: permit out ip from any to assigned
+      packetFilterUsage: true
   precedence: 10
   refTcData:
     - internet-scenario
+  refQosData:
+    - non-gbr-qos-5qi-9
 
 edge-rule-restricted:
   flowInfos:
     - flowDescription: permit out ip from 1.1.1.2 to assigned
+      packetFilterUsage: true
   precedence: 9
   refTcData:
     - edge-scenario
+  refQosData:
+    - gbr-qos-5qi-5
 
 edge-rule-all:
   flowInfos:
     - flowDescription: permit out ip from any to assigned
+      packetFilterUsage: true
   precedence: 10
   refTcData:
     - edge-scenario
+  refQosData:
+    - non-gbr-qos-5qi-9
