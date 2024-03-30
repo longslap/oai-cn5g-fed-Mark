@@ -39,25 +39,25 @@ oc create secret generic etc-pki-entitlement --from-file /etc/pki/entitlement/<p
 Create the build configs for each core network function, the build config yamls will also create the image streams.
 
 ```bash
-$: oc create -f oai-amf-build-config.yaml
-$: oc create -f oai-ausf-build-config.yaml
-$: oc create -f oai-udr-build-config.yaml
-$: oc create -f oai-udm-build-config.yaml
-$: oc create -f oai-smf-build-config.yaml
-$: oc create -f oai-spgwu-tiny-build-config.yaml
-$: oc create -f oai-nrf-build-config.yaml
+oc create -f oai-amf-build-config.yaml
+oc create -f oai-ausf-build-config.yaml
+oc create -f oai-udr-build-config.yaml
+oc create -f oai-udm-build-config.yaml
+oc create -f oai-smf-build-config.yaml
+oc create -f oai-spgwu-tiny-build-config.yaml
+oc create -f oai-nrf-build-config.yaml
 ```
 
 You can do `oc get bc` to see all the build configs in `oai5g` project. Once all the build config definations are there, you can start building the network function images parallel or one by one its a choice, 
 
 ``` bash
-$: oc start-bc oai-amf 
-$: oc start-bc oai-smf 
-$: oc start-bc oai-ausf 
-$: oc start-bc oai-nrf
-$: oc start-bc oai-spgwu-tiny 
-$: oc start-bc oai-udm
-$: oc start-bc oai-udr
+oc start-bc oai-amf 
+oc start-bc oai-smf 
+oc start-bc oai-ausf 
+oc start-bc oai-nrf
+oc start-bc oai-spgwu-tiny 
+oc start-bc oai-udm
+oc start-bc oai-udr
 ```
 
 For the moment the dockerfiles used in these build configs are based on v1.4.0 release tag of all the network functions. 
@@ -77,49 +77,68 @@ Every image has its own build config. For the moment you will see inside the bui
 
 Develop branch is mostly stable and there is a new merge every week. First start with creating base image
 
-```
-$: oc create -f oai-ran-base-build-config.yaml
-$: oc start-build oai-ran-base
+```bash
+oc create -f oai-ran-base-build-config.yaml
+oc start-build oai-ran-base
 ```
 
 Once done you need to build builder image
 
 #### 2.2 Creating builder image
 
-```
-$: oc create -f ran-build/ran-build.yaml 
-$: oc start-build ran-build
+```bash
+oc create -f ran-build/ran-build.yaml 
+oc start-build ran-build
 ```
 
-#### 2.3 Creating target gNB image
+#### 2.3 Creating target image for oai-gNB
 
-NOTE: If you are using another project than `oai-tutorial` then you need to make a small change in the [build config file](./oai-gnb-build-config.yaml). Change the YOUR_PROJECT_NAME variable with your project name (oc project) 
+This target image is used by oai-gnb, oai-cu, oai-cu-cp and oai-du. But for oai-cu-up there is another target image. 
+
+If you are using another project than `oai-tutorial` then you need to make a small change in the [build config file](./oai-gnb-build-config.yaml). Change the YOUR_PROJECT_NAME variable with your project name (oc project)
 
 ```
 $: sed -i 's/oai-tutorial/$YOUR_PROJECT_NAME/g' oai-gnb-build-config.yaml
 ```
 
-If you are using the project name as `oai-tutorial` then please avoid the note. 
+If you are using the project name as `oai-tutorial` then you can directly start building the target image. 
+
+```bash
+oc create -f oai-gnb-build-config.yaml
+oc start-build oai-gnb
+```
+
+#### 2.4 Creating target image for oai-cu-up
+
+This target image is only for oai-cu-up
+
+If you are using another project than `oai-tutorial` then you need to make a small change in the [build config file](./oai-gnb-build-config.yaml). Change the YOUR_PROJECT_NAME variable with your project name (oc project)
 
 ```
-$: oc create -f oai-gnb-build-config.yaml
-$: oc start-build oai-gnb
+$: sed -i 's/oai-tutorial/$YOUR_PROJECT_NAME/g' oai-cu-up-build-config.yaml
 ```
 
-#### 2.4 Creating NR-UE image
+If you are using the project name as `oai-tutorial` then you can directly start building the target image. 
 
-**NOTE**: If you are using another project than `oai-tutorial` then you need to make a small change in the [build config file](./oai-nr-ue-build-config.yaml). Change the YOUR_PROJECT_NAME variable with your project name (oc project)
+```bash
+oc create -f oai-cu-up-build-config.yaml
+oc start-build oai-cu-up
+```
+
+#### 2.5 Creating NR-UE image
+
+If you are using another project than `oai-tutorial` then you need to make a small change in the [build config file](./oai-nr-ue-build-config.yaml). Change the YOUR_PROJECT_NAME variable with your project name (oc project)
 
 ```
 $: sed -i 's/oai-tutorial/$YOUR_PROJECT_NAME/g' oai-nr-ue-build-config.yaml
 ```
 
-If you are using the project name as `oai-tutorial` then please avoid the note.
+If you are using the project name as `oai-tutorial` then you can directly start building the target image. 
 
 
 ``` bash
-$: oc create -f oai-nr-ue-build-config.yaml
-$: oc start-build oai-nr-ue 
+oc create -f oai-nr-ue-build-config.yaml
+oc start-build oai-nr-ue 
 ```
 
 You can follow [our tutorial](../docs/DEPLOY_SA5G_HC.md) on how to deploy OAI5g Core, gNB and NR-UE via [helm-charts](../charts) and helm-spray.

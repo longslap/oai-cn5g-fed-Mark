@@ -24,18 +24,20 @@ spec:
           }]
     {{- end }}
     spec:
-    {{- if not .Values.config.upfSpgwu }}
-      hostAliases:
-      - ip: "192.168.124.200"
-        hostnames:
-          - "oai-upf-svc"
-    {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
+      initContainers:
+        - name: init
+          image: "{{ .Values.initContainer.repository }}:{{ .Values.initContainer.version }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          command: 
+            - /bin/sh
+            - -c 
+            - until curl --head -X GET http://{{ .Values.config.nrfFqdn }}/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.config.http2Param }}; do echo waiting for oai-nrf; sleep 2; done
       containers:
       - name: tcpdump
         image: "{{ .Values.tcpdumpimage.repository }}:{{ .Values.tcpdumpimage.version }}"
@@ -78,8 +80,8 @@ spec:
         readinessProbe:
           exec:
             command:
-            - /bin/bash
-            - /openair-smf/bin/healthcheck.sh
+            - pgrep
+            - oai_smf
           initialDelaySeconds: 2
           periodSeconds: 3
         {{- end}}
@@ -87,8 +89,8 @@ spec:
         livenessProbe:
           exec:
             command:
-            - /bin/bash
-            - /openair-smf/bin/healthcheck.sh
+            - pgrep
+            - oai_smf
           initialDelaySeconds: 10
           periodSeconds: 5
         {{- end}}
@@ -108,13 +110,7 @@ spec:
             memory: {{ .Values.resources.nf.limits.memory | quote }}
             cpu: {{ .Values.resources.nf.limits.cpu | quote }}
         {{- end}}
-        {{- if .Values.start.smf}}
-        command:
-          - /openair-smf/bin/oai_smf
-          - -c
-          - /openair-smf/etc/smf.conf
-          - -o
-        {{- else}}
+        {{- if not .Values.start.smf}}
         command:
           - /bin/sleep
           - infinity
@@ -126,7 +122,7 @@ spec:
           claimName: cn5g-pvc
       {{- end }}
       - configMap:
-          name: {{ .Chart.Name }}-configmap
+          name: oai5gcn
         name: configuration
       dnsPolicy: ClusterFirst
       restartPolicy: Always

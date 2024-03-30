@@ -14,7 +14,7 @@
 
 Currently there is no special tool for debugging the problems of core network components. Though there are certain methods which we use in our team to diagnose an issue.
 
-This page content expects you to read [deployment pre-requisites](./DEPLOY_PRE_REQUISITES.md) and try to deploy a [mini](./DEPLOY_SA5G_MINI_DEPLOYMENT.md) or [basic](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md) normal deployment.
+This page content expects you to read [deployment pre-requisites](./DEPLOY_PRE_REQUISITES.md) and try to deploy a [mini](./DEPLOY_SA5G_MINI_WITH_GNBSIM.md) or [basic](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md) normal deployment.
 
 **TABLE OF CONTENTS**
 
@@ -169,7 +169,7 @@ The healthchecks can be directly used from [here](../docker-compose/healthscript
 
 # 2.2.4 Creating docker-compose
 
-To run this docker-compose the network `demo-oai-public-net` should be created. To know how to create the network [follow](./DEPLOY_SA5G_MINI_DEPLOYMENT.md#3-configuring-host-machines)
+To run this docker-compose the network `demo-oai-public-net` should be created.
 
 ```
 version: '3.8'
@@ -288,8 +288,7 @@ Network components configuration is present in `~/oai-docker-compose/confs/` the
 
 1. Building the images in debug mode will provide more information about UE attach-detach process.
 2. Capture packets to understand message flow between the components and encapsulation-decapsulation.
-3. The captured packets can be compared with the end-to-end pcaps which are available in this [tutorial](./DEPLOY_SA5G_MINI_DEPLOYMENT.md)
-4. Check the UE subscription information is available in the Mysql database and the OPC is correctly configured in AMF.
+3. Check the UE subscription information is available in the Mysql database and the OPC is correctly configured in AMF.
 
 
 # 4. How to report an issue?

@@ -2,7 +2,9 @@
 ## ref: https://hub.docker.com/r/library/mysql/tags/
 ##
 image: "docker.io/mysql"
-imageTag: "8.0"
+imageTag: "5.7"
+
+replicas: 1
 
 strategy:
   type: Recreate
@@ -97,7 +99,7 @@ livenessProbe:
   failureThreshold: 3
 
 readinessProbe:
-  initialDelaySeconds: 15
+  initialDelaySeconds: 10
   periodSeconds: 15
   timeoutSeconds: 5
   successThreshold: 1

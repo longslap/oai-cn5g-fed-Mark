@@ -37,7 +37,7 @@ icon: http://www.openairinterface.org/wp-content/uploads/2015/06/cropped-oai_fin
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
-version: 0.1.1
+version: 2.0.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application.
@@ -48,6 +48,8 @@ keywords:
   - gNB
   - RAN
   - 5G
+  - USRP_B2XX
+  - USRP_N3XX
 
 sources:
   - https://gitlab.eurecom.fr/oai/openairinterface5g

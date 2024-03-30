@@ -13,7 +13,7 @@
 </table>
 
 
-![SA dsTest Demo](./images/5gcn_vpp_upf_omec_gnbsim.png)
+![SA Demo](./images/5gcn_vpp_upf_omec_gnbsim.png)
 
 **Reading time: ~ 30mins**
 
@@ -49,7 +49,7 @@ Note: In case readers are interested in deploying debuggers/developers core netw
 
 <br/>
 
-This tutorial is an extension of a previous tutorial: [testing a `basic` deployment with dsTester](./DEPLOY_SA5G_BASIC_DS_TESTER_DEPLOYMENT.md). In previous tutorial, we have seen the advanced testing tool dsTester, which is useful for validating even more complex scenarios.
+This tutorial is an extension of a previous tutorial: [testing a `basic` deployment](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md).
 
 Moreover, there are various other opensource gnb/ue simulator tools that are available for SA5G test. In this tutorial, we use an opensource simulator tool called `omec-gnbsim`. With the help of `omec-gnbsim` tool, we can perform basic SA5G test by simulating multiple gnb & ue.
 
@@ -71,7 +71,7 @@ Let's begin !!
 
 * Steps 1 to 5 are similar as previous [tutorial on vpp-upf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_SA5G_WITH_VPP_UPF.md#5-deploying-oai-5g-core-network). Please follow these steps to deploy OAI 5G core network components.
 * We deploy omec-gnbsim docker service on same host as of core network, so there is no need to create additional route as
-we did for dsTest-host.
+we did for gnb-host.
 * Before we proceed further for end-to-end SA5G test, make sure you have healthy docker services for OAI cn5g
 
 ## 1. Pre-requisites
@@ -234,8 +234,6 @@ docker-compose-host $: python3 ./core-network.py --type stop-basic-vpp --scenari
 | [omec-gnbsim-logs.txt](./results/omec-gnbsim/omec-gnbsim-logs.txt) |
 | [5gcn-deployment-omec-gnbsim.pcapng](./results/omec-gnbsim/pcap/5gcn-deployment-omec-gnbsim.pcapng) |
 
-
-* For detailed analysis of messages, please refer previous tutorial of [testing with dsTester](./docs/DEPLOY_SA5G_WITH_DS_TESTER.md).
 
 <!---
 For CI purposes please ignore this line

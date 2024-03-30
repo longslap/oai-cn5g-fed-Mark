@@ -26,9 +26,9 @@ import logging
 import os
 import re
 import sys
-import subprocess
+import common.python.cls_cmd as cls_cmd
 
-from generate_html import (
+from common.python.generate_html import (
     generate_header,
     generate_footer,
     generate_chapter,
@@ -160,13 +160,13 @@ def nfDetails(nfName):
         return generate_image_table_row(contName, 'Not Found', 'Not Found', f'could not open archives/{nfName}-image-info.log', 'N/A')
     with open(os.path.join(cwd, f'archives/{nfName}-image-info.log'), 'r') as podImageLog:
         for line in podImageLog:
-            result = re.search('Tested Tag is (?P<imageName>' + nfName + '[a-zA-Z0-9\-\:]+)', line)
+            result = re.search('Tested Tag is (?P<imageName>' + nfName + '[a-zA-Z0-9\.\-\:]+)', line)
             if result is not None:
                 fullTag = result.group('imageName')
-            result = re.search('OC Pushed Tag is (?P<ocName>' + nfName + '[a-zA-Z0-9\-\:]+)', line)
+            result = re.search('OC Pushed Tag is (?P<ocName>' + nfName + '[a-zA-Z0-9\.\-\:]+)', line)
             if result is not None:
                 ocTag = result.group('ocName')
-            result = re.search('Tested Tag is (?P<imageName>[a-zA-Z0-9\.\/]+' + nfName + '[a-zA-Z0-9\-\:\_]+)', line)
+            result = re.search('Tested Tag is (?P<imageName>[a-zA-Z0-9\.\/]+' + nfName + '[a-zA-Z0-9\-\:\.\_]+)', line)
             if result is not None:
                 fullTag = result.group('imageName')
             result = re.search('Size = (?P<imageSize>[0-9]+) bytes', line)
@@ -176,10 +176,17 @@ def nfDetails(nfName):
                     size = f'{(sizeInt/1000000000):.3f} Gbytes'
                 else:
                     size = f'{(sizeInt/1000000):.1f} Mbytes'
+            result = re.search('Image Size:\\t*(?P<imageSize>[0-9\.]+)MB', line)
+            if result is not None:
+                sizeInt = float(result.group('imageSize')) * 2.6
+                size = f'{sizeInt:.1f} Mbytes'
             result = re.search('Date = (?P<imageDate>[0-9\-]+ [0-9\:]+)', line)
             if result is not None:
                 creationDate = result.group('imageDate')
             result = re.search('Date = (?P<imageDate>[0-9\-]+T[0-9\:]+)', line)
+            if result is not None:
+                creationDate = re.sub('T', ' ', result.group('imageDate'))
+            result = re.search('"(?P<imageDate>[0-9\-]+T[0-9\:]+)Z"', line)
             if result is not None:
                 creationDate = re.sub('T', ' ', result.group('imageDate'))
 
@@ -225,7 +232,7 @@ def detailsCoreDeployment():
     status = True
     detailsHtml = generate_button_header('cn5g-details', 'Details on the OAI CN5G Deployment')
     detailsHtml += generate_image_table_header()
-    coreElements = ['mysql', 'oai-nrf', 'oai-amf', 'oai-smf', 'oai-spgwu-tiny', 'oai-ausf', 'oai-udm', 'oai-udr']
+    coreElements = ['mysql', 'oai-nrf', 'oai-amf', 'oai-smf', 'oai-upf', 'oai-ausf', 'oai-udm', 'oai-udr']
     for element in coreElements:
         imageStatus = nfDetails(element)
         detailsHtml += imageStatus
@@ -328,13 +335,80 @@ def detailsUeStopTest(runNb):
         detailsHtml += generate_list_footer()
         detailsHtml += generate_button_footer()
         return (False, detailsHtml)
+    status = True
+    previousCmd = ''
+    errorIssues = ''
+    with open(os.path.join(cwd, f'archives/test-stop{runNb}.log'), 'r') as testRunLog:
+        for line in testRunLog:
+            if re.search('^---- ', line) is not None:
+                previousCmd = re.sub('^---- ', '', line.strip())
+            if re.search('error: operation failed:', line) is not None:
+                status = False
+                errorIssues += generate_list_row(f'This command returned an error: <pre><b>{previousCmd}</b></pre>', 'fire')
+                errorIssues += generate_list_row(line.strip(), 'remove-sign')
+    detailsHtml += errorIssues
     detailsHtml += generate_list_row(f'More details in archives/test-stop{runNb}.log', 'info-sign')
     detailsHtml += generate_list_footer()
     detailsHtml += generate_button_footer()
-    return (True, detailsHtml)
+    return (status, detailsHtml)
+
+def detailsUeTrafficTest(runNb):
+    detailsHtml = generate_button_header(f'ue-traffic{runNb}-details', f'Details on the UE traffic test #{runNb}')
+    detailsHtml += generate_list_header()
+    cwd = os.getcwd()
+    if not os.path.isfile(os.path.join(cwd, f'archives/test-traffic{runNb}.log')) or not os.path.isfile(os.path.join(cwd, f'archives/test-oai_final_logo.png')):
+        detailsHtml += generate_list_row(f'could not open archives/test-traffic{runNb}.log', 'question-sign')
+        detailsHtml += generate_list_footer()
+        detailsHtml += generate_button_footer()
+        return (False, detailsHtml)
+    status = True
+    # Checking the trace route message
+    cnt = 0
+    oai_org_final_destination = ''
+    with open(os.path.join(cwd, f'archives/test-traffic{runNb}.log'), 'r') as testRunLog:
+        for line in testRunLog:
+            if re.search('12.1.1.1', line) is not None:
+                cnt += 1
+                detailsHtml += generate_list_row(line, 'forward')
+            if re.search('oaiocp-gw.oai.cs.eurecom.fr', line) is not None:
+                cnt += 1
+                detailsHtml += generate_list_row(line, 'forward')
+            if re.search('openairinterface.org', line) is not None and cnt > 0:
+                cnt += 1
+                detailsHtml += generate_list_row(line, 'forward')
+            # internet is using a cache?
+            elif oai_org_final_destination != '' and re.search(oai_org_final_destination, line) is not None:
+                cnt += 1
+                detailsHtml += generate_list_row(line, 'forward')
+            if re.search('traceroute to openairinterface.org', line) is not None:
+                cnt += 1
+                detailsHtml += generate_list_row(line, 'info-sign')
+                res = re.search('traceroute to openairinterface.org \((?P<ip_address>[0-9\.]+)\),', line)
+                if res is not None:
+                    oai_org_final_destination = res.group('ip_address')
+    if cnt != 4:
+        detailsHtml += generate_list_row('TraceRoute did NOT complete', 'question-sign')
+        status = False
+    else:
+        detailsHtml += generate_list_row('TraceRoute was complete', 'thumbs-up')
+    # Checking the OAI logo image
+    myCmds = cls_cmd.LocalCmd()
+    res = myCmds.run(f'file {cwd}/archives/test-oai_final_logo.png', silent=True)
+    if res.returncode != 0:
+        status = False
+    htmlMessage = re.sub(f'{cwd}/archives/test-oai_final_logo.png', 'archives/test-oai_final_logo.png', res.stdout)
+    if re.search('PNG image data, 800 x 267, 8-bit/color RGBA, non-interlaced', res.stdout) is None:
+        detailsHtml += generate_list_row(htmlMessage, 'thumbs-down')
+        status = False
+    else:
+        detailsHtml += generate_list_row(htmlMessage, 'thumbs-up')
+    myCmds.close()
+    detailsHtml += generate_list_footer()
+    detailsHtml += generate_button_footer()
+    return (status, detailsHtml)
 
 if __name__ == '__main__':
-    # Parse the arguments to get the deployment instruction
+    # Parse the arguments
     args = _parse_args()
 
     # Parse logs for details
@@ -353,6 +427,7 @@ if __name__ == '__main__':
         ueStart0Status = True
     else:
         ueStart0Status = False
+    (ueTraffic0Status, ueTrafficTest0) = detailsUeTrafficTest(0)
     (ueStop0Status, ueStopTest0) = detailsUeStopTest(0)
     if ueStop0Status and not args.ue_test0_stop_failed:
         ueStop0Status = True
@@ -378,11 +453,13 @@ if __name__ == '__main__':
         wfile.write(ranDetails)
         wfile.write(generate_chapter('First COTS-UE Connection', 'Registration / PDU session establishment / Ping Traffic status', ueStart0Status))
         wfile.write(ueStartTest0)
+        wfile.write(generate_chapter('First COTS-UE Traffic Test', 'Traceroute / Curl', ueTraffic0Status))
+        wfile.write(ueTrafficTest0)
         wfile.write(generate_chapter('First COTS-UE Deconnection', 'PDU Session release / Deregistration', ueStop0Status))
         wfile.write(ueStopTest0)
         wfile.write(generate_chapter('Second COTS-UE Connection', 'Registration / PDU session establishment / Ping Traffic status', ueStart1Status))
         wfile.write(ueStartTest1)
-        wfile.write(generate_chapter('First COTS-UE Deconnection', 'PDU Session release / Deregistration', ueStop1Status))
+        wfile.write(generate_chapter('Second COTS-UE Deconnection', 'PDU Session release / Deregistration', ueStop1Status))
         wfile.write(ueStopTest1)
         wfile.write(generate_chapter('Post-Run PCAP Analysis', 'To be done', True))
         wfile.write(generate_footer())

@@ -1,15 +1,10 @@
-kubernetesType: Vanilla  #Vanilla for community kubernetes distribution
+kubernetesType: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
 
-# NF image
+## In case of using these charts on Openshift then please use UBI images
+## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:
   repository: docker.io/oaisoftwarealliance/oai-nrf
-  version: v1.5.0 #image tag, develop tag for experimental features 
-  # pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
-
-tcpdumpimage:
-  repository: corfr/tcpdump
-  version: latest
+  version: v2.0.1 #image tag, develop tag for experimental features 
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
@@ -30,52 +25,59 @@ podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
-securityContext:
-  privileged: false
+exposedPorts:
+  sbi: 80
 
-#service type is fixed to clusterIP
-
+## Debugging section
 start:
-  nrf: true
-  tcpdump: false #start tcpdump collection to analyse but beware it will take a lot of space in the container/persistent volume
+  nrf: true #If false the network function container will run in sleep mode for manually testing
+  tcpdump: false
 
-# create multus interface in case the NRF wants to use a separate interface 
-# than kubernetes general CNI or it needs to be accessed from outside cluster network using ip-address (please use amf multus.yaml as an example). 
+includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
 
-config:
-  nrfInterfaceNameForSBI: "eth0" # net1 if multus.create is set true
-  nrfInterfacePortForSBI: "80"
-  nrfInterfaceHttp2PortForSBI: "8080"
-  nrfApiVersion: "v1"
+## For openshift you can use rhel8/support-tools:8.7-13
+tcpdumpimage:
+  repository: docker.io/corfr/tcpdump
+  version: latest
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
 
+# To store PCAP of NF in a sharedVolume so it can be easily fetched
 persistent:
   sharedvolume: false
-  volumeName: managed-nfs-storage
+  storageClass: "-"
+  #storageClass: "nfs-client" #If value is "-" default storageClass will be used
   size: 1Gi
 
+## NF is the network function and tcpdump is the tcpdump container. 
+## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
+## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
+## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
   define: false
   limits:
-    tcpdump:
+    nf:
       cpu: 100m
       memory: 128Mi
-    nf:
+    #If tcpdump container is disabled this value will not be used
+    tcpdump:
       cpu: 100m
       memory: 128Mi
   requests:
-    tcpdump:
-      cpu: 100m
-      memory: 128Mi
     nf:
       cpu: 100m
       memory: 128Mi
-
-terminationGracePeriodSeconds: 5
+    #If tcpdump container is disabled this value will not be used
+    tcpdump:
+      cpu: 100m
+      memory: 128Mi
 
 readinessProbe: true
 
 livenessProbe: false
 
+terminationGracePeriodSeconds: 5
+
 nodeSelector: {}
 
-nodeName: 
+nodeName:

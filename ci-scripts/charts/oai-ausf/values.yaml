@@ -12,6 +12,11 @@ tcpdumpimage:
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
+initContainer:
+  repository: docker.io/alpine/curl
+  version: 3.14
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
 
 ## good to use when pulling images from docker-hub mention 
 #imagePullSecrets: 
@@ -46,23 +51,9 @@ start:
 
 config:
   tz: "Europe/Paris"
-  instanceId: "0"
-  pidDirectory: "/var/run"
-  ausfName: "OAI_AUSF"
-  sbiIfName: "eth0"
-  sbiPortHttp1: "80"
-  sbiPortHttp2: "8080"
-  useHttp2: "no"          #If set to yes then HTTP2 will be used to talk to every other network function and HTTP server will be started
-  useFqdnDns: "yes"
-  udmIpAddress: "127.0.0.1"
-  udmPort: "80"
-  udmVersionNb: "v1"
-  udmFqdn: "oai-udm-svc"
-  nrfIpAddress: "127.0.0.1"
-  nrfPort: "80"
-  nrfApiVersion: "v1"
-  nrfFqdn: "oai-nrf-svc"
-  registerNrf: "no"
+  nrfFqdn: "oai-nrf"
+  sbiPortHttp1: 80
+  sbiPortHttp2: 8080
 
 persistent:
   sharedvolume: true

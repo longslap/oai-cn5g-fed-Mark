@@ -13,7 +13,7 @@
 </table>
 
 
-![SA dsTest Demo](./images/5gcn_vpp_upf_ueransim.png)
+![SA Demo](./images/5gcn_vpp_upf_ueransim.png)
 
 **Reading time: ~ 30mins**
 
@@ -47,7 +47,7 @@ Note: In case readers are interested in deploying debuggers/developers core netw
 
 <br/>
 
-This tutorial is an extension of a previous tutorial: [testing a `basic` deployment with dsTester](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md). In previous tutorial, we have seen the advanced testing tool dsTester, which is useful for validating even more complex scenarios.
+This tutorial is an extension of a previous tutorial: [testing a `basic` deployment](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md).
 
 Moreover, there are various other opensource gnb/ue simulator tools that are available for SA5G test. In this tutorial, we use an opensource simulator tool called `UERANSIM`. With the help of `UERANSIM` tool, we can perform very basic SA5G test by simulating one gnb and multiple ues.
 
@@ -59,7 +59,7 @@ Let's begin !!
 
 * Steps 1 to 5 are similar to this previous [tutorial on vpp-upf](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_SA5G_WITH_VPP_UPF.md#5-deploying-oai-5g-core-network). Please follow these steps to deploy OAI 5G core network components.
 * We deploy ueransim docker service on the same host as for core network, so there is no need to create additional route as
-we did for dsTest-host.
+we did for gnb-host.
 * Before we proceed further for end-to-end SA5G test, make sure you have healthy docker services for OAI cn5g
 
 #### NOTE: ####
@@ -285,7 +285,6 @@ iperf Done.
 | [5gcn-deployment-ueransim.pcap](./results/UERANSIM/pcap/5gcn-deployment-ueransim.pcap)                  |
 
 
-* For detailed analysis of messages, please refer to this [previous tutorial](./docs/DEPLOY_SA5G_MINI_DEPLOYMENT.md).
 ## 9. Trying Some Advanced Stuff ##
 
 Here we try some scaling test with ueransim. There are additional IMSIs added into database (208950000000031-208950000000131).

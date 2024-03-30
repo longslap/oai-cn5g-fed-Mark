@@ -5,7 +5,7 @@ metadata:
   name: {{ include "mysql.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "mysql.fullname" . }}
+    app.kubernetes.io/name: {{ template "mysql.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
@@ -21,6 +21,6 @@ spec:
       - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      app: {{ include "mysql.fullname" . }}
+      app.kubernetes.io/name: {{ include "mysql.fullname" . }}
       release: {{ .Release.Name }}
 {{- end }}

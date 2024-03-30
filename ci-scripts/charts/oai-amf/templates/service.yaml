@@ -1,12 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Chart.Name }}-svc
+  name: {{ .Chart.Name }}
   labels:
     {{- include "oai-amf.labels" . | nindent 4 }}
 spec:
   type: ClusterIP
-  clusterIP: None
   ports:
     - name: http1
       port: {{ .Values.config.amfInterfaceSBIHTTPPort }}

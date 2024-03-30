@@ -12,7 +12,7 @@
   </tr>
 </table>
 
-![SA dsTest Demo](./images/5gcn_vpp_upf.jpg)
+![SA Demo](./images/5gcn_vpp_upf.jpg)
 
 **Reading time: ~ 30mins**
 
@@ -22,15 +22,7 @@ Note: In case readers are interested in deploying debuggers/developers core netw
 
 **TABLE OF CONTENTS**
 
-1.  Pre-requisites
-2.  [Building Container Images](./BUILD_IMAGES.md) or [Retrieving Container Images](./RETRIEVE_OFFICIAL_IMAGES.md)
-3.  Configuring Host Machines
-4.  Configuring OAI 5G Core Network Functions
-5.  [Deploying OAI 5G Core Network with VPP-UPF](#5-deploying-oai-5g-core-network)
-6.  [Stimuli with a RAN emulator](#6-stimuli-with-a-ran-emulator)
-7.  [Recover the logs](#7-recover-the-logs)
-8.  [Undeploy the Core Network](#8-undeploy-the-core-network)
-9.  [Notes](#9-notes)
+[[_TOC_]]
 
 * In this demo the image tags and commits which were used are listed below, follow [Building images](./BUILD_IMAGES.md) to build images with the tags below.
 
@@ -64,7 +56,7 @@ Project is available on github as VPP-UPG which follows release `16` of 3GPP spe
 
 Let's begin !!
 
-* Steps 1 to 4 are similar to previous tutorials such as [minimalist](./DEPLOY_SA5G_MINI_DEPLOYMENT.md) or [basic](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md) deployments. Please follow these steps to deploy OAI 5G core network components.
+* Steps 1 to 4 are similar to previous tutorials such as [minimalist](./DEPLOY_SA5G_MINI_WITH_GNBSIM.md) or [basic](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md) deployments. Please follow these steps to deploy OAI 5G core network components.
 
 ## 1. Pre-requisites
 
@@ -110,12 +102,11 @@ optional arguments:
                         Add an automatic PCAP capture on docker networks to CAPTURE file
 
 example:
-        python3 core-network.py --type start-mini
         python3 core-network.py --type start-basic
         python3 core-network.py --type start-basic-vpp
-        python3 core-network.py --type stop-mini
         python3 core-network.py --type start-mini --scenario 2
-        python3 core-network.py --type start-basic --scenario 2
+        python3 core-network.py --type stop-mini --scenario 2
+        python3 core-network.py --type start-basic --scenario 1
 
 ```
 
@@ -274,7 +265,7 @@ $ docker logs oai-smf
 
 ### 6.1. Test with Gnbsim
 
-In this Section we will use Gnbsim to test our deployemt. Make sure you already have built [Gnbsim docker image](./DEPLOY_SA5G_WITH_GNBSIM.md#6-getting-a-gnbsim-docker-image)<br/>
+In this Section we will use Gnbsim to test our deployemt. Make sure you already have built [Gnbsim docker image](./DEPLOY_SA5G_MINI_WITH_GNBSIM.md#6-getting-a-gnbsim-docker-image)<br/>
 Launch gnbsim instance:
 
 ``` shell
@@ -285,7 +276,7 @@ Creating gnbsim-vpp ... done
 <!---
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: sleep 20
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name gnbsim-vpp --timeout 30
 ```
 -->
 
@@ -433,7 +424,7 @@ docker-compose-host $: docker exec gnbsim-vpp wget --tries=2 --timeout=30 --bind
 ## 7. Recover the logs
 
 <!---
-For CI purposes please ignore this line
+For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim-vpp.yaml stop -t 2
 docker-compose-host $: docker-compose -f docker-compose-basic-vpp-nrf.yaml stop -t 2
@@ -448,6 +439,7 @@ docker-compose-host $: docker logs vpp-upf > /tmp/oai/vpp-upf-gnbsim/vpp-upf.log
 docker-compose-host $: docker logs oai-udr > /tmp/oai/vpp-upf-gnbsim/udr.log 2>&1
 docker-compose-host $: docker logs oai-udm > /tmp/oai/vpp-upf-gnbsim/udm.log 2>&1
 docker-compose-host $: docker logs oai-ausf > /tmp/oai/vpp-upf-gnbsim/ausf.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn > /tmp/oai/vpp-upf-gnbsim/ext-dn.log 2>&1
 docker-compose-host $: docker logs gnbsim-vpp > /tmp/oai/vpp-upf-gnbsim/gnbsim-vpp.log 2>&1
 ```
 

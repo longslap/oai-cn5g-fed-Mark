@@ -54,6 +54,9 @@ spec:
         {{- end}}
       - name: nrf
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
+        volumeMounts:
+          - mountPath: /openair-nrf/etc
+            name: configuration
         imagePullPolicy: {{ .Values.nfimage.pullPolicy }}
         {{- if .Values.resources.define}}
         resources:
@@ -66,12 +69,17 @@ spec:
         {{- end}}
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
+        {{- if not .Values.start.nrf}}
+        command:
+          - /bin/sleep
+          - infinity
+        {{- end}}
         {{- if .Values.readinessProbe}}
         readinessProbe:
           exec:
             command:
-            - /bin/bash
-            - /openair-nrf/bin/healthcheck.sh
+            - pgrep
+            - oai_nrf
           initialDelaySeconds: 2
           periodSeconds: 3
         {{- end}}
@@ -79,8 +87,8 @@ spec:
         livenessProbe:
           exec:
             command:
-            - /bin/bash
-            - /openair-nrf/bin/healthcheck.sh
+            - pgrep
+            - oai_nrf
           initialDelaySeconds: 15
           periodSeconds: 5
         {{- end}}
@@ -91,33 +99,15 @@ spec:
         - containerPort: {{ .Values.config.nrfInterfaceHttp2PortForSBI }}
           name: http2
           protocol: TCP
-        env:
-          - name: NRF_INTERFACE_NAME_FOR_SBI
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfInterfaceNameForSBI
-          - name: NRF_INTERFACE_PORT_FOR_SBI
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfInterfacePortForSBI
-          - name: NRF_INTERFACE_HTTP2_PORT_FOR_SBI
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfInterfaceHttp2PortForSBI
-          - name: NRF_API_VERSION
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfApiVersion
       volumes:
       {{- if .Values.persistent.sharedvolume}}
       - name: cn5g-pvc
         persistentVolumeClaim:
           claimName: cn5g-pvc
       {{- end }}
+      - configMap:
+          name: oai5gcn
+        name: configuration
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }}

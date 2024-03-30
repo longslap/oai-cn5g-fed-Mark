@@ -7,8 +7,13 @@ metadata:
 rules:
 - apiGroups:
   - security.openshift.io
+{{- if .Values.includeTcpDumpContainer }}
   resourceNames:
   - privileged
+{{- else }}
+  resourceNames:
+  - anyuid
+{{- end }}
   resources:
   - securitycontextconstraints
   verbs:

@@ -31,16 +31,7 @@ Note: In case readers are interested in deploying debuggers/developers core netw
 
 **TABLE OF CONTENTS**
 
-1. [Pre-requisites](#1-pre-requisites)
-2. [Building Container Images](./BUILD_IMAGES.md) or [Retrieving Container Images](./RETRIEVE_OFFICIAL_IMAGES.md)
-3. [Deploying OAI 5G Core Network](#3-deploying-oai-5g-core-network)
-4. [Simulate with gnbsim](#4-simulate-with-gnbsim)
-5. [Traffic Test for UL CL Scenario](#5-traffic-test-for-ul-cl-scenario)
-6. [Traffic Test for Edge-Only Scenario](#6-traffic-test-for-edge-only-scenario)
-7. [Traffic Test for Internet-Only Scenario](#7-traffic-test-for-internet-only-scenario)
-8. [Trace Analysis](#8-trace-analysis)
-9. [Undeploy Network Functions](#9-undeploy-network-functions)
-10. [Conclusion](#10-conclusion)
+[[_TOC_]]
 
 For this demo, all the images which use the `v1.5.0` tag have been retrieved from the official `docker-hub` (see also
 [Retrieving images](./RETRIEVE_OFFICIAL_IMAGES.md)).
@@ -83,6 +74,12 @@ docker-compose-host $: mkdir -p /tmp/oai/ulcl-scenario
 docker-compose-host $: chmod 777 /tmp/oai/ulcl-scenario
 ```
 
+## 2. Get OAI CN5G Container Images
+
+You can either:
+
+* [Building Container Images](./BUILD_IMAGES.md) or
+* [Retrieving Container Images](./RETRIEVE_OFFICIAL_IMAGES.md)
 
 ## 3. Deploying OAI 5g Core Network
 
@@ -123,9 +120,15 @@ Creating mysql ... done
 We capture the packets on the docker networks and filter out ARP. 
 ``` shell
 docker-compose-host $: sleep 1
-docker-compose-host $: nohup sudo tshark -i demo-oai -f "not arp" -w /tmp/oai/ulcl-scenario/control_plane.pcap > /dev/null 2>&1 &
-docker-compose-host $: sleep 5
+docker-compose-host $: nohup sudo tshark -i demo-oai -f "not arp" -w /tmp/oai/ulcl-scenario/control_plane.pcap > /tmp/oai/ulcl-scenario/control_plane.log 2>&1 &
 ```
+<!--
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/ulcl-scenario/control_plane.log --timeout 60
+```
+-->
+
 Then, we start all the NFs.
 
 ``` shell
@@ -148,12 +151,16 @@ Creating oai-smf             ... done
 <!--
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: sleep 30
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name mysql --timeout 120
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name oai-amf --timeout 30
+docker-compose-host $: docker-compose -f docker-compose-basic-vpp-pcf-ulcl.yaml ps -a
 ```
 -->
 
 ### Checking the Status of the NFs
 Using `docker ps` you can verify that no NF exited, e.g. because of a faulty configuration:
+
+Also all should be in an `healthy` state before going further. The `mysql` container may take some time.
 ``` console 
 docker-compose-host $: docker ps
 CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS                    PORTS                          NAMES
@@ -203,7 +210,7 @@ When the graph is fully built, it should look like this (again, the order does n
 ## 4. Simulate with gnbsim
 
 When the CN is deployed successfully, we can simulate a gNB and UE using `gnbsim`. 
-Please see the [gnbsim tutorial](./DEPLOY_SA5G_WITH_GNBSIM.md) on how to retrieve or build the image.
+Please see the [gnbsim tutorial](./DEPLOY_SA5G_MINI_WITH_GNBSIM.md) on how to retrieve or build the image.
 
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim-vpp.yaml up -d 
@@ -214,7 +221,7 @@ Creating gnbsim-vpp ... done
 <!--
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: sleep 30
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name gnbsim-vpp --timeout 30
 ```
 -->
 
@@ -236,12 +243,20 @@ fails.
 *Note: As tshark is running in the background, and we run everything in the same terminal, we will stop the control plane traces here. If you want, you can open tshark on another terminal and terminate it whenever it suits you.*  
 ``` shell
 docker-compose-host $: sudo pkill tshark 
+docker-compose-host $: sleep 5
 ```
 
 Before we start the traffic tests, we start the user plane trace without any filter:
 ``` shell
-docker-compose-host $: nohup sudo tshark -i cn5g-access -i cn5g-core-11 -i cn5g-core-12 -i cn5g-core-21 -i cn5g-core-22 -w /tmp/oai/ulcl-scenario/user_plane_ulcl.pcap > /dev/null 2>&1 &
+docker-compose-host $: nohup sudo tshark -i cn5g-access -i cn5g-core-11 -i cn5g-core-12 -i cn5g-core-21 -i cn5g-core-22 -w /tmp/oai/ulcl-scenario/user_plane_ulcl.pcap > /tmp/oai/ulcl-scenario/user_plane_ulcl.log 2>&1 &
 ```
+
+<!--
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/ulcl-scenario/user_plane_ulcl.log --timeout 60
+```
+-->
 
 This capture contains all the UP network interfaces.
 
@@ -274,12 +289,15 @@ rtt min/avg/max/mdev = 9.725/12.668/17.231/2.843 ms
 ```
 
 <!--
-For CI purposes please ignore this line
-we use 1.1.1.1 and 1.1.1.2 as it serves HTTP, so we can verify if the UL CL works properly in the generated traces 
+For CI purposes please ignore these lines
+ * 192.168.75.160 is oai-ext-dn-internet
+ * 192.168.76.160 is oai-ext-dn-edge
 
 ``` shell
-docker-compose-host $: docker exec gnbsim-vpp wget -tries=2 --timeout=30 --bind-address=12.1.1.2 1.1.1.1
-docker-compose-host $: docker exec gnbsim-vpp wget -tries=2 --timeout=30 --bind-address=12.1.1.2 1.1.1.2
+docker-compose-host $: docker exec gnbsim-vpp /bin/bash -c 'traceroute -4 -T -s 12.1.1.2 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue0-test0.log
+docker-compose-host $: docker exec gnbsim-vpp /bin/bash -c 'traceroute -4 -T -s 12.1.1.2 1.1.1.2' 2>&1 | tee /tmp/oai/ulcl-scenario/ue0-test1.log
+docker-compose-host $: grep 192.168.75.160 /tmp/oai/ulcl-scenario/ue0-test0.log
+docker-compose-host $: grep 192.168.76.160 /tmp/oai/ulcl-scenario/ue0-test1.log
 ```
 -->
 
@@ -294,7 +312,7 @@ docker-compose-host $: sudo pkill tshark
 
 
 ## 6. Traffic Test for Edge-Only Scenario
-As you can see in the PCC rules (`policies/pcc_rules/pcc_rules.yaml`), there are two edge rules: `edge-rule-restricted` and
+As you can see in the PCC rules (`policies/ulcl/pcc_rules/pcc_rules.yaml`), there are two edge rules: `edge-rule-restricted` and
 `edge-rule-all`. Both use the same traffic rule, but the flow description is configured differently. It means that the
 `edge-rule-restricted` allows only traffic to 1.1.1.2, whereas the other rule allows any traffic to the edge.
 
@@ -310,12 +328,10 @@ Creating gnbsim-vpp2 ... done
 
 <!--
 For CI purposes please ignore this line
-
 ``` shell
-docker-compose-host $: sleep 30  
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name gnbsim-vpp2 --timeout 30
 ```
 -->
-
 
 Again, we can verify if the PDU session establishment was successful.
 ``` shell
@@ -325,8 +341,15 @@ docker-compose-host $: docker logs gnbsim-vpp2 2>&1 | grep "UE address:"
 
 We start a trace for this scenario:
 ``` shell
-docker-compose-host $: nohup sudo tshark -i cn5g-access -i cn5g-core-11 -i cn5g-core-12 -i cn5g-core-21 -i cn5g-core-22 -w /tmp/oai/ulcl-scenario/user_plane_edge_only.pcap > /dev/null 2>&1 &
+docker-compose-host $: nohup sudo tshark -i cn5g-access -i cn5g-core-11 -i cn5g-core-12 -i cn5g-core-21 -i cn5g-core-22 -w /tmp/oai/ulcl-scenario/user_plane_edge_only.pcap > /tmp/oai/ulcl-scenario/user_plane_edge_only.log 2>&1 &
 ```
+
+<!--
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/ulcl-scenario/user_plane_edge_only.log --timeout 60
+```
+-->
 
 Then, as before, we ping `1.1.1.1` and `1.1.1.2`. 
 
@@ -357,12 +380,15 @@ rtt min/avg/max/mdev = 9.766/14.397/19.823/3.785 ms
 ```
 
 <!--
-For CI purposes please ignore this line
+For CI purposes please ignore these lines
 we use 1.1.1.1 and 1.1.1.2 as it serves HTTP, so we can verify if the UL CL works properly in the generated traces 
+ * 192.168.76.160 is oai-ext-dn-edge
 
 ``` shell
-docker-compose-host $: docker exec gnbsim-vpp2 wget -tries=2 --timeout=30 --bind-address=12.1.1.3 1.1.1.1
-docker-compose-host $: docker exec gnbsim-vpp2 wget -tries=2 --timeout=30 --bind-address=12.1.1.3 1.1.1.2
+docker-compose-host $: docker exec gnbsim-vpp2 /bin/bash -c 'traceroute -4 -T -s 12.1.1.3 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue1-test0.log
+docker-compose-host $: docker exec gnbsim-vpp2 /bin/bash -c 'traceroute -4 -T -s 12.1.1.3 1.1.1.2' 2>&1 | tee /tmp/oai/ulcl-scenario/ue1-test1.log
+docker-compose-host $: grep 192.168.76.160 /tmp/oai/ulcl-scenario/ue1-test0.log
+docker-compose-host $: grep 192.168.76.160 /tmp/oai/ulcl-scenario/ue1-test1.log
 ```
 -->
 
@@ -383,12 +409,10 @@ docker-compose-host $: docker-compose -f docker-compose-gnbsim-vpp-additional.ya
 
 <!--
 For CI purposes please ignore this line
-
 ``` shell
-docker-compose-host $: sleep 30  
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name gnbsim-vpp3 --timeout 30
 ```
 -->
-
 
 We verify that the PDU session establishment is successful and that the UP is routed.
 
@@ -399,8 +423,15 @@ docker-compose-host $: docker logs gnbsim-vpp3 2>&1 | grep "UE address:"
 
 We start a trace for this scenario:
 ``` shell
-docker-compose-host $: nohup sudo tshark -i cn5g-access -i cn5g-core-11 -i cn5g-core-12 -i cn5g-core-21 -i cn5g-core-22 -w /tmp/oai/ulcl-scenario/user_plane_internet_only.pcap > /dev/null 2>&1 &
+docker-compose-host $: nohup sudo tshark -i cn5g-access -i cn5g-core-11 -i cn5g-core-12 -i cn5g-core-21 -i cn5g-core-22 -w /tmp/oai/ulcl-scenario/user_plane_internet_only.pcap > /tmp/oai/ulcl-scenario/user_plane_internet_only.log 2>&1 &
 ```
+
+<!--
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/ulcl-scenario/user_plane_internet_only.log --timeout 60
+```
+-->
 
 Again, we generate traffic using pings to 1.1.1.2 and 1.1.1.1.
 
@@ -431,12 +462,15 @@ rtt min/avg/max/mdev = 9.766/14.397/19.823/3.785 ms
 ```
 
 <!--
-For CI purposes please ignore this line
+For CI purposes please ignore these lines
 we use 1.1.1.1 and 1.1.1.2 as it serves HTTP, so we can verify if the UL CL works properly in the generated traces 
+ * 192.168.75.160 is oai-ext-dn-internet
 
 ``` shell
-docker-compose-host $: docker exec gnbsim-vpp3 wget -tries=2 --timeout=30 --bind-address=12.1.1.4 1.1.1.1
-docker-compose-host $: docker exec gnbsim-vpp3 wget -tries=2 --timeout=30 --bind-address=12.1.1.4 1.1.1.2
+docker-compose-host $: docker exec gnbsim-vpp3 /bin/bash -c 'traceroute -4 -T -s 12.1.1.4 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue2-test0.log
+docker-compose-host $: docker exec gnbsim-vpp3 /bin/bash -c 'traceroute -4 -T -s 12.1.1.4 1.1.1.2' 2>&1 | tee /tmp/oai/ulcl-scenario/ue2-test1.log
+docker-compose-host $: grep 192.168.75.160 /tmp/oai/ulcl-scenario/ue2-test0.log
+docker-compose-host $: grep 192.168.75.160 /tmp/oai/ulcl-scenario/ue2-test1.log
 ```
 -->
 
@@ -449,10 +483,10 @@ docker-compose-host $: sudo pkill tshark
 
 Then, we change the permissions of the traces to open them in Wireshark:
 ``` shell
-docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/control_plane.pcap
-docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/user_plane_ulcl.pcap
-docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/user_plane_edge_only.pcap
-docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/user_plane_internet_only.pcap
+docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/control_plane.*
+docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/user_plane_ulcl.*
+docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/user_plane_edge_only.*
+docker-compose-host $: sudo chmod 666 /tmp/oai/ulcl-scenario/user_plane_internet_only.*
 ```
 
 As we capture more than one interface, the pcap files are likely out-of-order. To solve this, sort based on the `Time`
@@ -522,6 +556,9 @@ docker-compose-host $: docker logs vpp-upf-aupf2 > /tmp/oai/ulcl-scenario/vpp-up
 docker-compose-host $: docker logs oai-udr > /tmp/oai/ulcl-scenario/udr.log 2>&1
 docker-compose-host $: docker logs oai-udm > /tmp/oai/ulcl-scenario/udm.log 2>&1
 docker-compose-host $: docker logs oai-ausf > /tmp/oai/ulcl-scenario/ausf.log 2>&1
+docker-compose-host $: docker logs oai-pcf > /tmp/oai/ulcl-scenario/pcf.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn-edge > /tmp/oai/ulcl-scenario/ext-dn-edge.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn-internet > /tmp/oai/ulcl-scenario/ext-dn-internet.log 2>&1
 docker-compose-host $: docker logs gnbsim-vpp > /tmp/oai/ulcl-scenario/gnbsim-vpp.log 2>&1
 docker-compose-host $: docker logs gnbsim-vpp2 > /tmp/oai/ulcl-scenario/gnbsim-vpp2.log 2>&1
 docker-compose-host $: docker logs gnbsim-vpp3 > /tmp/oai/ulcl-scenario/gnbsim-vpp3.log 2>&1

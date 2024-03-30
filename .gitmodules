@@ -4,9 +4,6 @@
 [submodule "component/oai-smf"]
 	path = component/oai-smf
 	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-smf.git
-[submodule "component/oai-upf-equivalent"]
-	path = component/oai-upf-equivalent
-	url = https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny.git
 [submodule "component/oai-nrf"]
 	path = component/oai-nrf
 	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nrf.git
@@ -31,3 +28,9 @@
 [submodule "component/oai-pcf"]
 	path = component/oai-pcf
 	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-pcf.git
+[submodule "ci-scripts/common"]
+	path = ci-scripts/common
+	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-common-ci.git
+[submodule "component/oai-upf"]
+	path = component/oai-upf
+	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-upf.git

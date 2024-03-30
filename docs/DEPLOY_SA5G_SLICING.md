@@ -22,35 +22,27 @@
 
 Note: In case readers are interested in deploying debuggers/developers core network environment with more logs please follow [this tutorial](./DEBUG_5G_CORE.md)
 
+**CAUTION: 2023/07/13: This tutorial has been updated to use the new UPF that replaces SPGWU-TINY.**
+
 **TABLE OF CONTENTS**
 
-1.  Pre-requisites
-2.  [Building Container Images](./BUILD_IMAGES.md) or [Retrieving Container Images](./RETRIEVE_OFFICIAL_IMAGES.md)
-3.  Configuring Host Machines
-4.  Configuring OAI 5G Core Network Functions
-5.  [Deploying OAI 5G Core Network](#5-deploying-oai-5g-core-network)
-6.  [Getting `ransim` docker images](#6-getting-ransim-docker-images)
-7.  [Executing `ransim` Scenario](#7-executing-ransim-scenario)
-8.  [Traffic test](#8-traffic-test)
-9.  [Analyzing Scenario Results](#9-analyzing-scenario-results)
-10. [UE with multiple S-NSSAIs](#10-ue-with-multiple-s-nssais)
-11. [Undeploy network functions](#11-undeploy-network-functions)
+[[_TOC_]]
 
 * In this demo the image tags and commits which were used are listed below, follow the [Building images](./BUILD_IMAGES.md) to build images with the tags below.
 
 You can also retrieve the images from `docker-hub`. See [Retrieving images](./RETRIEVE_OFFICIAL_IMAGES.md).
 
-| CNF Name    | Branch Name    | Tag used at time of writing   | Ubuntu 18.04 | RHEL8         |
-| ----------- |:-------------- | ----------------------------- | ------------ | --------------|
-| NSSF        | `master`      | `v1.5.0`                      | X            | X              |
-| AMF         | `master`      | `v1.5.0`                      | X            | X              |
-| AUSF        | `master`      | `v1.5.0`                      | X            | X              |
-| NRF         | `master`      | `v1.5.0`                      | X            | X              |
-| SMF         | `master`      | `v1.5.0`                      | X            | X              |
-| UDR         | `master`      | `v1.5.0`                      | X            | X              |
-| UDM         | `master`      | `v1.5.0`                      | X            | X              |
-| SPGWU       | `master`      | `v1.5.0`                      | X            | X              |
-| UPF-VPP     | `master`      | `v1.5.0`                      | X            | X              |
+| CNF Name    | Branch Name   | Tag used at time of writing   | Ubuntu 22.04 | RHEL8         |
+| ----------- |:------------- | ----------------------------- | ------------ | --------------|
+| NSSF        | `master`      | `v2.0.1`                      | X            | X              |
+| AMF         | `master`      | `v2.0.1`                      | X            | X              |
+| AUSF        | `master`      | `v2.0.1`                      | X            | X              |
+| NRF         | `master`      | `v2.0.1`                      | X            | X              |
+| SMF         | `master`      | `v2.0.1`                      | X            | X              |
+| UDR         | `master`      | `v2.0.1`                      | X            | X              |
+| UDM         | `master`      | `v2.0.1`                      | X            | X              |
+| UPF         | `master`      | `v2.0.1`                      | X            | X              |
+| UPF-VPP     | `master`      | `v2.0.1`                      | X            | X              |
 
 <br/>
 
@@ -59,7 +51,7 @@ In this tutorial we are going to explore the slicing feature of OAI 5G core netw
 * SMF selection based on S-NSSAI
 * NRF selection based on S-NSSAI (With help of NSSF)
 * AMF selection based on S-NSSAI (With help of NSSF - Next Release, March 2022)
-* Single UE with multiple S-NSSAIs (With the help of commercial tool dsTest)
+* Single UE with multiple S-NSSAIs
 
 A Network Slice is defined within a PLMN and it incorporates the 5G Core and 5G RAN components. Network slice is identified as Single Network Slice Selection Assistance Information (S-NSSAI). A S-NSSAI consists of Slice/Service type (SST) and Slice Differentiator (SD). SST is a mandatory field which defines the expected slice behavior in terms of features and services. Whereas SD is an optional field which can be used to differentiate amongst multiple slices.
 
@@ -83,7 +75,7 @@ Here AMF, NSSF, UDM, UDR, AUSF are common to all slices. SMF and UPF in slice 1 
 
 **Let's begin !!**
 
-* Steps 1 to 4 are similar to previous tutorials such as [minimalist](./DEPLOY_SA5G_MINI_DEPLOYMENT.md) or [basic](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md) deployments. Please follow these steps to deploy OAI 5G core network components.
+* Steps 1 to 4 are similar to previous tutorials such as [minimalist](./DEPLOY_SA5G_MINI_WITH_GNBSIM.md) or [basic](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md) deployments. Please follow these steps to deploy OAI 5G core network components.
 
 ## 1. Pre-requisites
 
@@ -123,55 +115,68 @@ Creating mysql            ... done
 
 We capture the packets on the docker networks with a complex filter --> smaller PCAP file.
 ``` shell
-docker-compose-host $: nohup sudo tshark -i demo-oai -f '(not host 192.168.70.145 and not host 192.168.70.154) or (host 192.168.70.145 and icmp)' -w /tmp/oai/slicing-with-nssf/slicing-with-nssf.pcap > /dev/null 2>&1 &
-docker-compose-host $: sleep 30
+docker-compose-host $: nohup sudo tshark -i demo-oai -f '(not host 192.168.70.145 and not host 192.168.70.154) or (host 192.168.70.145 and icmp)' -w /tmp/oai/slicing-with-nssf/slicing-with-nssf.pcap > /tmp/oai/slicing-with-nssf/slicing-with-nssf.log 2>&1 &
 ```
+
+<!---
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/slicing-with-nssf/slicing-with-nssf.log --timeout 30
+```
+-->
 
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml up -d
 mysql is up-to-date
 Creating oai-nrf-slice12 ... done
-Creating oai-nssf         ... done
-Creating oai-ext-dn       ... done
-Creating oai-nrf-slice3   ... done
-Creating oai-spgwu-slice2 ... done
-Creating oai-udr          ... done
-Creating vpp-upf-slice3   ... done
-Creating oai-udm          ... done
-Creating oai-ausf         ... done
-Creating oai-amf          ... done
-Creating oai-smf-slice3   ... done
-Creating oai-smf-slice1   ... done
-Creating oai-smf-slice2   ... done
-Creating oai-spgwu-slice1 ... done
+Creating oai-udr         ... done
+Creating oai-nrf-slice3  ... done
+Creating oai-nssf        ... done
+Creating oai-ext-dn      ... done
+Creating oai-udm         ... done
+Creating oai-ausf        ... done
+Creating oai-amf         ... done
+Creating oai-smf-slice3  ... done
+Creating oai-smf-slice1  ... done
+Creating oai-smf-slice2  ... done
+Creating oai-upf-slice1  ... done
+Creating vpp-upf-slice3  ... done
+Creating oai-upf-slice2  ... done
 ```
 
 ``` shell
-docker-compose-host $: sudo chmod 666 /tmp/oai/slicing-with-nssf/slicing-with-nssf.pcap
-docker-compose-host $: sleep 90
+docker-compose-host $: sudo chmod 666 /tmp/oai/slicing-with-nssf/slicing-with-nssf.*
 ```
+
+<!---
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name mysql --timeout 120
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name oai-upf-slice1 --timeout 30
+```
+-->
 
 * Make sure all services are healthy -
 
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml ps -a
-Name                    Command                  State                  Ports
------------------------------------------------------------------------------------------------
-mysql              docker-entrypoint.sh mysqld      Up (healthy)   3306/tcp, 33060/tcp
-oai-amf            /bin/bash /openair-amf/bin ...   Up (healthy)   38412/sctp, 80/tcp, 9090/tcp
-oai-ausf           /bin/bash /openair-ausf/bi ...   Up (healthy)   80/tcp
-oai-ext-dn         /bin/bash -c  apt update;  ...   Up (healthy)
-oai-nrf-slice12    /bin/bash /openair-nrf/bin ...   Up (healthy)   80/tcp, 9090/tcp
-oai-nrf-slice3     /bin/bash /openair-nrf/bin ...   Up (healthy)   80/tcp, 9090/tcp
-oai-nssf           /bin/bash /openair-nssf/bi ...   Up (healthy)   80/tcp, 8080/tcp
-oai-smf-slice1     /bin/bash /openair-smf/bin ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp
-oai-smf-slice2     /bin/bash /openair-smf/bin ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp
-oai-smf-slice3     /bin/bash /openair-smf/bin ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp
-oai-spgwu-slice1   /openair-spgwu-tiny/bin/en ...   Up (healthy)   2152/udp, 8805/udp
-oai-spgwu-slice2   /openair-spgwu-tiny/bin/en ...   Up (healthy)   2152/udp, 8805/udp
-oai-udm            /bin/bash /openair-udm/bin ...   Up (healthy)   80/tcp
-oai-udr            /bin/bash /openair-udr/bin ...   Up (healthy)   80/tcp
-vpp-upf-slice3     /openair-upf/bin/entrypoin ...   Up (healthy)   2152/udp, 8085/udp
+Name                    Command                  State                       Ports
+--------------------------------------------------------------------------------------------------------
+mysql             docker-entrypoint.sh mysqld      Up (healthy)   3306/tcp, 33060/tcp
+oai-amf           /openair-amf/bin/oai_amf - ...   Up (healthy)   38412/sctp, 80/tcp, 8080/tcp, 9090/tcp
+oai-ausf          /openair-ausf/bin/oai_ausf ...   Up (healthy)   80/tcp, 8080/tcp
+oai-ext-dn        /bin/bash -c  iptables -t  ...   Up (healthy)
+oai-nrf-slice12   /openair-nrf/bin/oai_nrf - ...   Up (healthy)   80/tcp, 8080/tcp, 9090/tcp
+oai-nrf-slice3    /openair-nrf/bin/oai_nrf - ...   Up (healthy)   80/tcp, 8080/tcp, 9090/tcp
+oai-nssf          /openair-nssf/bin/oai_nssf ...   Up (healthy)   80/tcp, 8080/tcp
+oai-smf-slice1    /openair-smf/bin/oai_smf - ...   Up (healthy)   80/tcp, 8080/tcp, 8805/udp
+oai-smf-slice2    /openair-smf/bin/oai_smf - ...   Up (healthy)   80/tcp, 8080/tcp, 8805/udp
+oai-smf-slice3    /openair-smf/bin/oai_smf - ...   Up (healthy)   80/tcp, 8080/tcp, 8805/udp
+oai-udm           /openair-udm/bin/oai_udm - ...   Up (healthy)   80/tcp, 8080/tcp
+oai-udr           /openair-udr/bin/oai_udr - ...   Up (healthy)   80/tcp, 8080/tcp
+oai-upf-slice1    /openair-upf/bin/oai_udr - ...   Up (healthy)   2152/udp, 8080/tcp, 8805/udp
+oai-upf-slice2    /openair-upf/bin/oai_udr - ...   Up (healthy)   2152/udp, 8080/tcp, 8805/udp
+vpp-upf-slice3    /openair-upf/bin/entrypoin ...   Up (healthy)   2152/udp, 8085/udp
 ```
 
 ## 6. Getting `ransim` docker images
@@ -200,30 +205,40 @@ Deploy ran simulator for slice 1
 docker-compose-host $: docker-compose -f docker-compose-slicing-ransim.yaml up -d ueransim
 Creating ueransim             ... done
 ```
-Wait a bit
+Wait a bit (5 to 10 seconds).
+<!---
+For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: sleep 10
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name ueransim --timeout 30
 ```
+-->
 Deploy ran simulator for slice 2
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-ransim.yaml up -d oai-gnb oai-nr-ue1
 Creating rfsim5g-oai-gnb    ... done
 Creating rfsim5g-oai-nr-ue1 ... done
 ```
-Wait a bit
+Wait a bit (5 to 10 seconds).
+<!---
+For CI purposes please ignore these lines
 ``` shell
-docker-compose-host $: sleep 10
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name rfsim5g-oai-nr-ue1 --timeout 30
+docker-compose-host $: ../ci-scripts/checkUePduSession.py --container_name rfsim5g-oai-nr-ue1
 ```
+-->
 Deploy ran simulator for slice 3
 
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-ransim.yaml up -d gnbsim
 Creating gnbsim             ... done
 ```
-Wait a bit
+Wait a bit (5 to 10 seconds).
+<!---
+For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: sleep 10
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name gnbsim --timeout 30
 ```
+-->
 
 Make sure all ran simulator services are healthy.
 
@@ -263,7 +278,7 @@ In this section we perform traffic test between oai-ext-dn node and UEs <br/>
 
 ``` shell
 docker-compose-host $: docker logs gnbsim 2>&1 | tail -10
-docker-compose-host $: docker logs oai-amf 2>&1 | tail -20
+docker-compose-host $: docker logs oai-amf 2>&1 | grep --color=never info | tail -20
 docker-compose-host $: docker exec oai-ext-dn ping -c 4 12.1.1.2
 PING 12.1.1.2 (12.1.1.2) 56(84) bytes of data.
 64 bytes from 12.1.1.2: icmp_seq=2 ttl=63 time=0.346 ms
@@ -285,22 +300,22 @@ PING 12.2.1.2 (12.2.1.2) 56(84) bytes of data.
 4 packets transmitted, 4 received, 0% packet loss, time 3039ms
 rtt min/avg/max/mdev = 0.390/0.635/1.004/0.232 ms
 
-docker-compose-host $: docker exec oai-ext-dn ping -c 4 12.1.1.129
-PING 12.1.1.129 (12.1.1.129) 56(84) bytes of data.
-64 bytes from 12.1.1.129: icmp_seq=1 ttl=63 time=40.0 ms
-64 bytes from 12.1.1.129: icmp_seq=2 ttl=63 time=39.5 ms
-64 bytes from 12.1.1.129: icmp_seq=3 ttl=63 time=11.2 ms
-64 bytes from 12.1.1.129: icmp_seq=4 ttl=63 time=11.2 ms
+docker-compose-host $: docker exec rfsim5g-oai-nr-ue1 ping -I oaitun_ue1 -c 4 192.168.70.145
+PING 192.168.70.145 (192.168.70.145) from 12.1.1.130 oaitun_ue1: 56(84) bytes of data.
+64 bytes from 192.168.70.145: icmp_seq=1 ttl=63 time=9.74 ms
+64 bytes from 192.168.70.145: icmp_seq=2 ttl=63 time=9.17 ms
+64 bytes from 192.168.70.145: icmp_seq=3 ttl=63 time=8.07 ms
+64 bytes from 192.168.70.145: icmp_seq=4 ttl=63 time=5.94 ms
 
---- 12.1.1.129 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3003ms
-rtt min/avg/max/mdev = 11.206/25.511/40.071/14.292 ms
+--- 192.168.70.145 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 5.936/8.226/9.739/1.452 ms
 ```
 
 ## 9. Analyzing Scenario Results
 
 <!---
-For CI purposes please ignore this line
+For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-ransim.yaml stop -t 2
 docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml stop -t 2
@@ -318,9 +333,10 @@ docker-compose-host $: docker logs oai-nrf-slice3 > /tmp/oai/slicing-with-nssf/n
 docker-compose-host $: docker logs oai-smf-slice1 > /tmp/oai/slicing-with-nssf/smf-slice1.log 2>&1
 docker-compose-host $: docker logs oai-smf-slice2 > /tmp/oai/slicing-with-nssf/smf-slice2.log 2>&1
 docker-compose-host $: docker logs oai-smf-slice3 > /tmp/oai/slicing-with-nssf/smf-slice3.log 2>&1
-docker-compose-host $: docker logs oai-spgwu-slice1 > /tmp/oai/slicing-with-nssf/spgwu-slice1.log 2>&1
-docker-compose-host $: docker logs oai-spgwu-slice2 > /tmp/oai/slicing-with-nssf/spgwu-slice2.log 2>&1
+docker-compose-host $: docker logs oai-upf-slice1 > /tmp/oai/slicing-with-nssf/upf-slice1.log 2>&1
+docker-compose-host $: docker logs oai-upf-slice2 > /tmp/oai/slicing-with-nssf/upf-slice2.log 2>&1
 docker-compose-host $: docker logs vpp-upf-slice3 > /tmp/oai/slicing-with-nssf/vpp-upf-slice3.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn > /tmp/oai/slicing-with-nssf/ext-dn.log 2>&1
 docker-compose-host $: docker logs gnbsim > /tmp/oai/slicing-with-nssf/gnbsim.log 2>&1
 docker-compose-host $: docker logs rfsim5g-oai-gnb > /tmp/oai/slicing-with-nssf/rfsim5g-oai-gnb.log 2>&1
 docker-compose-host $: docker logs rfsim5g-oai-nr-ue1 > /tmp/oai/slicing-with-nssf/rfsim5g-oai-nr-ue1.log 2>&1
@@ -342,8 +358,8 @@ docker-compose-host $: docker logs ueransim > /tmp/oai/slicing-with-nssf/ueransi
 | oai-smf-slice1        | 192.168.70.139 |
 | oai-smf-slice2        | 192.168.70.140 |
 | oai-smf-slice3        | 192.168.70.141 |
-| oai-spgwu-slice1      | 192.168.70.142 |
-| oai-spgwu-slice2      | 192.168.70.143 |
+| oai-upf-slice1        | 192.168.70.142 |
+| oai-upf-slice2        | 192.168.70.143 |
 | vpp-upf-slice3 (N4)   | 192.168.70.144 |
 | vpp-upf-slice3 (N3)   | 192.168.72.144 |
 | vpp-upf-slice3 (N6)   | 192.168.73.144 |
@@ -354,7 +370,7 @@ docker-compose-host $: docker logs ueransim > /tmp/oai/slicing-with-nssf/ueransi
 | rfsim UE2             | 192.168.70.155 |
 | gnbsim gNB            | 192.168.70.156 |
 | UE1                   | 12.2.1.2       |
-| UE2                   | 12.1.1.129     |
+| UE2                   | 12.1.1.130     |
 | UE3                   | 12.1.1.2       |
 
 | Pcap/log files                                                                             |
@@ -363,8 +379,6 @@ docker-compose-host $: docker logs ueransim > /tmp/oai/slicing-with-nssf/ueransi
 
 ## 10. UE with multiple S-NSSAIs
 OAI 5G CN also supports UE with multiple slices. Apparently the ran simulators that we have validated do not support UE with multiple slices at once.
-
-Hence, we have validated this feature using the commercial testing tool [dsTest](https://www.developingsolutions.com/products/about-dstest/). This test case is integrated in our [CI pipeline for NSSF](https://jenkins-oai.eurecom.fr/view/CN5G/job/OAI-CN5G-NSSF/) and AMF. This pipeline triggers a deployment scenario as shown in the figure below with two slices. During PDU session establishment request, AMF queries NSSF for NSI information with appropriate NRF Id. And then again corresponding SMF and UPF is slected in the NSI, based on S-NSSAI provided. You can verify this scenario from the [pcap](https://jenkins-oai.eurecom.fr/view/CN5G/job/OAI-CN5G-NSSF/lastSuccessfulBuild/artifact/docker_logs.zip).
 
 ![Multislice](./images/5gcn_slicing_ue_multislice.png)
 
@@ -391,36 +405,36 @@ Network oai-public-access is external, skipping
 
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml down -t 0
-Stopping oai-spgwu-slice1 ... done
-Stopping oai-smf-slice3   ... done
-Stopping oai-smf-slice1   ... done
-Stopping oai-smf-slice2   ... done
-Stopping oai-amf          ... done
-Stopping oai-ausf         ... done
-Stopping oai-udm          ... done
-Stopping oai-udr          ... done
-Stopping vpp-upf-slice3   ... done
-Stopping oai-spgwu-slice2 ... done
-Stopping oai-nrf-slice12  ... done
-Stopping mysql            ... done
-Stopping oai-nssf         ... done
-Stopping oai-ext-dn       ... done
-Stopping oai-nrf-slice3   ... done
-Removing oai-spgwu-slice1 ... done
-Removing oai-smf-slice3   ... done
-Removing oai-smf-slice1   ... done
-Removing oai-smf-slice2   ... done
-Removing oai-amf          ... done
-Removing oai-ausf         ... done
-Removing oai-udm          ... done
-Removing oai-udr          ... done
-Removing vpp-upf-slice3   ... done
-Removing oai-spgwu-slice2 ... done
-Removing oai-nrf-slice12  ... done
-Removing mysql            ... done
-Removing oai-nssf         ... done
-Removing oai-ext-dn       ... done
-Removing oai-nrf-slice3   ... done
+Stopping oai-nssf        ... done
+Stopping oai-upf-slice2  ... done
+Stopping oai-upf-slice1  ... done
+Stopping oai-ext-dn      ... done
+Stopping oai-smf-slice2  ... done
+Stopping vpp-upf-slice3  ... done
+Stopping oai-smf-slice1  ... done
+Stopping oai-smf-slice3  ... done
+Stopping oai-amf         ... done
+Stopping oai-nrf-slice3  ... done
+Stopping oai-ausf        ... done
+Stopping oai-nrf-slice12 ... done
+Stopping oai-udm         ... done
+Stopping oai-udr         ... done
+Stopping mysql           ... done
+Removing oai-upf-slice1  ... done
+Removing oai-amf         ... done
+Removing oai-udr         ... done
+Removing vpp-upf-slice3  ... done
+Removing oai-smf-slice2  ... done
+Removing oai-nrf-slice12 ... done
+Removing oai-smf-slice3  ... done
+Removing oai-smf-slice1  ... done
+Removing mysql           ... done
+Removing oai-ext-dn      ... done
+Removing oai-udm         ... done
+Removing oai-nssf        ... done
+Removing oai-nrf-slice3  ... done
+Removing oai-upf-slice2  ... done
+Removing oai-ausf        ... done
 Removing network demo-oai-public-net
 Removing network oai-public-access
 Removing network oai-public-core

@@ -22,13 +22,13 @@ services:
             - DNN=default
             - URL=http://www.asnt.org:8080/
             - NRCellID=1
-            - USE_FQDN=no
-            - NGAPPeerAddr=192.168.70.132
-            - GTPuLocalAddr=192.168.70.156
+            - USE_FQDN=yes
+            - AMF_FQDN=oai-amf
+            - NGAPPeerAddr=0.0.0.0
+            - GTPuLocalAddr=0.0.0.0
             - GTPuIFname=eth0
         networks:
             public_net:
-                ipv4_address: 192.168.70.156
         healthcheck:
             test: /bin/bash -c "ip address show dev gtp-gnb"
             interval: 10s
@@ -56,13 +56,13 @@ services:
             - DNN=default
             - URL=http://www.asnt.org:8080/
             - NRCellID=1
-            - USE_FQDN=no
-            - NGAPPeerAddr=192.168.70.132
-            - GTPuLocalAddr=192.168.70.157
+            - USE_FQDN=yes
+            - AMF_FQDN=oai-amf
+            - NGAPPeerAddr=0.0.0.0
+            - GTPuLocalAddr=0.0.0.0
             - GTPuIFname=eth0
         networks:
             public_net:
-                ipv4_address: 192.168.70.157
         healthcheck:
             test: /bin/bash -c "ip address show dev gtp-gnb"
             interval: 10s
@@ -90,13 +90,13 @@ services:
             - DNN=default
             - URL=http://www.asnt.org:8080/
             - NRCellID=1
-            - USE_FQDN=no
-            - NGAPPeerAddr=192.168.70.132
-            - GTPuLocalAddr=192.168.70.158
+            - USE_FQDN=yes
+            - AMF_FQDN=oai-amf
+            - NGAPPeerAddr=0.0.0.0
+            - GTPuLocalAddr=0.0.0.0
             - GTPuIFname=eth0
         networks:
             public_net:
-                ipv4_address: 192.168.70.158
         healthcheck:
             test: /bin/bash -c "ip address show dev gtp-gnb"
             interval: 10s
@@ -124,13 +124,13 @@ services:
             - DNN=default
             - URL=http://www.asnt.org:8080/
             - NRCellID=1
-            - USE_FQDN=no
-            - NGAPPeerAddr=192.168.70.132
-            - GTPuLocalAddr=192.168.70.159
+            - USE_FQDN=yes
+            - AMF_FQDN=oai-amf
+            - NGAPPeerAddr=0.0.0.0
+            - GTPuLocalAddr=0.0.0.0
             - GTPuIFname=eth0
         networks:
             public_net:
-                ipv4_address: 192.168.70.159
         healthcheck:
             test: /bin/bash -c "ip address show dev gtp-gnb"
             interval: 10s
@@ -158,13 +158,13 @@ services:
             - DNN=default
             - URL=http://www.asnt.org:8080/
             - NRCellID=1
-            - USE_FQDN=no
-            - NGAPPeerAddr=192.168.70.132
-            - GTPuLocalAddr=192.168.70.160
+            - USE_FQDN=yes
+            - AMF_FQDN=oai-amf
+            - NGAPPeerAddr=0.0.0.0
+            - GTPuLocalAddr=0.0.0.0
             - GTPuIFname=eth0
         networks:
             public_net:
-                ipv4_address: 192.168.70.160
         healthcheck:
             test: /bin/bash -c "ip address show dev gtp-gnb"
             interval: 10s

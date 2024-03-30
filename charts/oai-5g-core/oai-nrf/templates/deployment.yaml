@@ -23,47 +23,59 @@ spec:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
       containers:
+    {{- if .Values.includeTcpDumpContainer }}
       - name: tcpdump
         image: "{{ .Values.tcpdumpimage.repository }}:{{ .Values.tcpdumpimage.version }}"
         imagePullPolicy: {{ .Values.tcpdumpimage.pullPolicy }}
         {{- if .Values.resources.define}}
         resources:
           requests:
-            memory: {{ .Values.resources.tcpdump.requests.memory | quote }}
-            cpu: {{ .Values.resources.tcpdump.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.tcpdump.memory | quote }}
+            cpu: {{ .Values.resources.requests.tcpdump.cpu | quote }}
           limits:
-            memory: {{ .Values.resources.tcpdump.limits.memory | quote }}
-            cpu: {{ .Values.resources.tcpdump.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.tcpdump.memory | quote }}
+            cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
+        securityContext:
+           privileged: true
+           capabilities:
+              add: 
+               - NET_ADMIN
+              drop: 
+               - ALL
         {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
           - infinity
         {{- end}}
-        {{- if .Values.persistent.sharedvolume}}
+        {{- if .Values.includeTcpDumpContainer}}
+        {{- if .Values.persistent.sharedvolume }}
         volumeMounts:
-        - mountPath: "/pcap"
+        - mountPath: "/tmp/pcap"
           name: cn5g-pvc
         {{- end}}
+        {{- end}}
+    {{- end }}
       - name: nrf
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
+        volumeMounts:
+          - mountPath: /openair-nrf/etc
+            name: configuration
         imagePullPolicy: {{ .Values.nfimage.pullPolicy }}
         {{- if .Values.resources.define}}
         resources:
           requests:
-            memory: {{ .Values.resources.nf.requests.memory | quote }}
-            cpu: {{ .Values.resources.nf.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.nf.memory | quote }}
+            cpu: {{ .Values.resources.requests.nf.cpu | quote }}
           limits:
-            memory: {{ .Values.resources.nf.limits.memory | quote }}
-            cpu: {{ .Values.resources.nf.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.nf.memory | quote }}
+            cpu: {{ .Values.resources.limits.nf.cpu | quote }}
         {{- end}}
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
         {{- if .Values.readinessProbe}}
         readinessProbe:
           exec:
@@ -71,7 +83,7 @@ spec:
             - /bin/bash
             - /openair-nrf/bin/healthcheck.sh
           initialDelaySeconds: 2
-          periodSeconds: 3
+          periodSeconds: 2
         {{- end}}
         {{- if .Values.livenessProbe}}
         livenessProbe:
@@ -83,38 +95,23 @@ spec:
           periodSeconds: 5
         {{- end}}
         ports:
-        - containerPort: {{ .Values.config.nrfInterfacePortForSBI }}
-          name: http1
+        - containerPort: {{ .Values.exposedPorts.sbi }}
+          name: http
           protocol: TCP
-        - containerPort: {{ .Values.config.nrfInterfaceHttp2PortForSBI }}
-          name: http2
-          protocol: TCP
-        env:
-          - name: NRF_INTERFACE_NAME_FOR_SBI
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfInterfaceNameForSBI
-          - name: NRF_INTERFACE_PORT_FOR_SBI
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfInterfacePortForSBI
-          - name: NRF_INTERFACE_HTTP2_PORT_FOR_SBI
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfInterfaceHttp2PortForSBI
-          - name: NRF_API_VERSION
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nrfApiVersion
       volumes:
+      - configMap:
+      {{- if .Values.global }}
+          name: {{ .Values.global.nfConfigurationConfigMap }}
+      {{- else }}
+          name: {{ .Chart.Name }}-configmap
+      {{- end }}
+        name: configuration
+      {{- if .Values.includeTcpDumpContainer}}
       {{- if .Values.persistent.sharedvolume}}
       - name: cn5g-pvc
         persistentVolumeClaim:
           claimName: cn5g-pvc
+      {{- end }}
       {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
@@ -127,4 +124,3 @@ spec:
       {{- if .Values.nodeName}}
       nodeName: {{ .Values.nodeName }}
       {{- end }}
-

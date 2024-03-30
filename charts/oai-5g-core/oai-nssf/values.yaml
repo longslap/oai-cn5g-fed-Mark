@@ -1,14 +1,8 @@
-kubernetesType: Vanilla  #Vanilla for community kubernetes distribution
+kubernetesType: Vanilla  # Vanilla (Community Kubernetes) or Openshift (For RedHat Openshift)
 
 nfimage:
   repository: docker.io/oaisoftwarealliance/oai-nssf # image name either locally present or in a public/private repository
-  version: v1.5.0 #image tag, develop tag for experimental features 
-  #pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
-
-tcpdumpimage:
-  repository: docker.io/corfr/tcpdump
-  version: latest
+  version: v2.0.1 #image tag, develop tag for experimental features 
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
@@ -28,58 +22,55 @@ podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
-securityContext:
-  privileged: false
-
 #service type is fixed to clusterIP, it is only support for non multus interface (eth0)
 
+exposedPorts:
+  sbi: 80
+
+## Debugging section
 start:
-  nssf: true
-  tcpdump: false #start tcpdump collection to analyse but beware it will take a lot of space in the container/persistent volume
+  nssf: true #If false the network function container will run in sleep mode for manually testing
+  tcpdump: false
 
+includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
 
-config:
-  tz: "Europe/Paris"
-  instance: "0"
-  nssfname: "oai-nssf"
-  pidDirectory: "/var/run"
-  nssfFqdn: "oai-nssf-svc"
-  sbiIfName: "eth0"
-  sbiPortHttp1: "80"
-  sbiPortHttp2: "8080"
-  sbiApiVersion: "v1"
-  nssfSliceConfig: "/tmp/nssf_slice_config.yaml"   # Do not change
+tcpdumpimage:
+   repository: docker.io/corfr/tcpdump
+   version: latest
+   #pullPolicy: IfNotPresent or Never or Always
+   pullPolicy: IfNotPresent
 
+#To store PCAP of NF in a sharedVolume so it can be easily fetched (PVC is created with NRF charts so make sure in NRF it is true)
+persistent:
+  sharedvolume: true
 
-persistence:
-  sharedvolume: false
-  volumneName: managed-nfs-storage
-  size: 1Gi
-  
+## NF is the network function and tcpdump is the tcpdump container. 
+## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
+## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
+## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
   define: false
   limits:
-    tcpdump:
-      cpu: 100m
-      memory: 128Mi
     nf:
       cpu: 100m
       memory: 128Mi
+    # tcpdump:
+    #   cpu: 100m
+    #   memory: 128Mi
   requests:
-    tcpdump:
-      cpu: 100m
-      memory: 128Mi
     nf:
       cpu: 100m
       memory: 128Mi
+    # tcpdump:
+    #   cpu: 100m
+    #   memory: 128Mi
 
 readinessProbe: true
 
-livenessProbe: false      
+livenessProbe: false
 
 terminationGracePeriodSeconds: 5
 
 nodeSelector: {}
 
 nodeName:
-

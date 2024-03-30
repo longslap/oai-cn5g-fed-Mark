@@ -1,19 +1,15 @@
-kubernetesType: Vanilla  #Vanilla for community kubernetes distribution
+kubernetesType: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
 
+## In case of using these charts on Openshift then please use UBI images
+## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:   # image name either locally present or in a public/private repository
   repository: docker.io/oaisoftwarealliance/oai-gnb
-  version: develop # image tag
+  version: 2023.w49 # image tag or develop
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
-tcpdumpimage:
-  repository: docker.io/corfr/tcpdump
-  version: latest
-  #pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
-
 # good to use when pulling images from docker-hub mention 
-imagePullSecrets: 
+imagePullSecrets:
  - name: "regcred"
 
 serviceAccount:
@@ -25,74 +21,111 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: "oai-gnb-sa"
 
+#service type is fixed to clusterIP, it is only support for non multus interface (eth0)
+
+# These helm-charts can be used for two purpose
+# 1. RFSimulated oai-gNB: Only requires 1 interface for N2 and N3. You can use Kubernetes default interface eth0
+# 2. Physical gNB with Ethernet based USRP or RRU: You need to use ruInterface to connect with RU. Make sure that the ip-address you choose can reach to RU. 
+#                                                 Using a dedicated interface for N2 or N3 is optional you can still use eth0. 
+# 3. Another thing you can chose to use same virtual interface for N2/N3 its optional to have two different
+
+## NOTE: To use these charts with USRP B210 you need to modify and mount usb from the host. 
+## Change these ip-addresses according to your environment
+
+
+multus:
+  # if default gatway is empty then it will be removed
+  defaultGateway: ""
+  n2Interface:
+    create: false
+    # #name inside the pod is hardcoded right now
+    # name: "n2"
+    IPadd: "172.21.6.90"
+    Netmask: "22"
+    # if gatway is empty then it will be removed
+    #Gateway: "172.21.7.254"
+    #routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
+    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+  n3Interface:
+    create: false
+    IPadd: "172.21.8.91"
+    # #name inside the pod is hardcoded right now
+    # name: "n3"
+    Netmask: "22"
+    # if gatway is empty then it will be removed
+    #Gateway: "172.21.11.254"
+    #routes:
+    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+  ruInterface:            #Only needed if using a ethernet based RU/USRP
+    create: false
+    IPadd: "192.168.80.90"
+    # #name inside the pod is hardcoded right now
+    # name: "ru"
+    Netmask: "24"
+    # if gatway is commented then it will be removed
+    Gateway: "192.168.80.1"  #In case you don't have a gateway remove it from here
+    ## The value must be [0, master's MTU]. If commented it will masters MTU
+    #mtu: 1500
+    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+
+## If you want to change more configuration parameters then you should mount the config file  
+# in templates/configmap.yaml
+# Example config files --> https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/targets/PROJECTS/GENERIC-NR-5GC/CONF 
+config:
+  timeZone: "Europe/Paris"
+  useAdditionalOptions: "--sa --rfsim --log_config.global_log_options level,nocolor,time"
+  gnbName: "oai-gnb-rfsim"
+  mcc: "001"   # check the information with AMF, SMF, UPF
+  mnc: "01"    # check the information with AMF, SMF, UPF
+  tac: "1"     # check the information with AMF
+  sst: "1"  #currently only 4 standard values are allowed 1,2,3,4
+  usrp: rfsim   #allowed values rfsim, b2xx, n3xx or x3xx
+  amfhost: "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
+  n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
+  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
+
+## Debugging section
+start:
+  gnb: true #If false the network function container will run in sleep mode for manually testing
+  tcpdump: false
+
+includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
+
 podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
-securityContext:
-  privileged: true
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+## For openshift you can use rhel8/support-tools:8.7-13
+tcpdumpimage:
+   repository: docker.io/corfr/tcpdump
+   version: latest
+   #pullPolicy: IfNotPresent or Never or Always
+   pullPolicy: IfNotPresent
 
-#service type is fixed to clusterIP, it is only support for non multus interface (eth0)
-
-start:
-  gnb: true
-  tcpdump: false
-
-# gNB needs two seperate interface one for ngap (N2) and other one for gtpu (N3) 
-# But for experimentation only one interface can be used. 
-# When you need multus:
-# 1. you want seperate interface for N2 and N3 
-# 2. You want static ip-address for N2 and N3 interface
-# 3. Different interfaces for different packets
-
-multus:    # needed when gnB service will run on another interface rather than traditional eth0
-  create: false
-  n2n3IPadd: "172.21.6.203"
-  n2n3Netmask: "22"
-  defaultGateway: "172.21.7.254"
-  hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
-
-config:
-  mountConfig: false          #If config file is mounted then please edit mount.conf in configmap.yaml properly 
-  useSATddMono: true
-  timeZone: "Europe/Paris"
-  rfSimulator: "server"
-  useSATddMono: "yes"
-  gnbName: "gnb-rfsim"
-  mcc: "001"   # check the information with AMF, SMF, UPF/SPGWU
-  mnc: "01"    # check the information with AMF, SMF, UPF/SPGWU
-  mncLength: "2" # check the information with AMF, SMF, UPF/SPGWU
-  tac: "1"     # check the information with AMF
-  nssaiSst: "1"  #currently only 4 standard values are allowed 1,2,3,4 
-  nssaiSd0: "ffffff"    #values in hexa-decimal format
-  amfIpAddress: "oai-amf-svc"  # amf ip-address or service-name oai-amf-svc
-  gnbNgaIfName: "eth0"            # net1 in case multus create is true that means another interface is created for ngap interface, n2 to communicate with amf
-  gnbNgaIpAddress: "status.podIP" # n2n3IPadd in case multus create is true
-  gnbNguIfName: "eth0"   #net1 in case multus create is true gtu interface for upf/spgwu
-  gnbNguIpAddress: "status.podIP" # n2n3IPadd in case multus create is true
-  useAdditionalOptions: "--sa -E --rfsim --log_config.global_log_options level,nocolor,time"
-  threadParallelConfig: "PARALLEL_SINGLE_THREAD"
-  sdrAddrs: "serial=XXXXXXX"
-
-
+## NF is the network function and tcpdump is the tcpdump container. 
+## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
+## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
+## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
   define: false
   limits:
-    cpu: 100m
-    memory: 128Mi
+    nf:
+      cpu: 2000m
+      memory: 2Gi
+    #If tcpdump container is disabled this value will not be used
+    tcpdump:
+      cpu: 200m
+      memory: 128Mi
   requests:
-   cpu: 100m
-   memory: 256Mi
-
+    nf:
+      cpu: 2000m
+      memory: 2Gi
+    #If tcpdump container is disabled this value will not be used
+    tcpdump:
+      cpu: 100m
+      memory: 128Mi
 
 tolerations: []
-
 affinity: {}
 
 terminationGracePeriodSeconds: 5

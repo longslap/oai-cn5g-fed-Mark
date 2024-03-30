@@ -67,10 +67,10 @@ Username:
 Password:
 ```
 
-On a Ubuntu18.04 host:
+On a Ubuntu-22.04 host:
 
 ```bash
-$ docker pull ubuntu:bionic
+$ docker pull ubuntu:jammy
 $ docker pull mysql:8.0
 ```
 

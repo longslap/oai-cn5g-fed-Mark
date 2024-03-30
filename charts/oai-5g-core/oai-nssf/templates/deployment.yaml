@@ -18,56 +18,69 @@ spec:
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+    {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
+    {{- end }}
       containers:
+    {{- if .Values.includeTcpDumpContainer }}
       - name: tcpdump
         image: "{{ .Values.tcpdumpimage.repository }}:{{ .Values.tcpdumpimage.version }}"
         imagePullPolicy: {{ .Values.tcpdumpimage.pullPolicy }}
         {{- if .Values.resources.define}}
         resources:
           requests:
-            memory: {{ .Values.resources.tcpdump.requests.memory | quote }}
-            cpu: {{ .Values.resources.tcpdump.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.tcpdump.memory | quote }}
+            cpu: {{ .Values.resources.requests.tcpdump.cpu | quote }}
           limits:
-            memory: {{ .Values.resources.tcpdump.limits.memory | quote }}
-            cpu: {{ .Values.resources.tcpdump.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.tcpdump.memory | quote }}
+            cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
+        securityContext:
+           privileged: true
+           capabilities:
+              add:
+               - NET_ADMIN
+              drop:
+               - ALL
         {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /pcap/oai-nssf_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/sbin/tcpdump -i any -w /pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
           - infinity
         {{- end}}
-        {{- if .Values.persistence.sharedvolume}}
+        {{- if .Values.includeTcpDumpContainer}}
+        {{- if .Values.persistent.sharedvolume}}
         volumeMounts:
-        - mountPath: "/pcap"
-          name: cn5g-pv
+        - mountPath: "/tmp/pcap"
+          name: cn5g-pvc
         {{- end}}
+        {{- end}}
+    {{- end }}
       - name: nssf
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
         imagePullPolicy: {{ .Values.nfimage.pullPolicy }}
         {{- if .Values.resources.define}}
         resources:
           requests:
-            memory: {{ .Values.resources.nf.requests.memory | quote }}
-            cpu: {{ .Values.resources.nf.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.nf.memory | quote }}
+            cpu: {{ .Values.resources.requests.nf.cpu | quote }}
           limits:
-            memory: {{ .Values.resources.nf.limits.memory | quote }}
-            cpu: {{ .Values.resources.nf.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.nf.memory | quote }}
+            cpu: {{ .Values.resources.limits.nf.cpu | quote }}
         {{- end}}
         volumeMounts:
-        - mountPath: /tmp/
-          name: nssf-slice-config
+        - mountPath: /openair-nssf/etc
+          name: configuration
         {{- if .Values.readinessProbe}}
         readinessProbe:
           exec:
             command:
-            - sh
+            - /bin/bash
             - /openair-nssf/bin/healthcheck.sh
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -76,75 +89,20 @@ spec:
         livenessProbe:
           exec:
             command:
-            - sh
+            - /bin/bash
             - /openair-nssf/bin/healthcheck.sh
           initialDelaySeconds: 10
           periodSeconds: 5
         {{- end}}
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
         ports:
-        - containerPort: {{ .Values.config.sbiPortHttp1 }}
-          name: http1
-        - containerPort: {{ .Values.config.sbiPortHttp2 }}
-          name: http2
+        - containerPort: {{ .Values.exposedPorts.sbi }}
+          name: http
         {{- if .Values.start.nssf}}
         {{- else}}
         command:
           - /bin/sleep
           - infinity
         {{- end}}
-        env:
-          - name: TZ
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: tz     
-          - name: NSSF_NAME
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nssfname
-          - name: INSTANCE
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: instance
-          - name: PID_DIRECTORY
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: pidDirectory
-          - name: NSSF_FQDN
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nssfFqdn
-          - name: SBI_IF_NAME
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: sbiIfName
-          - name: SBI_PORT_HTTP1
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: sbiPortHttp1
-          - name: SBI_PORT_HTTP2
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: sbiPortHttp2
-          - name: SBI_API_VERSION
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: sbiApiVersion
-          - name: NSSF_SLICE_CONFIG
-            valueFrom:
-              configMapKeyRef:
-                name: {{ .Chart.Name }}-configmap
-                key: nssfSliceConfig
         {{- if .Values.start.nssf}}
         {{- else}}
         command:
@@ -152,14 +110,20 @@ spec:
           - infinity
         {{- end}}
       volumes:
-      {{- if .Values.persistence.sharedvolume}}
-      - name: cn5g-pv
+      {{- if .Values.includeTcpDumpContainer}}
+      {{- if .Values.persistent.sharedvolume}}
+      - name: cn5g-pvc
         persistenceVolumeClaim:
           claimName: cn5g-pvc
       {{- end }}
-      - name: nssf-slice-config
-        configMap:
-          name: {{ .Chart.Name }}-yamlconfig
+      {{- end }}
+      - configMap:
+      {{- if .Values.global }}
+          name: {{ .Values.global.nfConfigurationConfigMap }}
+      {{- else }}
+          name: {{ .Chart.Name }}-configmap
+      {{- end }}
+        name: configuration
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

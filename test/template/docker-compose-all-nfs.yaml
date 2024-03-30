@@ -1,0 +1,256 @@
+## DO NOT START THIS DOCKER-COMPOSE-FILE. IT IS INTENDED AS TEMPLATE FOR THE TESTS AND CONTAINS ALL NFS ##
+## DURING TEST, UNNECESSARY NFS ARE BEING DELETED # 
+
+version: '3.8'
+services:
+    mysql:
+        container_name: "mysql"
+        image: mysql:8.0
+        volumes:
+            - ./mysql/oai_db2.sql:/docker-entrypoint-initdb.d/oai_db.sql
+            - ./mysql/mysql-healthcheck2.sh:/tmp/mysql-healthcheck.sh
+        environment:
+            - TZ=Europe/Paris
+            - MYSQL_DATABASE=oai_db
+            - MYSQL_USER=test
+            - MYSQL_PASSWORD=test
+            - MYSQL_ROOT_PASSWORD=linux
+        healthcheck:
+            test: /bin/bash -c "/tmp/mysql-healthcheck.sh"
+            interval: 10s
+            timeout: 5s
+            retries: 30
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.131
+    oai-udr:
+        container_name: "oai-udr"
+        image: oaisoftwarealliance/oai-udr:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+        volumes:
+            - REPLACE:/openair-udr/etc/config.yaml
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.136
+    oai-udm:
+        container_name: "oai-udm"
+        image: oaisoftwarealliance/oai-udm:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+        volumes:
+            - REPLACE:/openair-udm/etc/config.yaml
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.137
+    oai-ausf:
+        container_name: "oai-ausf"
+        image: oaisoftwarealliance/oai-ausf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+        volumes:
+            - REPLACE:/openair-ausf/etc/config.yaml
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.138
+    oai-nrf:
+        container_name: "oai-nrf"
+        image: oaisoftwarealliance/oai-nrf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+        volumes:
+            - REPLACE:/openair-nrf/etc/config.yaml
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.130
+    oai-amf:
+        container_name: "oai-amf"
+        image: oaisoftwarealliance/oai-amf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+            - 38412/sctp
+        volumes:
+            - REPLACE:/openair-amf/etc/config.yaml
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.132
+    oai-smf:
+        container_name: "oai-smf"
+        image: oaisoftwarealliance/oai-smf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+            - 8805/udp
+        volumes:
+            - REPLACE:/openair-smf/etc/config.yaml
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.133
+    oai-pcf:
+        container_name: "oai-pcf"
+        image: oaisoftwarealliance/oai-pcf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+        volumes:
+            - ./policies:/openair-pcf/policies
+            - REPLACE:/openair-pcf/etc/config.yaml
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.139
+
+    oai-upf:
+        container_name: "oai-upf"
+        image: oaisoftwarealliance/oai-upf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+            - 2152/udp
+        volumes:
+            - REPLACE:/openair-upf/etc/config.yaml
+        cap_add:
+            - NET_ADMIN
+            - SYS_ADMIN
+        cap_drop:
+            - ALL
+        privileged: true
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.134
+
+    oai-upf-ebpf:
+        container_name: "oai-upf-ebpf"
+        image: oaisoftwarealliance/oai-upf:develop
+        expose:
+            - 2152/udp
+            - 8805/udp
+            - 80/tcp
+        volumes:
+            - REPLACE:/openair-upf/etc/config.yaml
+        cap_add:
+            - NET_ADMIN
+            - SYS_ADMIN
+        cap_drop:
+            - ALL
+        privileged: true
+        network_mode: host
+        extra_hosts:
+            - "oai-ext-dn-ebpf:192.168.81.144"
+            - "oai-nrf:192.168.79.130"
+
+    oai-ext-dn:
+        privileged: true
+        init: true
+        container_name: oai-ext-dn
+        image: oaisoftwarealliance/trf-gen-cn5g:latest
+        entrypoint: /bin/bash -c \
+              "ip route add 12.1.1.0/24 via 192.168.79.134 dev eth0; ip route; sleep infinity"
+        command: ["/bin/bash", "-c", "trap : SIGTERM SIGINT; sleep infinity & wait"]
+        healthcheck:
+            test: /bin/bash -c "ip r | grep 12.1.1"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.141
+
+    oai-ext-dn-2:
+        privileged: true
+        init: true
+        container_name: oai-ext-dn-2
+        image: oaisoftwarealliance/trf-gen-cn5g:latest
+        entrypoint: /bin/bash -c \
+            "ip route add 12.1.1.0/24 via 192.168.79.134 dev eth0; ip route; sleep infinity"
+        command: ["/bin/bash", "-c", "trap : SIGTERM SIGINT; sleep infinity & wait"]
+        healthcheck:
+            test: /bin/bash -c "ip r | grep 12.1.1"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.142
+
+    oai-ext-dn-3:
+        privileged: true
+        init: true
+        container_name: oai-ext-dn-3
+        image: oaisoftwarealliance/trf-gen-cn5g:latest
+        entrypoint: /bin/bash -c \
+            "ip route add 12.1.1.0/24 via 192.168.79.134 dev eth0; ip route; sleep infinity"
+        command: ["/bin/bash", "-c", "trap : SIGTERM SIGINT; sleep infinity & wait"]
+        healthcheck:
+            test: /bin/bash -c "ip r | grep 12.1.1"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.143
+
+    oai-ext-dn-ebpf:
+        privileged: true
+        init: true
+        container_name: oai-ext-dn-ebpf
+        image: oaisoftwarealliance/trf-gen-cn5g:latest
+        environment:
+            - EBPF_GW_SETUP=yes
+            - EBPF_GW_N6_IP_ADDR=192.168.81.144
+            - GW_SGI_IP_ADDR=192.168.79.144
+            - GW_N3_IP_ADDR=192.168.80.144
+            - UE_IP_ADDRESS_POOL=12.1.1.0/24
+            - N6_UPF_IP_ADDR=192.168.81.129
+            - SGI_DEMO_OAI_ADDR=192.168.79.129
+        healthcheck:
+            test: /bin/bash -c "ip r | grep 12.1.1"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.144
+            n3_test_net:
+                ipv4_address: 192.168.80.144
+            n6_test_net:
+                ipv4_address: 192.168.81.144
+
+    # is used to create network
+    trace_dummy:
+        container_name: trace_dummy
+        image: ubuntu:jammy
+        command: "echo hello"
+        networks:
+            public_test_net:
+                ipv4_address: 192.168.79.199
+
+networks:
+    public_test_net:
+        driver: bridge
+        name: test-oai-public-net
+        ipam:
+            config:
+                - subnet: 192.168.79.128/25
+        driver_opts:
+            com.docker.network.bridge.name: "demo-oai-test"
+    n3_test_net:
+        driver: bridge
+        name: test-oai-n3-net
+        ipam:
+            config:
+                - subnet: 192.168.80.128/25
+        driver_opts:
+            com.docker.network.bridge.name: "demo-n3-test"
+    n6_test_net:
+        driver: bridge
+        name: test-oai-n6-net
+        ipam:
+            config:
+                - subnet: 192.168.81.128/25
+        driver_opts:
+            com.docker.network.bridge.name: "demo-n6-test"

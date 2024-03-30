@@ -12,6 +12,12 @@ tcpdumpimage:
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
+initContainer:
+  repository: docker.io/alpine/curl
+  version: 3.14
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
+
 ## good to use when pulling images from docker-hub mention 
 #imagePullSecrets:
 #  - name: "regcred"
@@ -61,37 +67,9 @@ multus:
 ## Incase the pod is not able to resolve the FQDN of other network functions example nrf then you can disable useFqdnDns feature this way AMF will talk to other network functions using their ip-address. 
 
 config:
-  mcc: "001"
-  mnc: "01"
-  regionId: "128"
-  amfSetId: "1"
-  tac: "0x0001"
-  sst0: "1"
-  sd0: "0xFFFFFF"
-  sst1: "1"
-  sd1: "1"
-  amfInterfaceNameForNGAP: "net1" # If multus creation is true then net1 else eth0
-  amfInterfaceNameForSBI: "eth0"  # Service based interface
-  amfInterfaceSBIHTTPPort: 80  # Service based interface
-  amfInterfaceSBIHTTP2Port: 8080  # Service based interface
-  smfFqdn: "oai-smf-svc"
-  nrfFqdn: "oai-nrf-svc"  # amf communicates using FQDN
-  ausfFqdn: "oai-ausf-svc"   #only needed if ausf is used and externalAusf is true else internal ausf will be used
-  nfRegistration: "yes"
-  nrfSelection: "no"
-  smfSelection: "yes"
-  externalAusf: "yes"
-  externalUdm: "no"
-  externalNrf: "no"
-  externalNssf: "no"
-  useHttp2: "no"
-  intAlgoList: '[ "NIA1" , "NIA1" , "NIA2" ]'
-  ciphAlgoList: '[ "NEA0" , "NEA1" , "NEA2" ]'
-  mySqlServer: "mysql" # OPTIONAL: used only if not using AUSF
-  mySqlUser: "root" # OPTIONAL: used only if not using AUSF
-  mySqlPass: "linux" # OPTIONAL: used only if not using AUSF
-  mySqlDb: "oai_db" # OPTIONAL: used only if not using AUSF
-
+  nrfFqdn: "oai-nrf"  # amf communicates using FQDN
+  amfInterfaceSBIHTTPPort: 80
+  amfInterfaceSBIHTTP2Port: 8080
 
 persistent:
   sharedvolume: true

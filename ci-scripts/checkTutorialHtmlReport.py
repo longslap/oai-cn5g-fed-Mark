@@ -1,87 +1,67 @@
-#/*
-# * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
-# * contributor license agreements.  See the NOTICE file distributed with
-# * this work for additional information regarding copyright ownership.
-# * The OpenAirInterface Software Alliance licenses this file to You under
-# * the OAI Public License, Version 1.1  (the "License"); you may not use this file
-# * except in compliance with the License.
-# * You may obtain a copy of the License at
-# *
-# *   http://www.openairinterface.org/?page_id=698
-# *
-# * Unless required by applicable law or agreed to in writing, software
-# * distributed under the License is distributed on an "AS IS" BASIS,
-# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# * See the License for the specific language governing permissions and
-# * limitations under the License.
-# *-------------------------------------------------------------------------------
-# * For more information about the OpenAirInterface (OAI) Software Alliance:
-# *   contact@openairinterface.org
-# */
-#---------------------------------------------------------------------
+#!/usr/bin/env python3
+"""
+Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The OpenAirInterface Software Alliance licenses this file to You under
+the OAI Public License, Version 1.1  (the "License"); you may not use this file
+except in compliance with the License.
+You may obtain a copy of the License at
 
+  http://www.openairinterface.org/?page_id=698
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+------------------------------------------------------------------------------
+For more information about the OpenAirInterface (OAI) Software Alliance:
+  contact@openairinterface.org
+
+---------------------------------------------------------------------
+"""
+
+import argparse
 import os
 import re
 import sys
-import subprocess
+
+from common.python.generate_html import (
+    generate_header,
+    generate_footer,
+    generate_chapter,
+    generate_button_header,
+    generate_button_footer,
+    generate_image_table_header,
+    generate_image_table_footer,
+    generate_image_table_row,
+    generate_command_table_header,
+    generate_command_table_footer,
+    generate_command_table_row,
+)
+
+REPORT_NAME = 'test_results_oai_cn5g_tutorials.html'
 
 class HtmlReport():
 	def __init__(self):
-		self.job_name = ''
-		self.job_id = ''
-		self.job_url = ''
-		self.job_start_time = 'TEMPLATE_TIME'
-		self.amfConfigStatus = True
-		self.smfConfigStatus = True
-		self.upfConfigStatus = True
+		pass
 
-	def generate(self):
+	def generate(self, args):
 		cwd = os.getcwd()
-		self.file = open(cwd + '/test_results_oai_cn5g_tutorials.html', 'w')
-		self.generateHeader()
+		with open(os.path.join(cwd, REPORT_NAME), 'w') as wfile:
+			wfile.write(generate_header(args))
 
-		tutorials = ['mini-gnbsim', 'static-ue-ip', 'vpp-upf-gnbsim', 'slicing-with-nssf']
-		for tutorial in tutorials:
-			if not os.path.isfile(cwd + '/archives/' + tutorial + '.log'):
-				continue
-			if not os.path.isdir(cwd + '/archives/' + tutorial):
-				continue
-			self.tutorialSummary(tutorial)
+			tutorials = ['mini-gnbsim', 'static-ue-ip', 'vpp-upf-gnbsim', 'slicing-with-nssf', 'ulcl-scenario', 'mongodb-test', 'upf-ebpf-gnbsim']
+			tutorials = ['mini-gnbsim', 'static-ue-ip', 'vpp-upf-gnbsim', 'slicing-with-nssf', 'ulcl-scenario', 'mongodb-test']
+			for tutorial in tutorials:
+				if not os.path.isfile(cwd + '/archives/' + tutorial + '.log'):
+					continue
+				if not os.path.isdir(cwd + '/archives/' + tutorial):
+					continue
+				wfile.write(self.tutorialSummary(tutorial))
 
-		self.generateFooter()
-		self.file.close()
-
-	def generateHeader(self):
-		# HTML Header
-		self.file.write('<!DOCTYPE html>\n')
-		self.file.write('<html class="no-js" lang="en-US">\n')
-		self.file.write('<head>\n')
-		self.file.write('  <meta name="viewport" content="width=device-width, initial-scale=1">\n')
-		self.file.write('  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">\n')
-		self.file.write('  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>\n')
-		self.file.write('  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>\n')
-		self.file.write('  <title>OAI Core Network Test Results for ' + self.job_name + ' job build #' + self.job_id + '</title>\n')
-		self.file.write('</head>\n')
-		self.file.write('<body><div class="container">\n')
-		self.file.write('  <table width = "100%" style="border-collapse: collapse; border: none;">\n')
-		self.file.write('   <tr style="border-collapse: collapse; border: none;">\n')
-		self.file.write('	<td style="border-collapse: collapse; border: none;">\n')
-		self.file.write('	  <a href="http://www.openairinterface.org/">\n')
-		self.file.write('		 <img src="http://www.openairinterface.org/wp-content/uploads/2016/03/cropped-oai_final_logo2.png" alt="" border="none" height=50 width=150>\n')
-		self.file.write('		 </img>\n')
-		self.file.write('	  </a>\n')
-		self.file.write('	</td>\n')
-		self.file.write('	<td style="border-collapse: collapse; border: none; vertical-align: center;">\n')
-		self.file.write('	  <b><font size = "6">Job Summary -- Job: ' + self.job_name + ' -- Build-ID: <a href="' + self.job_url + '">' + self.job_id + '</a></font></b>\n')
-		self.file.write('	</td>\n')
-		self.file.write('   </tr>\n')
-		self.file.write('  </table>\n')
-		self.file.write('  <br>\n')
-
-	def generateFooter(self):
-		self.file.write('  <div class="well well-lg">End of Test Report -- Copyright <span class="glyphicon glyphicon-copyright-mark"></span> 2022 <a href="http://www.openairinterface.org/">OpenAirInterface</a>. All Rights Reserved.</div>\n')
-		self.file.write('</div></body>\n')
-		self.file.write('</html>\n')
+			wfile.write(generate_footer())
 
 	def tutorialSummary(self, tutorial):
 		cwd = os.getcwd()
@@ -89,24 +69,33 @@ class HtmlReport():
 		tutoStatus = True
 		cmdSummary = False
 		listOfCmds = []
+		nbAllCmds = '0'
+		nbPassCmds = '0'
 		with open(cwd + '/archives/' + tutorial + '.log','r') as tutoLog:
 			for line in tutoLog:
+				if cmdSummary:
+					pushToList = True
+					passFailStatus = re.search('FAIL', line)
+					nbCommands = re.search('(?P<pass>[0-9]+) out of (?P<all>[0-9]+) commands passed', line)
+					if passFailStatus is not None:
+						cmd = re.sub('^.*FAIL : ', '', line.strip())
+						cmdStatus = False
+					elif nbCommands is not None:
+						nbAllCmds = nbCommands.group('all')
+						nbPassCmds = nbCommands.group('pass')
+						pushToList = False
+					else:
+						cmd = re.sub('^.*PASS : ', '', line.strip())
+						cmdStatus = True
+					cmd = re.sub('\[0m.*$', '', cmd)
+					if pushToList:
+						listOfCmds.append((cmd,cmdStatus))
 				result = re.search('Final result for the tutorial (?P<doc_name>[a-zA-Z0-9\.\_:]+)', line)
 				if result is not None:
+					cmdSummary = True
 					tutoName = result.group('doc_name')
 					if re.search('FAIL', line) is not None:
 						tutoStatus = False
-				if cmdSummary:
-					if re.search('FAIL', line) is not None:
-						cmd = re.sub(': FAIL.*$', '', line.strip())
-						cmdStatus = False
-					else:
-						cmd = re.sub(': PASS.*$', '', line.strip())
-						cmdStatus = True
-					listOfCmds.append((cmd,cmdStatus))
-				result = re.search('Command execution summary', line)
-				if result is not None:
-					cmdSummary = True
 		tutoLog.close()
 
 		log_files = sorted(os.listdir(cwd + '/archives/' + tutorial))
@@ -120,12 +109,9 @@ class HtmlReport():
 				continue
 			rootName = re.sub('.log.*$', '', log_file)
 			containerName = 'oai-' + rootName
-			if re.search('spgwu', rootName) is not None:
-				imageRootName = 'oai-spgwu-tiny:'
-				fileRootName = re.sub('-slice.*','',rootName)
-			elif re.search('vpp-upf', rootName) is not None:
+			if re.search('vpp-upf', rootName) is not None:
 				imageRootName = 'oai-upf-vpp:'
-				fileRootName = 'upf_vpp'
+				fileRootName = 'upf-vpp'
 				containerName = rootName
 			else:
 				imageRootName = 'oai-' + re.sub('-slice.*','',rootName) + ':'
@@ -133,9 +119,11 @@ class HtmlReport():
 			imageTag = ''
 			imageSize = ''
 			imageDate = ''
-			with open(cwd + '/archives/oai_' + fileRootName + '_image_info.log','r') as imageDetailsFile:
+			if not os.path.isfile(cwd + '/archives/oai-' + fileRootName + '-image-info.log'):
+				continue
+			with open(cwd + '/archives/oai-' + fileRootName + '-image-info.log','r') as imageDetailsFile:
 				for line in imageDetailsFile:
-					result = re.search('TAG: oai-.*:(?P<tag>[a-zA-Z0-9\-\_]+)', line)
+					result = re.search('Tested Tag is oai-.*:(?P<tag>[a-zA-Z0-9\-\_]+)', line)
 					if result is not None:
 						imageTag = result.group('tag')
 					result = re.search('Size = (?P<size>[0-9]+) bytes', line)
@@ -154,65 +142,62 @@ class HtmlReport():
 			deployedContainerImages.append((containerName, imageRootName + imageTag, imageSize, imageDate))
 
 		if tutoName == '':
-			return
-		self.file.write('  <h2>Tutorial Check Summary </h2>\n')
+			return ''
 
+		tutoText = ''
 		if tutoStatus:
-				self.file.write('  <div class="alert alert-success">\n')
-				self.file.write('	<strong>Successful Check for ' + tutoName + '! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
-				self.file.write('  </div>\n')
+			tutoText += generate_chapter('Tutorial Check Summary', f'Successful Check for {tutoName} : all {nbAllCmds} commands PASSED', tutoStatus)
 		else:
-				self.file.write('  <div class="alert alert-danger">\n')
-				self.file.write('	<strong>Failed Check ' + tutoName + '! <span class="glyphicon glyphicon-warning-sign"></span></strong>\n')
-				self.file.write('  </div>\n')
+			tutoText += generate_chapter('Tutorial Check Summary', f'Failed Check for {tutoName}: ONLY {nbPassCmds} over {nbAllCmds} commands passed', tutoStatus)
 
-		self.file.write('  <br>\n')
-		self.file.write('  <button data-toggle="collapse" data-target="#' + tutorial + '-details">More details on tutorial results</button>\n')
-		self.file.write('  <br>\n')
-		self.file.write('  <div id="' + tutorial + '-details" class="collapse">\n')
-		self.file.write('  <table class="table-bordered" width = "100%" align = "center" border = 1>\n')
-		self.file.write('	 <tr bgcolor = "#33CCFF" >\n')
-		self.file.write('	   <th>Container Name</th>\n')
-		self.file.write('	   <th>Used Image Tag</th>\n')
-		self.file.write('	   <th>Image Creation Date</th>\n')
-		self.file.write('	   <th>Used Image Size</th>\n')
-		self.file.write('	 </tr>\n')
+		tutoText += generate_button_header(f'{tutorial}-details', 'More details on tutorial results')
+		tutoText += generate_image_table_header()
 		for (cName,iTag,iSize,iDate) in deployedContainerImages:
-			self.file.write('	 <tr>\n')
-			self.file.write('	   <td>' + cName + '</td>\n')
-			self.file.write('	   <td>' + iTag + '</td>\n')
-			self.file.write('	   <td>' + iDate + '</td>\n')
-			self.file.write('	   <td>' + iSize + '</td>\n')
-			self.file.write('	 </tr>\n')
-		self.file.write('  </table>\n')
-		self.file.write('  <table class="table-bordered" width = "100%" align = "center" border = 1>\n')
-		self.file.write('	 <tr bgcolor = "#33CCFF" >\n')
-		self.file.write('	   <th>Command</th>\n')
-		self.file.write('	   <th>Status</th>\n')
-		self.file.write('	 </tr>\n')
+			tutoText += generate_image_table_row(cName, iTag, 'N/A', iDate, iSize)
+		tutoText += generate_image_table_footer()
+		tutoText += generate_command_table_header()
 		for (cmd,cmdStatus) in listOfCmds:
-			self.file.write('    <tr>\n')
-			self.file.write('	   <td>'+ cmd + '</td>\n')
-			if cmdStatus:
-				self.file.write('	   <td bgcolor="lightgreen"><b>PASS</b></td>\n')
-			else:
-				self.file.write('	   <td bgcolor="lightcoral"><b>FAIL</b></td>\n')
-			self.file.write('    </tr>\n')
-		self.file.write('  </table>\n')
-		self.file.write('  </div>\n')
-		self.file.write('  <br>\n')
+			tutoText += generate_command_table_row(cmd, cmdStatus)
+		tutoText += generate_command_table_footer()
+		tutoText += generate_button_footer()
+		return tutoText
 
-def Usage():
-	print('----------------------------------------------------------------------------------------------------------------------')
-	print('checkTutorialHtmlReport.py')
-	print('   Generate an HTML report for the Jenkins pipeline on oai-cn5g-fed.')
-	print('----------------------------------------------------------------------------------------------------------------------')
-	print('Usage: python3 checkTutorialHtmlReport.py [options]')
-	print('  --help  Show this help.')
-	print('---------------------------------------------------------------------------------------------- Mandatory Options -----')
-	print('  --job_name=[Jenkins Job name]')
-	print('  --job_id=[Jenkins Job Build ID]')
-	print('  --job_url=[Jenkins Job Build URL]')
+def _parse_args() -> argparse.Namespace:
+	"""Parse the command line args
+
+	Returns:
+		argparse.Namespace: the created parser
+	"""
+	example_text = '''example:
+		./ci-scripts/checkTutorialHtmlReport.py --help
+		./ci-scripts/checkTutorialHtmlReport.py --job_name NameOfPipeline --job_id BuildNumber --job_url BuildURL'''
+
+	parser = argparse.ArgumentParser(description='OAI 5G CORE NETWORK Tutorial Check HTML report',
+									epilog=example_text,
+									formatter_class=argparse.RawDescriptionHelpFormatter)
+
+	# Job Name
+	parser.add_argument(
+		'--job_name', '-n',
+		action='store',
+		help='Pipeline is called JOB_NAME',
+	)
+
+	# Job Build Id
+	parser.add_argument(
+		'--job_id', '-id',
+		action='store',
+		help='Build # JOB_ID',
+	)
+
+	# Job URL
+	parser.add_argument(
+		'--job_url', '-u',
+		action='store',
+		help='Pipeline provides an URL for this run',
+	)
+
+	return parser.parse_args()
 
 #--------------------------------------------------------------------------------------------------------
 #
@@ -220,29 +205,10 @@ def Usage():
 #
 #--------------------------------------------------------------------------------------------------------
 
-argvs = sys.argv
-argc = len(argvs)
+if __name__ == '__main__':
+	# Parse the arguments
+	args = _parse_args()
 
-HTML = HtmlReport()
-
-while len(argvs) > 1:
-	myArgv = argvs.pop(1)
-	if re.match('^\-\-help$', myArgv, re.IGNORECASE):
-		Usage()
-		sys.exit(0)
-	elif re.match('^\-\-job_name=(.+)$', myArgv, re.IGNORECASE):
-		matchReg = re.match('^\-\-job_name=(.+)$', myArgv, re.IGNORECASE)
-		HTML.job_name = matchReg.group(1)
-	elif re.match('^\-\-job_id=(.+)$', myArgv, re.IGNORECASE):
-		matchReg = re.match('^\-\-job_id=(.+)$', myArgv, re.IGNORECASE)
-		HTML.job_id = matchReg.group(1)
-	elif re.match('^\-\-job_url=(.+)$', myArgv, re.IGNORECASE):
-		matchReg = re.match('^\-\-job_url=(.+)$', myArgv, re.IGNORECASE)
-		HTML.job_url = matchReg.group(1)
-	else:
-		sys.exit('Invalid Parameter: ' + myArgv)
-
-if HTML.job_name == '' or HTML.job_id == '' or HTML.job_url == '':
-	sys.exit('Missing Parameter in job description')
-
-HTML.generate()
+	# Generate report
+	HTML = HtmlReport()
+	HTML.generate(args)

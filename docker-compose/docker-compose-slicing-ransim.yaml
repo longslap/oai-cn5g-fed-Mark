@@ -55,20 +55,9 @@ services:
         container_name: rfsim5g-oai-gnb
         environment: 
             RFSIMULATOR: server
-            USE_SA_TDD_MONO: 'yes'
-            GNB_NAME: gnb-rfsim
-            TAC: 40960
-            MCC: '208'
-            MNC: '95'
-            MNC_LENGTH: 2
-            NSSAI_SST: 1
-            AMF_IP_ADDRESS: 192.168.70.138
-            GNB_NGA_IF_NAME: eth0
-            GNB_NGA_IP_ADDRESS: 192.168.70.153
-            GNB_NGU_IF_NAME: eth0
-            GNB_NGU_IP_ADDRESS: 192.168.70.153
-            SDR_ADDRS: serial=XXXXXXX
             USE_ADDITIONAL_OPTIONS: --sa -E --rfsim --log_config.global_log_options level,nocolor,time
+        volumes:
+            - ./ran-conf/gnb.conf:/opt/oai-gnb/etc/gnb.conf
         networks:
             public_net:
                 ipv4_address: 192.168.70.153
@@ -83,14 +72,11 @@ services:
         container_name: rfsim5g-oai-nr-ue1
         environment: 
             RFSIMULATOR: 192.168.70.153
-            FULL_IMSI: '208950000000036'
-            FULL_KEY: '0C0A34601D4F07677303652C0462535B'
-            OPC: '63bfa50ee6523365ff14c1f45f88737d'
-            DNN: oai
-            NSSAI_SST: 1
             USE_ADDITIONAL_OPTIONS: -E --sa --rfsim -r 106 --numerology 1 -C 3619200000 --nokrnmod --log_config.global_log_options level,nocolor,time
         depends_on:
             - oai-gnb
+        volumes:
+            - ./ran-conf/nr-ue.conf:/opt/oai-nr-ue/etc/nr-ue.conf
         networks:
             public_net:
                 ipv4_address: 192.168.70.154
@@ -99,29 +85,6 @@ services:
             interval: 10s
             timeout: 5s
             retries: 5
-#    oai-nr-ue2:
-#        image: oai-nr-ue:develop
-#        privileged: true
-#        container_name: rfsim5g-oai-nr-ue2
-#        environment: 
-#            RFSIMULATOR: 192.168.70.153
-#            FULL_IMSI: '208950000000037'
-#            FULL_KEY: '0C0A34601D4F07677303652C0462535B'
-#            OPC: '63bfa50ee6523365ff14c1f45f88737d'
-#            DNN: oai
-#            NSSAI_SST: 1
-#            NSSAI_SD: 0
-#            USE_ADDITIONAL_OPTIONS: -E --sa --rfsim -r 106 --numerology 1 -C 3619200000 --nokrnmod
-#        depends_on:
-#            - oai-gnb
-#        networks:
-#            public_net:
-#                ipv4_address: 192.168.70.155
-#        healthcheck:
-#            test: /bin/bash -c "pgrep nr-uesoftmodem"
-#            interval: 10s
-#            timeout: 5s
-#            retries: 5
     gnbsim:
         container_name: gnbsim
         image: gnbsim:latest

@@ -30,6 +30,14 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
+      initContainers:
+        - name: init
+          image: "{{ .Values.initContainer.repository }}:{{ .Values.initContainer.version }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          command: 
+            - /bin/sh
+            - -c 
+            - until curl --head -X GET http://{{ .Values.config.nrfFqdn }}/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.config.http2Param }}; do echo waiting for oai-nrf; sleep 2; done
       containers:
       - name: tcpdump
         image: "{{ .Values.tcpdumpimage.repository }}:{{ .Values.tcpdumpimage.version }}"

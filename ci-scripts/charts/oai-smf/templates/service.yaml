@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Chart.Name }}-svc
+  name: {{ .Chart.Name }}
   labels:
     {{- include "oai-smf.labels" . | nindent 4 }}
 spec:
@@ -21,7 +21,7 @@ spec:
     - name: http1
       port: {{ .Values.config.smfInterfacePortForSBI }}
       # Port to forward to inside the pod
-      targetPort: {{ .Values.config.smfInterfaceHttp2PortForSBI }}
+      targetPort: {{ .Values.config.smfInterfacePortForSBI }}
       protocol: TCP
     - name: http2
       port: {{ .Values.config.smfInterfaceHttp2PortForSBI }}

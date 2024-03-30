@@ -48,10 +48,8 @@ start:
 # than kubernetes general CNI or it needs to be accessed from outside cluster network using ip-address (please use amf multus.yaml as an example). 
 
 config:
-  nrfInterfaceNameForSBI: "eth0" 
   nrfInterfacePortForSBI: "80"
   nrfInterfaceHttp2PortForSBI: "8080"
-  nrfApiVersion: "v1"
 
 persistent:
   sharedvolume: true

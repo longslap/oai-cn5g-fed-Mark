@@ -4,7 +4,7 @@ metadata:
   name: {{ template "mysql.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "mysql.fullname" . }}
+    app.kubernetes.io/name: {{ template "mysql.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     app.kubernetes.io/instance: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
@@ -12,18 +12,18 @@ metadata:
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
-
 spec:
+  replicas: {{ .Values.replicas }}
   strategy:
 {{ toYaml .Values.strategy | indent 4 }}
   selector:
     matchLabels:
-      app: {{ template "mysql.fullname" . }}
+      app.kubernetes.io/name: {{ template "mysql.fullname" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "mysql.fullname" . }}
+        app.kubernetes.io/name: {{ template "mysql.fullname" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
 {{- with .Values.podLabels }}
 {{ toYaml . | indent 8 }}

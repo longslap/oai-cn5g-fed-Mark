@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -60,7 +61,7 @@ class CustomFormatter(logging.Formatter):
 
 logger = logging.getLogger("checkTutorial")
 logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
+ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
 ch.setFormatter(CustomFormatter())
 logger.addHandler(ch)
@@ -123,7 +124,7 @@ class CheckTutorial:
         for key in self.cmds_per_block:
             logger.warning(f"Executing commands of Section {key}")
             for cmd in self.cmds_per_block[key]:
-                logger.info(f"Executing command {cmd}")
+                logger.info(f"Executing command: {cmd}")
                 self.subprocess_call(cmd)
                 time.sleep(SLEEP_BETWEEN_COMMANDS)
 

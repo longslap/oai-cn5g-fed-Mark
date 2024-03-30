@@ -1,3 +1,4 @@
+{{- if .Values.includeTcpDumpContainer }}
 {{- if .Values.persistent.sharedvolume }}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -6,8 +7,15 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: {{ .Values.persistent.volumeName }}
+{{- if not .Values.persistent.storageClass }}
+{{- if (eq "-" .Values.persistent.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.persistent.storageClass }}"
+{{- end }}
+{{- end }}
   resources:
     requests:
       storage: {{ .Values.persistent.size }}
+{{- end }}
 {{- end }}

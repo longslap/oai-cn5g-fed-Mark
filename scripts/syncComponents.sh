@@ -45,8 +45,8 @@ function usage {
     echo "    --smf-branch ####"
     echo "    Specify the source branch for the OAI-SMF component"
     echo ""
-    echo "    --spgwu-tiny-branch ####"
-    echo "    Specify the source branch for the OAI-SPGW-U-TINY component"
+    echo "    --upf-branch ####"
+    echo "    Specify the source branch for the OAI-UPF component"
     echo ""
     echo "    --ausf-branch ####"
     echo "    Specify the source branch for the OAI-AUSF component"
@@ -69,24 +69,32 @@ function usage {
     echo "    --pcf-branch ####"
     echo "    Specify the source branch for the OAI-PCF component"
     echo ""
+    echo "    --verbose"
+    echo "    Will show all operations results"
+    echo ""
     echo "    --help OR -h"
     echo "    Print this help message."
     echo ""
 }
 
-NRF_BRANCH='master'
-AMF_BRANCH='master'
-SMF_BRANCH='master'
-SPGWU_BRANCH='master'
-AUSF_BRANCH='master'
-UDM_BRANCH='master'
-UDR_BRANCH='master'
-UPF_VPP_BRANCH='master'
-NSSF_BRANCH='master'
-NEF_BRANCH='master'
-PCF_BRANCH='master'
+BRANCH_NAMES=("master" "master" "master" "master" "master" "master" "master" "master" "master" "master" "master")
+#BRANCH_NAMES=("develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop")
+COMPONENT_PATHS=("oai-nrf" "oai-amf" "oai-smf" "oai-upf" "oai-ausf" "oai-udm" "oai-udr" "oai-upf-vpp" "oai-nssf" "oai-nef" "oai-pcf")
 
-doDefault=1
+NRF_IDX=0
+AMF_IDX=1
+SMF_IDX=2
+UPF_IDX=3
+AUSF_IDX=4
+UDM_IDX=5
+UDR_IDX=6
+UPF_VPP_IDX=7
+NSSF_IDX=8
+NEF_IDX=9
+PCF_IDX=10
+
+doDefault=0
+verbose=0
 
 while [[ $# -gt 0 ]]
 do
@@ -99,68 +107,73 @@ case $key in
     exit 0
     ;;
     --nrf-branch)
-    NRF_BRANCH="$2"
+    BRANCH_NAMES[NRF_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --amf-branch)
-    AMF_BRANCH="$2"
+    BRANCH_NAMES[AMF_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --smf-branch)
-    SMF_BRANCH="$2"
+    BRANCH_NAMES[SMF_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
-    --spgwu-tiny-branch)
-    SPGWU_BRANCH="$2"
+    --upf-branch)
+    BRANCH_NAMES[UPF_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --ausf-branch)
-    AUSF_BRANCH="$2"
+    BRANCH_NAMES[AUSF_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --udm-branch)
-    UDM_BRANCH="$2"
+    BRANCH_NAMES[UDM_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --udr-branch)
-    UDR_BRANCH="$2"
+    BRANCH_NAMES[UDR_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --upf-vpp-branch)
-    UPF_VPP_BRANCH="$2"
+    BRANCH_NAMES[UPF_VPP_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --nssf-branch)
-    NSSF_BRANCH="$2"
+    BRANCH_NAMES[NSSF_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --nef-branch)
-    NEF_BRANCH="$2"
+    BRANCH_NAMES[NEF_IDX]="$2"
     doDefault=0
     shift
     shift
     ;;
     --pcf-branch)
-    PCF_BRANCH="$2"
+    BRANCH_NAMES[PCF_IDX]="$2"
     doDefault=0
+    shift
+    shift
+    ;;
+    --verbose)
+    verbose=1
     shift
     shift
     ;;
@@ -174,141 +187,68 @@ esac
 done
 
 echo "---------------------------------------------------------"
-echo "OAI-NRF     component branch : ${NRF_BRANCH}"
-echo "OAI-AMF     component branch : ${AMF_BRANCH}"
-echo "OAI-SMF     component branch : ${SMF_BRANCH}"
-echo "OAI-SPGW-U  component branch : ${SPGWU_BRANCH}"
-echo "OAI-AUSF    component branch : ${AUSF_BRANCH}"
-echo "OAI-UDM     component branch : ${UDM_BRANCH}"
-echo "OAI-UDR     component branch : ${UDR_BRANCH}"
-echo "OAI-UPF-VPP component branch : ${UPF_VPP_BRANCH}"
-echo "OAI-NSSF    component branch : ${NSSF_BRANCH}"
-echo "OAI-NEF     component branch : ${NEF_BRANCH}"
-echo "OAI-PCF     component branch : ${PCF_BRANCH}"
+echo "OAI-NRF     component branch : ${BRANCH_NAMES[NRF_IDX]}"
+echo "OAI-AMF     component branch : ${BRANCH_NAMES[AMF_IDX]}"
+echo "OAI-SMF     component branch : ${BRANCH_NAMES[SMF_IDX]}"
+echo "OAI-UPF     component branch : ${BRANCH_NAMES[UPF_IDX]}"
+echo "OAI-AUSF    component branch : ${BRANCH_NAMES[AUSF_IDX]}"
+echo "OAI-UDM     component branch : ${BRANCH_NAMES[UDM_IDX]}"
+echo "OAI-UDR     component branch : ${BRANCH_NAMES[UDR_IDX]}"
+echo "OAI-UPF-VPP component branch : ${BRANCH_NAMES[UPF_VPP_IDX]}"
+echo "OAI-NSSF    component branch : ${BRANCH_NAMES[NSSF_IDX]}"
+echo "OAI-NEF     component branch : ${BRANCH_NAMES[NEF_IDX]}"
+echo "OAI-PCF     component branch : ${BRANCH_NAMES[PCF_IDX]}"
 echo "---------------------------------------------------------"
 
 # First do a clean-up
-echo "git submodule deinit --all --force"
-git submodule deinit --all --force > /dev/null 2>&1
-
-echo "git submodule init"
-git submodule init > /dev/null 2>&1
-echo "git submodule update --init --recursive"
-git submodule update --init --recursive > /dev/null 2>&1
-
-if [ $doDefault -eq 1 ]
-then
-    # should be enough now.
-    exit
-    #git submodule foreach 'git fetch --prune && git branch -D master&& git checkout -b master origin/master && git submodule update --init --recursive' > /dev/null 2>&1
+echo "git submodule deinit --force ."
+if [ $verbose -eq 1 ]; then
+    git submodule deinit --force .
 else
-    pushd component/oai-nrf
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $NRF_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $NRF_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $NRF_BRANCH origin/$NRF_BRANCH > /dev/null 2>&1
-    fi
-    popd
-    pushd component/oai-amf
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $AMF_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $AMF_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $AMF_BRANCH origin/$AMF_BRANCH > /dev/null 2>&1
-    fi
+    git submodule deinit --force . > /dev/null 2>&1
+fi
+echo "git submodule update --init --recursive"
+if [ $verbose -eq 1 ]; then
+    git submodule update --init --recursive
+else
     git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-smf
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $SMF_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $SMF_BRANCH > /dev/null 2>&1
+fi
+
+if [ $doDefault -eq 1 ]; then
+    # should be enough now.
+    echo "git submodule foreach 'git clean -x -d -ff'"
+    if [ $verbose -eq 1 ]; then
+        git submodule foreach 'git clean -x -d -ff'
     else
-        git checkout -b $SMF_BRANCH origin/$SMF_BRANCH > /dev/null 2>&1
+        git submodule foreach 'git clean -x -d -ff' > /dev/null 2>&1
     fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-upf-equivalent
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $SPGWU_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout  $SPGWU_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $SPGWU_BRANCH origin/$SPGWU_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-ausf
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $AUSF_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $AUSF_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $AUSF_BRANCH origin/$AUSF_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-udm
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $UDM_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $UDM_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $UDM_BRANCH origin/$UDM_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-udr
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $UDR_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $UDR_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $UDR_BRANCH origin/$UDR_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-upf-vpp
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $UPF_VPP_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $UPF_VPP_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $UPF_VPP_BRANCH origin/$UPF_VPP_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-nssf
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $NSSF_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $NSSF_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $NSSF_BRANCH origin/$NSSF_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-nef
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $NEF_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $NEF_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $NEF_BRANCH origin/$NEF_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
-    pushd component/oai-pcf
-    git fetch --prune > /dev/null 2>&1
-    git branch -D $PCF_BRANCH > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        git checkout $PCF_BRANCH > /dev/null 2>&1
-    else
-        git checkout -b $PCF_BRANCH origin/$PCF_BRANCH > /dev/null 2>&1
-    fi
-    git submodule update --init --recursive > /dev/null 2>&1
-    popd
+    exit
+else
+    length=${#BRANCH_NAMES[@]}
+    for (( idx=0; idx<${length}; idx++ ));
+    do
+        pushd component/${COMPONENT_PATHS[idx]}
+        if [ $verbose -eq 1 ]; then
+            git fetch --prune
+            git branch -D ${BRANCH_NAMES[idx]}
+            if [[ $? -ne 0 ]]; then
+                git checkout ${BRANCH_NAMES[idx]}
+            else
+                git checkout -b ${BRANCH_NAMES[idx]} origin/${BRANCH_NAMES[idx]}
+            fi
+            git submodule update --init --recursive
+            git clean -x -d -ff
+        else
+            git fetch --prune > /dev/null 2>&1
+            git branch -D ${BRANCH_NAMES[idx]} > /dev/null 2>&1
+            if [[ $? -ne 0 ]]; then
+                git checkout ${BRANCH_NAMES[idx]} > /dev/null 2>&1
+            else
+                git checkout -b ${BRANCH_NAMES[idx]} origin/${BRANCH_NAMES[idx]} > /dev/null 2>&1
+            fi
+            git submodule update --init --recursive > /dev/null 2>&1
+            git clean -x -d -ff > /dev/null 2>&1
+        fi
+        popd
+    done
 fi

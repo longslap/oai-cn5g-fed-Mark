@@ -12,6 +12,12 @@ tcpdumpimage:
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
+initContainer:
+  repository: docker.io/alpine/curl
+  version: 3.14
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
+
 ## good to use when pulling images from docker-hub
 #imagePullSecrets:
 #  - name: "regcred"
@@ -50,7 +56,7 @@ multus:
   hostInterface: "bond0"
 
 config:
-  fqdn: "oai-spgwu-tiny-svc"
+  fqdn: "oai-spgwu-tiny"
   n3If: "net1"  # net1 if gNB is outside the cluster network and multus creation is true else eth0
   n4If: "eth0" # use for SMF communication
   n6If: "net1"  # net1 if gNB is outside the cluster network and multus creation is true else eth0 (important because it sends the traffic towards internet)
@@ -67,7 +73,7 @@ config:
   #netUeIp2: "12.2.1.0/24"  # The range in which UE ip-address will be allocated should be configured the same in SMF
   registerNRF: "yes"
   useFqdnNrf: "yes"  # use FQDN to resolve nrf ip-address
-  nrfFqdn: "oai-nrf-svc" # make sure this can be resolved by container dns
+  nrfFqdn: "oai-nrf" # make sure this can be resolved by container dns
   #Mandatory to configure atlease one slice
   nssaiSst0: 1 # should match with SMF information
   nssaiSd0: "0xFFFFFF"  # should match with SMF information (Optional, if removed sd value will be 0xFFFFFF)
@@ -76,7 +82,7 @@ config:
   nssaiSst1: 1 # should match with SMF information (Optional, if removed slice will not be configured)
   nssaiSd1: "0xFFFFFF"  # should match with SMF information (Optional, if removed sd value will be 0xFFFFFF only if nssaiSst1 is configured)
   dnn1: "ims" # should match with SMF information
-
+  logLevel: "debug"
 
 ## currently only used by tcpdump container to store the tcpdump, this volume will be shared between all the network functions
 persistent:

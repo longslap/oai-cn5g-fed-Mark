@@ -61,14 +61,12 @@ spec:
                 libX11 \
                 atlas \
                 lksctp-tools \
-                nettle \
                 tzdata \
                 gdb \
                 python3 \
                 python3-pip \
                 net-tools \
-                iputils \
-                libyaml && \
+                iputils && \
             pip3 install six && \
             pip3 install requests && \
             echo "/usr/local/lib" > /etc/ld.so.conf.d/local-lib.conf && \
@@ -92,6 +90,7 @@ spec:
             /oai-ran/cmake_targets/ran_build/build/libldpc_optim8seg.so \
             /oai-ran/cmake_targets/ran_build/build/libldpc_orig.so \
             /oai-ran/cmake_targets/ran_build/build/libtelnetsrv.so \
+            /oai-ran/cmake_targets/ran_build/build/libtelnetsrv_ci.so \
             /usr/local/lib/
 
         COPY --from=gnb-base \
@@ -118,8 +117,7 @@ spec:
 
         # Now we are copying from builder-image the UHD files.
         COPY --from=gnb-base /usr/local/bin/uhd_find_devices /usr/local/bin
-        COPY --from=gnb-base /usr/lib64/libprotobuf-c.so.1 /usr/local/lib
-        COPY --from=gnb-base /usr/local/lib64/libuhd.so.3.15.0 /usr/local/lib64
+        COPY --from=gnb-base /usr/local/lib64/libuhd.so.4.4.0 /usr/local/lib64
         COPY --from=gnb-base /usr/local/lib64/uhd/utils/uhd_images_downloader.py /opt/oai-gnb/bin
 
         WORKDIR /usr/local/share/uhd/rfnoc

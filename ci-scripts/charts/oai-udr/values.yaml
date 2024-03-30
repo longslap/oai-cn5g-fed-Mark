@@ -12,6 +12,12 @@ tcpdumpimage:
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
+initContainer:
+  repository: docker.io/alpine/curl
+  version: 3.14
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
+
 #imagePullSecrets: 
 #  - name: "regcred"
 
@@ -40,8 +46,6 @@ securityContext:
 
 service:
   type: ClusterIP
-  http1Port: 80
-  http2Port: 8080
 
 start:
   udr: true
@@ -49,24 +53,9 @@ start:
 
 config:
   tz: "Europe/Paris"
-  instance: "0"
-  udrname: "oai-udr"
-  pidDirectory: "/var/run"
-  sbiIfName: "eth0"
-  sbiPortHttp1: "80"
-  sbiPortHttp2: "8080"
-  udrApiVersion: "v1"
-  nrfIpv4Address: "127.0.0.1"
-  nrfPort: "80"
-  nrfApiVersion: "v1"
-  nrfFqdn: "oai-nrf-svc"
-  registerNrf: "no"
-  usehttp2: "no"
-  useFqdnDns: "yes"
-  mySqlServer: "mysql"
-  mySqlUser: "root"
-  mySqlPass: "linux"
-  mySqlDb: "oai_db"
+  nrfFqdn: "oai-nrf"
+  sbiPortHttp1: 80
+  sbiPortHttp2: 8080
 
 persistent:
   sharedvolume: true

@@ -59,6 +59,7 @@ echo $SESSION
 echo "Requesting IPv4 and IPv6 information through mbimcli proxy:"
 mbimcli -d $CONTROLDEV -p --query-ip-configuration
 IPDATA=$(mbimcli -d $CONTROLDEV -p --query-ip-configuration=$SESSION)
+UBUNTU_VERSION=`grep 'VERSION=' /etc/os-release`
 
 function parse_ip {
 	#      IP [0]: '10.134.203.177/30'
@@ -200,7 +201,11 @@ if [[ "${#ipv4_addresses[@]}" > 0 ]]; then
 		printf "ip link set mtu $ipv4_mtu dev $DEV \n" >> $execfile
 	fi
 	if [[ "${#ipv4_dns[@]}" > 0 ]]; then
-		printf "systemd-resolve -4 --interface=$DEV --set-dns=%s\n" "${ipv4_dns[@]}" >>$execfile
+		if [[ $UBUNTU_VERSION =~ "Jammy" ]]; then
+			printf "resolvectl dns -4 $DEV %s\n" "${ipv4_dns[@]}" >>$execfile
+		else
+			printf "systemd-resolve -4 --interface=$DEV --set-dns=%s\n" "${ipv4_dns[@]}" >>$execfile
+		fi
 	fi
 fi
 
@@ -211,7 +216,11 @@ if [[ "${#ipv6_addresses[@]}" > 0 ]]; then
 		printf "ip -6 link set mtu $ipv6_mtu dev $DEV\n" >> $execfile
 	fi
 	if [[ "${#ipv6_dns[@]}" > 0 ]]; then
-		printf "systemd-resolve -6 --interface=$DEV --set-dns=%s\n" "${ipv6_dns[@]}" >>$execfile
+		if [[ $UBUNTU_VERSION =~ "Jammy" ]]; then
+			printf "resolvectl dns -6 $DEV %s\n" "${ipv6_dns[@]}" >>$execfile
+		else
+			printf "systemd-resolve -6 --interface=$DEV --set-dns=%s\n" "${ipv6_dns[@]}" >>$execfile
+		fi
 	fi
 fi
 echo "Applying the following network interface configurations:"

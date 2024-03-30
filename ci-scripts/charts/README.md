@@ -12,7 +12,7 @@
   </tr>
 </table>
 
-The motive of this testing is to be sure all the merge request on AMF, SMF, UDR, UDM, AUSF and SPGWU gitlab repositories always works properly with COTSUE. This testing will be performed via oai-jenkins platform, this readme explains how jenkins perform the testing. 
+The motive of this testing is to be sure all the merge request on AMF, SMF, UDR, UDM, AUSF and UPF gitlab repositories always works properly with COTSUE. This testing will be performed via oai-jenkins platform, this readme explains how jenkins perform the testing. 
 
 Our correct testing scenario is
 
@@ -90,7 +90,7 @@ oai-amf          <openshift-registry-url>/oaicicd-core/oai-amf          develop-
 oai-ausf         <openshift-registry-url>/oaicicd-core/oai-ausf         develop-702608a7   27 hours ago
 oai-nrf          <openshift-registry-url>/oaicicd-core/oai-nrf          develop-f66cc2fe   27 hours ago
 oai-smf          <openshift-registry-url>/oaicicd-core/oai-smf          develop-5c7fbfd7   27 hours ago
-oai-spgwu-tiny   <openshift-registry-url>/oaicicd-core/oai-spgwu-tiny   develop-8c4397a    27 hours ago
+oai-upf          <openshift-registry-url>/oaicicd-core/oai-upf          develop-8c4397a    27 hours ago
 oai-udm          <openshift-registry-url>/oaicicd-core/oai-udm          develop-7723778c   27 hours ago
 oai-udr          <openshift-registry-url>/oaicicd-core/oai-udr          develop-89a82cc0   27 hours ago
 support-tools    <openshift-registry-url>/oaicicd-core/support-tools    8.7-8              27 hours ago
@@ -118,7 +118,7 @@ Once images are push it will be good to verify that they are present in the righ
 oc get istag | grep NRF_TAG_YOU_PUSHED
 oc get istag | grep AMF_TAG_YOU_PUSHED
 oc get istag | grep SMF_TAG_YOU_PUSHED
-oc get istag | grep SPGWU_TINY_TAG_YOU_PUSHED
+oc get istag | grep UPF_TAG_YOU_PUSHED
 oc get istag | grep AUSF_YOU_PUSHED
 oc get istag | grep UDR_TAG_YOU_PUSHED
 oc get istag | grep UDM_TAG_YOU_PUSHED
@@ -137,13 +137,13 @@ Do not change any other helm-charts unless you don't find the configuration vari
 sed -i 's/NRF_TAG/<TAG_YOU_WANT>/g' values.yaml
 sed -i 's/AMF_TAG/<TAG_YOU_WANT>/g' values.yaml
 sed -i 's/SMF_TAG/<TAG_YOU_WANT>/g' values.yaml
-sed -i 's/SPGWU_TINY_TAG/<TAG_YOU_WANT>/g' values.yaml
+sed -i 's/UPF_TAG/<TAG_YOU_WANT>/g' values.yaml
 sed -i 's/AUSF_TAG/<TAG_YOU_WANT>/g' values.yaml
 sed -i 's/UDR_TAG/<TAG_YOU_WANT>/g' values.yaml
 sed -i 's/UDM_TAG/<TAG_YOU_WANT>/g' values.yaml
 ```
 
-The SPGWU is configured to support two subnets, to disabled that please remove `netUeIp2` from `values.yaml`
+The UPF is configured to support two subnets, to disabled that please remove `netUeIp2` from `values.yaml`
 
 ## 1.2 Deploy the Basic Core Network
 
@@ -154,8 +154,12 @@ Run the below command on openshift jumphost which has access to `helm command`
 ```shell
 #assuming my current directory is ci-scripts/charts/oai-5g-basic
 helm dependency update
-helm spray .
+helm install oai5gcn .
 oc describe pod &> pod-describe-logs.logs
+#Check that deployment is ready 
+export READY_PODS=$(oc get pods -o custom-columns=NAMESPACE:metadata.namespace,POD:metadata.name,PodIP:status.podIP,READY:status.containerStatuses[*].ready | grep -v NAME | wc -l)
+export TOTAL_PODS=$(oc get pods | grep -v NAME | wc -l)
+## when READY_PODS==TOTAL_PODS the deployment is complete
 ```
 
 By default the time-out for helm spray is 300 seconds or 5 mins, if you want to reduce or increase it add this flag `--timeout xxx` time in seconds
@@ -166,9 +170,9 @@ The above commands make sure that the network functions are up and running using
 
 ## 1.4 Check if the Deployment is correct
 
-This is only needed to be sure that SMF and SPGWU are sharing the PFCP heartbeat, the required network functions have registered to NRF else there is no point going further. 
+This is only needed to be sure that SMF and UPF are sharing the PFCP heartbeat, the required network functions have registered to NRF else there is no point going further. 
 
-At the moment only AMF, SMF and SPGWU-TINY are registering to NRF. UDR, UDM and AUSF can do that but in this testbed we have disabled that. 
+At the moment only AMF, SMF and UPF are registering to NRF. UDR, UDM and AUSF can do that but in this testbed we have disabled that. 
 
 Make a shell script out of the below lines and run it on openshift jumphost which has access to `helm command`
 
@@ -181,16 +185,16 @@ export $NRF_URL="oai-nrf-svc-oaicicd-core.apps.oai.cs.eurecom.fr"
 AMF_namf=$(curl -s -X GET http://$NRF_URL/nnrf-nfm/v1/nf-instances?nf-type="AMF" | jq -r ._links.item[0].href)
 #to check SMF-NRF registration
 SMF_nsmf=$(curl -s -X GET http://$NRF_URL/nnrf-nfm/v1/nf-instances?nf-type="SMF" | jq -r ._links.item[0].href)
-#to check SPGWU-TINY-NRF registration
+#to check UPF-NRF registration
 UPF_nupf=$(curl -s -X GET http://$NRF_URL/nnrf-nfm/v1/nf-instances?nf-type="UPF" | jq -r ._links.item[0].href)
 if [[ -z $AMF_namf ]] && [[ -z $UPF_nupf ]] && [[ -z $SMF_nsmf ]]; then
       echo "There is a problem with NRF connection"
       exit 1
 fi
-SPGWU_POD=$(oc get pods | grep oai-spgwu-tiny | awk {'print $1'})
-SPGWU_log1=$(oc logs $SPGWU_POD spgwu | grep 'Received SX HEARTBEAT REQUEST')
-SPGWU_log2=$(oc logs $SPGWU_POD spgwu | grep 'handle_receive(16 bytes)')
-if [[ -z $SPGWU_log ]] && [[ -z $SPGWU_log2 ]] ; then
+UPF_POD=$(oc get pods | grep oai-upf | awk {'print $1'})
+UPF_log1=$(oc logs $UPF_POD upf | grep 'Received SX HEARTBEAT REQUEST')
+UPF_log2=$(oc logs $UPF_POD upf | grep 'handle_receive(16 bytes)')
+if [[ -z $UPF_log1 ]] && [[ -z $UPF_log2 ]] ; then
       echo "PFCP Heartbeat Issue"
       exit 1
 fi
@@ -260,7 +264,7 @@ UDM=$(oc get pods | grep oai-udm | awk {'print $1'})
 AUSF=$(oc get pods | grep oai-ausf | awk {'print $1'})
 AMF=$(oc get pods | grep oai-amf | awk {'print $1'})
 SMF=$(oc get pods | grep oai-smf | awk {'print $1'})
-SPGWU=$(oc get pods | grep oai-spgwu-tiny | awk {'print $1'})
+UPF=$(oc get pods | grep oai-upf | awk {'print $1'})
 folder_name=logs_$(date +"%d-%m-%y-%H-%M-%S")
 
 echo "creating a folder for storing logs, folder name:" $folder_name
@@ -277,8 +281,8 @@ echo "getting $AMF logs"
 oc logs $AMF amf &> $folder_name/amf.logs
 echo "getting $SMF logs"
 oc logs $SMF smf &> $folder_name/smf.logs
-echo "getting $SPGWU logs"
-oc logs $SPGWU spgwu &> $folder_name/spgwu.logs
+echo "getting $UPF logs"
+oc logs $UPF upf &> $folder_name/upf.logs
 #Collect Resource Consumption (Normally the window is 5 mins)
 oc get pods.metrics.k8s.io &> $folder_name/nf-resource-consumption.log
 oc rsync $NRF:/pcap $folder_name/
@@ -303,7 +307,7 @@ Stop the core-network functions, login to `openshift-jumphost`
 
 ```shell
 oc project oaicicd-core
-helm uninstall $(helm list -aq)
+helm uninstall oai5gcn
 ```
 
 The default graceperiod for all network functions is `5 seconds` so if you want to put a time out in jenkins then you can put `10 seconds`
@@ -312,7 +316,7 @@ The default graceperiod for all network functions is `5 seconds` so if you want 
 
 Once all the artifacts are collected to be sure that everything went perfectly fine, please check in the collected pcaps below messages are there. 
 
-Bare-minimum pcap of interest AMF and SPGWU. 
+Bare-minimum pcap of interest AMF and UPF. 
 
 Normally you will see below messages twice because we connected the UE twice and did ping twice. 
 
@@ -340,4 +344,4 @@ Below messages are from AMF pcap
 - SHUTDOWN ACK
 - SHUTDOWN_COMPLETE 
 
-In SPGWU pcap you should see GTP packets minimum 8 times because the ping was 4 packets
+In UPF pcap you should see GTP packets minimum 8 times because the ping was 4 packets
