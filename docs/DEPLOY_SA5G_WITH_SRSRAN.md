@@ -23,27 +23,23 @@ Note: In case readers are interested in deploying debuggers/developers core netw
 
 **TABLE OF CONTENTS**
 
-1.  Pre-requisites
-2.  Building Container Images
-3.  Configuring Host Machines
-4.  Configuring OAI 5G Core Network Functions
-5.  Deploying OAI 5G Core Network
-6.  [Getting a `srsRAN` docker image](#6-getting-a-srsRAN-docker-image)
-7.  [Executing `my5G-RANTester` Scenario](#7-executing-the-srsRAN-scenario)
-8.  [Analysing Scenario Results](#8-analysing-the-scenario-results)
-9.  [Trying some advanced stuff](#9-trying-some-advanced-stuff)
+[[_TOC_]]
 
-* In this demo the image tags and commits which were used are listed below, follow the [Building images](./BUILD_IMAGES.md) to build images with below tags.
+For this demo, all the images which use the `develop` branch have been retrieved from the official `docker-hub` (see also
+[Retrieving images](./RETRIEVE_OFFICIAL_IMAGES.md)).
 
-| CNF Name    | Branch Name | Tag      | Ubuntu 18.04 | RHEL8 (UBI8)    |
-| ----------- | ----------- | -------- | ------------ | ----------------|
-| AMF         | `develop`   | `v1.3.0` | X            | X               |
-| SMF         | `develop`   | `v1.3.0` | X            | X               |
-| NRF         | `develop`   | `v1.3.0` | X            | X               |
-| VPP-UPF     | `develop`   | `v1.3.0` | X            | X               |
-| UDR         | `develop`   | `v1.3.0` | X            | X               |
-| UDM         | `develop`   | `v1.3.0` | X            | X               |
-| AUSF        | `develop`   | `v1.3.0` | X            | X               |
+| NF Name | Branch Name | Tag used at time of writing | Ubuntu 22.04 | RHEL8 |
+|----------|:------------|-----------------------------|--------------|-------|
+| NSSF     | `develop`    | `v2.0.1`                    | X            | -     |
+| AMF      | `develop`    | `v2.0.1`                    | X            | -     |
+| AUSF     | `develop`    | `v2.0.1`                    | X            | -     |
+| NRF      | `develop`    | `v2.0.1`                    | X            | -     |
+| SMF      | `develop`    | `v2.0.1`                    | X            | -     |
+| UDR      | `develop`    | `v2.0.1`                    | X            | -     |
+| UDM      | `develop`    | `v2.0.1`                    | X            | -     |
+| PCF      | `develop`    | `v2.0.1`                    | X            | -     |
+| UPF-VPP  | `develop`    | `v2.0.1`                    | X            | -     |
+
 
 <br/>
 
@@ -69,7 +65,7 @@ Create a folder where you can store all the result files of the tutorial and lat
 <!---
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: rm -rf /tmp/oai/vpp-upf-srsran
+docker-compose-host $: rm -rf /tmp/oai/srsran
 ```
 -->
 * Update QFI Profile0 in SMF since srsran supports only QFI 9.
@@ -78,72 +74,78 @@ docker-compose-host $: rm -rf /tmp/oai/vpp-upf-srsran
 ```
 
 ``` shell
-docker-compose-host $: mkdir -p /tmp/oai/vpp-upf-srsran
-docker-compose-host $: chmod 777 /tmp/oai/vpp-upf-srsran
+docker-compose-host $: mkdir -p /tmp/oai/srsran
+docker-compose-host $: chmod 777 /tmp/oai/srsran
 ```
+## [2. Building Container Images](./BUILD_IMAGES.md) or [Retrieving Container Images](./RETRIEVE_OFFICIAL_IMAGES.md)
 
-## 5. Deploying OAI 5g Core Network
-* We will use same wrapper script for docker-compose that used for previous tutorials to set up 5gcn with `UPF-VPP`. Use help option to check how to use this wrapper script.
+## 3. Deploying OAI 5g Core Network
+
+We use `docker-compose` to deploy the core network. Please refer to the file [docker-compose-basic-nrf.yaml](../docker-compose/docker-compose-basic-nrf.yaml)
+for details.
+
+We run the `mysql` service first, so that we can start the trace before anything is sent over the CP. 
+You can choose to skip this step and deploy all the NFs at once.
 
 ``` shell
-docker-compose-host $: python3 ./core-network.py --type start-basic-vpp --fqdn no --scenario 1 --capture /tmp/oai/vpp-upf-srsran/vpp-upf-srsran.pcap
-[2022-02-08 16:18:19,328] root:DEBUG:  Starting 5gcn components... Please wait....
-[2022-02-08 16:18:19,328] root:DEBUG: docker-compose -f docker-compose-basic-vpp-nrf.yaml up -d mysql
-Creating network "oai-public-cp" with the default driver
-Creating network "oai-public-access" with the default driver
-Creating network "oai-public-core" with the default driver
-Creating mysql   ... done
-[2022-02-08 16:18:32,203] root:DEBUG: nohup sudo tshark -i demo-oai -i cn5g-core -f "(not host 192.168.73.135 and not arp and not port 53 and not port 2152) or (host 192.168.73.135 and icmp)" -w /tmp/oai/vpp-upf-gnbsim/vpp-upf-gnbsim.pcap > /dev/null 2>&1 &
-[2022-02-08 16:18:52,217] root:DEBUG: docker-compose -f docker-compose-basic-vpp-nrf.yaml up -d
+docker-compose-host $: Creating network "demo-oai-public-net" with driver "bridge"
+Creating mysql ... done
+```
+We capture the packets on the docker networks and filter out ARP. 
+``` shell
+docker-compose-host $: sleep 1
+docker-compose-host $: nohup sudo tshark -i demo-oai -f "not arp" -w /tmp/oai/srsran/control_plane.pcap > /tmp/oai/srsran/control_plane.log 2>&1 &
+```
+<!--
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/srsran/control_plane.log --timeout 60
+```
+-->
+
+Then, we start all the NFs.
+
+`` shell
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf.yaml up -d
 mysql is up-to-date
-Creating oai-nrf ... done
-Creating vpp-upf ... done
-Creating oai-udr ... done
-Creating oai-udm    ... done
 Creating oai-ext-dn ... done
+Creating oai-nrf    ... done
+Creating oai-udr    ... done
+Creating oai-udm    ... done
 Creating oai-ausf   ... done
 Creating oai-amf    ... done
 Creating oai-smf    ... done
+Creating oai-upf    ... done
+```
+<!--
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name mysql --timeout 120
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name oai-amf --timeout 30
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf.yaml ps -a
+```
+-->
+### Checking the Status of the NFs
+Using `docker ps` you can verify that no NF exited, e.g. because of a faulty configuration:
 
-[2022-02-08 16:19:47,977] root:DEBUG:  OAI 5G Core network started, checking the health status of the containers... takes few secs....
-[2022-02-08 16:19:47,977] root:DEBUG: docker-compose -f docker-compose-basic-vpp-nrf.yaml ps -a
-[2022-02-08 16:20:11,681] root:DEBUG:  All components are healthy, please see below for more details....
-Name                 Command                  State                  Ports
------------------------------------------------------------------------------------------
-mysql        docker-entrypoint.sh mysqld      Up (healthy)   3306/tcp, 33060/tcp
-oai-amf      /bin/bash /openair-amf/bin ...   Up (healthy)   38412/sctp, 80/tcp, 9090/tcp
-oai-ausf     /bin/bash /openair-ausf/bi ...   Up (healthy)   80/tcp
-oai-ext-dn   /bin/bash -c  apt update;  ...   Up
-oai-nrf      /bin/bash /openair-nrf/bin ...   Up (healthy)   80/tcp, 9090/tcp
-oai-smf      /bin/bash /openair-smf/bin ...   Up (healthy)   80/tcp, 8805/udp, 9090/tcp
-oai-udm      /bin/bash /openair-udm/bin ...   Up (healthy)   80/tcp
-oai-udr      /bin/bash /openair-udr/bin ...   Up (healthy)   80/tcp
-vpp-upf      /openair-upf/bin/entrypoin ...   Up (healthy)   2152/udp, 8085/udp
-[2022-02-08 16:20:11,681] root:DEBUG:  Checking if the containers are configured....
-[2022-02-08 16:20:11,681] root:DEBUG:  Checking if AMF, SMF and UPF registered with nrf core network....
-[2022-02-08 16:20:11,681] root:DEBUG: curl -s -X GET http://192.168.70.130/nnrf-nfm/v1/nf-instances?nf-type="AMF" | grep -o "192.168.70.132"
-192.168.70.132
-[2022-02-08 16:20:11,694] root:DEBUG: curl -s -X GET http://192.168.70.130/nnrf-nfm/v1/nf-instances?nf-type="SMF" | grep -o "192.168.70.133"
-192.168.70.133
-[2022-02-08 16:20:11,706] root:DEBUG: curl -s -X GET http://192.168.70.130/nnrf-nfm/v1/nf-instances?nf-type="UPF" | grep -o "192.168.70.202"
-192.168.70.202
-[2022-02-08 16:20:11,717] root:DEBUG:  Checking if AUSF, UDM and UDR registered with nrf core network....
-[2022-02-08 16:20:11,717] root:DEBUG: curl -s -X GET http://192.168.70.130/nnrf-nfm/v1/nf-instances?nf-type="AUSF" | grep -o "192.168.70.138"
-192.168.70.138
-[2022-02-08 16:20:11,728] root:DEBUG: curl -s -X GET http://192.168.70.130/nnrf-nfm/v1/nf-instances?nf-type="UDM" | grep -o "192.168.70.137"
-192.168.70.137
-[2022-02-08 16:20:11,739] root:DEBUG: curl -s -X GET http://192.168.70.130/nnrf-nfm/v1/nf-instances?nf-type="UDR" | grep -o "192.168.70.136"
-192.168.70.136
-[2022-02-08 16:20:11,750] root:DEBUG:  AUSF, UDM, UDR, AMF, SMF and UPF are registered to NRF....
-[2022-02-08 16:20:11,750] root:DEBUG:  Checking if SMF is able to connect with UPF....
-[2022-02-08 16:20:11,868] root:DEBUG:  UPF did answer to N4 Association request from SMF....
-[2022-02-08 16:20:11,927] root:DEBUG:  SMF receiving heathbeats from UPF....
-[2022-02-08 16:20:11,928] root:DEBUG:  OAI 5G Core network is configured and healthy....
+Also all should be in an `healthy` state before going further. The `mysql` container may take some time.
+```consol
+$ docker ps
+CONTAINER ID   IMAGE                                     COMMAND                  CREATED              STATUS                        PORTS                                    NAMES
+a394e4a58150   oaisoftwarealliance/oai-upf:develop       "/openair-upf/bin/oa…"   About a minute ago   Up About a minute (healthy)   2152/udp, 8805/udp                       oai-upf
+4672c6715bae   oaisoftwarealliance/oai-smf:develop       "/openair-smf/bin/oa…"   About a minute ago   Up About a minute (healthy)   80/tcp, 8080/tcp, 8805/udp               oai-smf
+e196525da65a   oaisoftwarealliance/oai-amf:develop       "/openair-amf/bin/oa…"   About a minute ago   Up About a minute (healthy)   80/tcp, 8080/tcp, 9090/tcp, 38412/sctp   oai-amf
+e91e7d2861e9   oaisoftwarealliance/oai-ausf:develop      "/openair-ausf/bin/o…"   About a minute ago   Up About a minute (healthy)   80/tcp, 8080/tcp                         oai-ausf
+1eb6de486815   oaisoftwarealliance/oai-udm:develop       "/openair-udm/bin/oa…"   About a minute ago   Up About a minute (healthy)   80/tcp, 8080/tcp                         oai-udm
+b3ef85d1618f   oaisoftwarealliance/oai-udr:develop       "/openair-udr/bin/oa…"   About a minute ago   Up About a minute (healthy)   80/tcp, 8080/tcp                         oai-udr
+a8a8b1a12f5d   oaisoftwarealliance/oai-nrf:develop       "/openair-nrf/bin/oa…"   About a minute ago   Up About a minute (healthy)   80/tcp, 8080/tcp, 9090/tcp               oai-nrf
+a2a87f08b6f5   oaisoftwarealliance/trf-gen-cn5g:latest   "/bin/bash /tmp/trfg…"   About a minute ago   Up About a minute (healthy)                                            oai-ext-dn
+0bf5f7e06cbe   mysql:8.0                                 "docker-entrypoint.s…"   2 minutes ago        Up 2 minutes (healthy)        3306/tcp, 33060/tcp                      mysql
 ```
 
-More details in [section 5 of the `basic` vpp tutorial](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/DEPLOY_SA5G_WITH_VPP_UPF.md#5-deploying-oai-5g-core-network).
+Please wait until all NFs are healthy. 
 
-## 6. Geting a `srsRAN` docker image ##
+## 4. Geting a `srsRAN` docker image ##
 * Pull pre-built docker image 
 ``` console
 docker-compose-host $: docker pull rohankharade/srsran:latest
@@ -157,9 +159,30 @@ docker-compose-host $: https://github.com/orion-belt/srsRAN.git
 docker-compose-host $: cd srsRAN/
 docker-compose-host $: docker build --build-arg BASE_IMAGE=ubuntu:focal -f docker/Dockerfile --target srsran --tag srsran:latest .
 ```
+## 5. Executing the `srsRAN` Scenario 
+
+
+``` shell
+docker-compose-host $: docker-compose -f docker-compose-srsran.yaml up -d
+Creating srsran ... done
+```
+
+<!---
+For CI purposes please ignore this line
+``` shell
+docker-compose-host $: sleep 10
+```
+-->
+
+* After launching srsRAN, make sure service status is healthy -
+``` shell
+docker-compose-host $: docker-compose -f docker-compose-srsran.yaml ps -a
+```
+
+We can verify it using srsran container logs as below -
 
 * Sample output logs
-```bash
+```consol
 $ docker logs srsran -f
 Now setting these variables '@GNBID@ @GTPU_LOCAL_ADDR@ @MCC@ @MNC@ @NGAP_LOCAL_ADDR@ @NGAP_REMOTE_ADDR@'
 Now setting these variables '@TAC@'
@@ -225,7 +248,6 @@ RRC NR reconfiguration successful.
 PDU Session Establishment successful. IP: 12.1.1.151
 RRC NR reconfiguration successful.
 ```
-## 7. Executing the `srsRAN` Scenario 
 
 * The configuration parameters, are preconfigured in [docker-compose-basic-vpp-nrf.yaml](../docker-compose/docker-compose-basic-vpp-nrf.yaml) and [docker-compose-srsran.yaml](../docker-compose/docker-compose-srsran.yaml) and one can modify it for test.
 * Launch my5G-RANTester docker service
@@ -238,24 +260,6 @@ docker-compose-host $: sleep 5
 -->
 
 
-``` shell
-docker-compose-host $: docker-compose -f docker-compose-srsran.yaml up -d
-Creating srsran ... done
-```
-
-<!---
-For CI purposes please ignore this line
-``` shell
-docker-compose-host $: sleep 10
-```
--->
-
-* After launching srsRAN, make sure service status is healthy -
-``` shell
-docker-compose-host $: docker-compose -f docker-compose-srsran.yaml ps -a
-```
-
-We can verify it using srsran container logs as below -
 ``` console
 ```
 
@@ -266,14 +270,14 @@ We can verify it using srsran container logs as below -
 ##  Recover the logs
 
 ``` shell
-docker-compose-host $: docker logs oai-amf > /tmp/oai/vpp-upf-srsran/amf.log 2>&1
-docker-compose-host $: docker logs oai-smf > /tmp/oai/vpp-upf-srsran/smf.log 2>&1
-docker-compose-host $: docker logs oai-nrf > /tmp/oai/vpp-upf-srsran/nrf.log 2>&1
-docker-compose-host $: docker logs vpp-upf > /tmp/oai/vpp-upf-srsran/vpp-upf.log 2>&1
-docker-compose-host $: docker logs oai-udr > /tmp/oai/vpp-upf-srsran/udr.log 2>&1
-docker-compose-host $: docker logs oai-udm > /tmp/oai/vpp-upf-srsran/udm.log 2>&1
-docker-compose-host $: docker logs oai-ausf > /tmp/oai/vpp-upf-srsran/ausf.log 2>&1
-docker-compose-host $: docker logs srsran > /tmp/oai/vpp-upf-srsran/srsran.log 2>&1
+docker-compose-host $: docker logs oai-amf > /tmp/oai/srsran/amf.log 2>&1
+docker-compose-host $: docker logs oai-smf > /tmp/oai/srsran/smf.log 2>&1
+docker-compose-host $: docker logs oai-nrf > /tmp/oai/srsran/nrf.log 2>&1
+docker-compose-host $: docker logs vpp-upf > /tmp/oai/srsran/vpp-upf.log 2>&1
+docker-compose-host $: docker logs oai-udr > /tmp/oai/srsran/udr.log 2>&1
+docker-compose-host $: docker logs oai-udm > /tmp/oai/srsran/udm.log 2>&1
+docker-compose-host $: docker logs oai-ausf > /tmp/oai/srsran/ausf.log 2>&1
+docker-compose-host $: docker logs srsran > /tmp/oai/srsran/srsran.log 2>&1
 ```
 
 ## 8. Analysing the Scenario Results 
