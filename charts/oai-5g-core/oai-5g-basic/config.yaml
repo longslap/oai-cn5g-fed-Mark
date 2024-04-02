@@ -31,7 +31,7 @@ nfs:
       api_version: v1
       interface_name: eth0
     n2:
-      interface_name: n2
+      interface_name: tun0
       port: 38412
   smf:
     host: oai-smf
@@ -213,16 +213,16 @@ upf:
       dnnUpfInfoList:
         - dnn: ims
 
-upf-local:
-  support_features:
-    enable_bpf_datapath: no    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
-    enable_snat: yes           # If "on": Source natting is done for UE, DEFAULT= off
-  remote_n6_gw: "127.0.0.1"      # Dummy host since simple-switch does not use N6 GW
-  upf_info:
-    sNssaiUpfInfoList:
-    - sNssai: *embb_slice2_1
-      dnnUpfInfoList:
-        - dnn: ims
+# upf-local:
+#   support_features:
+#     enable_bpf_datapath: no    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
+#     enable_snat: yes           # If "on": Source natting is done for UE, DEFAULT= off
+#   remote_n6_gw: "127.0.0.1"      # Dummy host since simple-switch does not use N6 GW
+#   upf_info:
+#     sNssaiUpfInfoList:
+#     - sNssai: *embb_slice2_1
+#       dnnUpfInfoList:
+#         - dnn: ims
 
 ## DNN configuration
 dnns:

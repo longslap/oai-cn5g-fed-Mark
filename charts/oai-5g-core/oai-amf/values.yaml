@@ -9,8 +9,8 @@ nfimage:  # image name either locally present or in a public/private repository
   pullPolicy: IfNotPresent
 
 ## good to use when pulling images from docker-hub mention
-imagePullSecrets:
-  - name: "regcred"
+# imagePullSecrets:
+#   - name: "regcred"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -40,7 +40,7 @@ multus:
   ## If you don't want to add a default route in your pod then leave this field empty
   defaultGateway: "172.21.7.254"
   n2Interface:
-    create: true
+    create: false
     Ipadd: "172.21.6.94"
     Netmask: "22"
     ## If you do not have a gateway leave the field empty
