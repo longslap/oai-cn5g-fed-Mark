@@ -22,6 +22,9 @@ spec:
           [{
                  "name": "{{ .Chart.Name }}-e1",
                  "interface": "e1"
+                {{- if .Values.multus.e1Interface.Mac }}
+                 ,"mac":  "{{ .Values.multus.e1Interface.Mac }}"
+                {{- end }}
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
                 {{- end }}
@@ -30,12 +33,18 @@ spec:
           ,{
                  "name": "{{ .Chart.Name }}-n3",
                  "interface": "n3"
+                {{- if .Values.multus.n3Interface.Mac }}
+                 ,"mac":  "{{ .Values.multus.n3Interface.Mac }}"
+                {{- end }}
           }
           {{- end }}
           {{- if .Values.multus.f1uInterface.create }}
           ,{
                  "name": "{{ .Chart.Name }}-f1u",
                  "interface": "f1"
+                {{- if .Values.multus.f1Interface.Mac }}
+                 ,"mac":  "{{ .Values.multus.f1Interface.Mac }}"
+                {{- end }}
           }
           {{- end }}
           ]
@@ -138,14 +147,24 @@ spec:
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/sbin/tcpdump -i any -w /pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
           - infinity
         {{- end}}
+        {{- if .Values.persistent.sharedvolume }}
+        volumeMounts:
+        - mountPath: "/pcap"
+          name: oai5g-pv
+        {{- end}}
       {{- end}}
       volumes:
+      {{- if .Values.persistent.sharedvolume }}
+      - name: oai5g-pv
+        persistentVolumeClaim:
+          claimName: oai5g-pvc
+      {{- end }}
       - configMap:
           name: {{ .Chart.Name }}-configmap
         name: configuration

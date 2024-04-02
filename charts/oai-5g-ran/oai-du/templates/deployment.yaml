@@ -22,14 +22,35 @@ spec:
           [{
                  "name": "{{ .Chart.Name }}-f1",
                  "interface": "f1"
+                {{- if .Values.multus.f1Interface.Mac }}
+                 ,"mac":  "{{ .Values.multus.f1Interface.Mac }}"
+                {{- end }}
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
                 {{- end }}
           }
-          {{- if .Values.multus.ruInterface.create }}
+          {{- if .Values.multus.ru1Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-ru",
-                 "interface": "ru"
+                 "name": "{{ .Chart.Name }}-ru1",
+                 "interface": "ru1"
+                {{- if .Values.multus.ru1Interface.Mac }}
+                 ,"mac":  "{{ .Values.multus.ru1Interface.Mac }}"
+                {{- end }}
+                {{- if .Values.multus.ru1Interface.Gateway }}
+                 ,"gateway": ["{{ .Values.multus.ru1Interface.Gateway }}"]
+                {{- end }}
+          }
+          {{- end }}
+          {{- if .Values.multus.ru2Interface.create }}
+          ,{
+                 "name": "{{ .Chart.Name }}-ru2",
+                 "interface": "ru2"
+                {{- if .Values.multus.ru2Interface.Mac }}
+                 ,"mac":  "{{ .Values.multus.ru2Interface.Mac }}"
+                {{- end }}
+                {{- if .Values.multus.ru2Interface.Gateway }}
+                 ,"gateway": ["{{ .Values.multus.ru2Interface.Gateway }}"]
+                {{- end }}
           }
           {{- end }}
           ]
@@ -120,14 +141,29 @@ spec:
         command:
           - /bin/sh
           - -c
+        {{- if eq .Values.config.usrp "b2xx" }}
+          - /usr/sbin/tcpdump -ni any -w /pcap/oai-gnb-n2_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+        {{- else}}
+          - /usr/sbin/tcpdump -ni n2 src {{ .Values.config.amfIpAddress }} or dst {{ .Values.config.amfIpAddress }} -w /pcap/oai-gnb-n2_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+        {{- end}}
           - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
           - infinity
         {{- end}}
+        {{- if .Values.persistent.sharedvolume }}
+        volumeMounts:
+        - mountPath: "/pcap"
+          name: oai5g-pv
+        {{- end}}
       {{- end }}
       volumes:
+      {{- if .Values.persistent.sharedvolume }}
+      - name: oai5g-pv
+        persistentVolumeClaim:
+          claimName: oai5g-pvc
+      {{- end }}
       - configMap:
           name: {{ .Chart.Name }}-configmap
         name: configuration

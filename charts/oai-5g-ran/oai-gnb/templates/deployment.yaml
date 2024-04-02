@@ -177,7 +177,6 @@ spec:
         {{- else}}
           - /usr/sbin/tcpdump -ni n2 src {{ .Values.config.amfIpAddress }} or dst {{ .Values.config.amfIpAddress }} -w /pcap/oai-gnb-n2_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- end}}
-          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep

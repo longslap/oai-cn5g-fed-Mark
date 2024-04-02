@@ -57,7 +57,7 @@ multus:
     IPadd: "@IP_GNB_CUCP_F1@" # "172.21.16.92"
     Netmask: "@NETMASK_GNB_F1@" # "22"
     # if mac is empty then it will be removed
-    Mac: "@MAC_GNB_CU_F1@"
+    Mac: "@MAC_GNB_CUCP_F1@"
     # #name inside the pod is hardcoded right now
     # name: "f1"
     # if gateway is commented then it will be removed
@@ -106,7 +106,6 @@ persistent:
   sharedvolume: @SHAREDVOLUME@
   volumeName: oai5g-volume
   size: 1Gi
-
 
 ## NF is the network function and tcpdump is the tcpdump container. 
 ## To know more about request and limit it is better to understand that how Kubernetes QoS works. 

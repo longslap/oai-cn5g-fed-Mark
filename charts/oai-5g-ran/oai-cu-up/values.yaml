@@ -56,42 +56,32 @@ multus:
     IPadd: "@IP_GNB_CUUP_F1@" # "172.21.16.93"
     Netmask: "@NETMASK_GNB_F1@" # "22"
     # if mac is empty then it will be removed
-    Mac: "@MAC_GNB_CU_F1@"
-    # #name inside the pod is hardcoded right now
-    # name: "f1"
-    # if gateway is commented then it will be removed
-    Gateway: "@GW_GNB_CU_F1@" # "172.21.19.254"
-    routes: @ROUTES_GNB_CU_F1@
-    hostInterface: "@IF_NAME_GNB_CU_F1@"  # Interface of the host machine on which this pod will be scheduled
-
-  f1uInterface:
-    create: false
-    IPadd: "172.21.16.93"
-    Netmask: "22"
+    Mac: "@MAC_GNB_CUUP_F1@"
     # #name inside the pod is hardcoded right now
     # name: "f1u"
-    # if gateway is empty then it will be removed
-    #Gateway: ""
-    #routes: []
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    # if gateway is commented then it will be removed
+    Gateway: "@GW_GNB_CUUP_F1@" # "172.21.19.254"
+    routes: @ROUTES_GNB_CUUP_F1@
+    hostInterface: "@IF_NAME_GNB_CUUP_F1@"  # Interface of the host machine on which this pod will be scheduled
 
 ## configuration file is in template/config.yaml 
 ## It is taken from https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/ci-scripts/conf_files/gnb-cuup.sa.f1.conf
 config:
   timeZone: "Europe/Paris"
-  useAdditionalOptions: "--sa"
-  cuupName: "oai-cuup"
-  mcc: "001"   # check the information with AMF, SMF, UPF
-  mnc: "01"    # check the information with AMF, SMF, UPF
-  tac: "1"     # check the information with AMF
-  sst: "1"     #currently only 4 standard values are allowed 1,2,3,4
-  cuCpHost: "oai-cu" # 
-  n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
-  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
-  f1IfName: "eth0"   #if multus.f1uInterface.create is true then use f1
-  e1IfName: "eth0"   #if multus.e1Interface.create is true then use e1
-  f1cuPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
-  f1duPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  useAdditionalOptions: "@ADD_OPTIONS_CUUP_GNB@" # "--sa"
+  cuupName: "@NAME_GNB_CUUP@" # "oai-cuup"
+  mcc: "@MCC@" # check the information with AMF, SMF, UPF
+  mnc: "@MNC@" # check the information with AMF, SMF, UPF
+  tac: "@TAC@" # check the information with AMF
+  #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap
+  cuCpHost: "@NAME_GNB_CU@" # "oai-cu" #
+  n2IfName: "@GNB_CU_N2IFNAME@" # if multus.n2Interface.create is true then use n2
+  n3IfName: "@GNB_CU_N3IFNAME@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
+  f1IfName: "@GNB_CU_F1IFNAME@" # "eth0"   #if multus.f1Interface.create is true then use f1
+  e1IfName: "@GNB_CU_E1IFNAME@" # "eth0"   #if multus.e1Interface.create is true then use e1
+  f1cuPort: "@GNB_F1_CU_PORT@"# "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  f1duPort: "@GNB_F1_DU_PORT@"# "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+
 
 ## Debugging section
 podSecurityContext:
@@ -100,7 +90,7 @@ podSecurityContext:
 
 start:
   gnbcuup: true #If false the network function container will run in sleep mode for manually testing
-  tcpdump: false
+  tcpdump: @START_TCPDUMP@
 
 includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
 
@@ -111,12 +101,17 @@ tcpdumpimage:
    #pullPolicy: IfNotPresent or Never or Always
    pullPolicy: IfNotPresent
 
+persistent:
+  sharedvolume: @SHAREDVOLUME@
+  volumeName: oai5g-volume
+  size: 1Gi
+
 ## NF is the network function and tcpdump is the tcpdump container. 
 ## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
 ## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
-  define: false
+  define:  @QOS_GNB_DEF@
   limits:
     nf:
       cpu: 100m
