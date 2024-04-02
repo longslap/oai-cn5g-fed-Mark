@@ -26,7 +26,6 @@ spec:
       }
     }'
 {{- end }}
-{{- if .Values.multus.ruInterface.create }}
 ---
 {{- if .Values.multus.ru1Interface.create }}
 apiVersion: "k8s.cni.cncf.io/v1"
