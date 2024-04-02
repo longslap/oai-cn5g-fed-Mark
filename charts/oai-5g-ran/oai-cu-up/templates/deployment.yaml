@@ -42,8 +42,8 @@ spec:
           ,{
                  "name": "{{ .Chart.Name }}-f1u",
                  "interface": "f1"
-                {{- if .Values.multus.f1Interface.Mac }}
-                 ,"mac":  "{{ .Values.multus.f1Interface.Mac }}"
+                {{- if .Values.multus.f1uInterface.Mac }}
+                 ,"mac":  "{{ .Values.multus.f1uInterface.Mac }}"
                 {{- end }}
           }
           {{- end }}

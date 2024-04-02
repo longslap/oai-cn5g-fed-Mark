@@ -28,29 +28,53 @@ spec:
 {{- end }}
 {{- if .Values.multus.ruInterface.create }}
 ---
+{{- if .Values.multus.ru1Interface.create }}
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition 
 metadata:
-  name: {{ .Chart.Name }}-ru
+  name: {{ .Chart.Name }}-ru1
 spec:
   config: '{ 
       "cniVersion": "0.3.1",
       "type": "macvlan",
-      "master": {{- cat .Values.multus.ruInterface.hostInterface | nospace | quote }},
-      {{- if .Values.multus.ruInterface.mtu }}
-      "mtu": {{ .Values.multus.ruInterface.mtu }},
+      "master": {{- cat .Values.multus.ru1Interface.hostInterface | nospace | quote }},
+      {{- if .Values.multus.ru1Interface.mtu }}
+      "mtu": {{ .Values.multus.ru1Interface.mtu }},
       {{- end }}
       "mode": "bridge",
       "ipam": {
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.ruInterface.IPadd "/" .Values.multus.ruInterface.Netmask | nospace | quote }}
-                        {{- if .Values.multus.ruInterface.Gateway }}
-                        ,"gateway": {{- cat .Values.multus.ruInterface.Gateway | nospace | quote }}
-                        {{- end }}
+                        "address": {{- cat .Values.multus.ru1Interface.IPadd "/" .Values.multus.ru1Interface.Netmask | nospace | quote }}
                 }
         ]
       }
     }'
 {{- end }}
+---
+{{- if .Values.multus.ru2Interface.create }}
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition 
+metadata:
+  name: {{ .Chart.Name }}-ru2
+spec:
+  config: '{ 
+      "cniVersion": "0.3.1",
+      "type": "macvlan",
+      "master": {{- cat .Values.multus.ru2Interface.hostInterface | nospace | quote }},
+      {{- if .Values.multus.ru2Interface.mtu }}
+      "mtu": {{ .Values.multus.ru2Interface.mtu }},
+      {{- end }}
+      "mode": "bridge",
+      "ipam": {
+        "type": "static",
+        "addresses": [
+                {
+                        "address": {{- cat .Values.multus.ru2Interface.IPadd "/" .Values.multus.ru2Interface.Netmask | nospace | quote }}
+                }
+        ]
+      }
+    }'
+{{- end }}
+
