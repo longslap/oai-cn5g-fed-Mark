@@ -19,7 +19,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: @NAME_GNB_DU_SA@ "oai-du-sa"
+  name: "@NAME_GNB_DU_SA@" # "oai-du-sa"
 
 
 # oai-du helm-charts can be used in RFSimulated mode which does not require multiple interaces. 
@@ -74,7 +74,7 @@ config:
   mountConfig: @GNB_DU_MOUNTCONFIG@          #If config file is mounted then please edit mount.conf in templates/configmap.yaml properly 
   timeZone: "Europe/Paris"
   useAdditionalOptions: "@ADD_OPTIONS_GNB@"
-  duName: "NAME_GNB_DU"
+  duName: "@NAME_GNB_DU@"
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
   tac: "@TAC@" # check the information with AMF
