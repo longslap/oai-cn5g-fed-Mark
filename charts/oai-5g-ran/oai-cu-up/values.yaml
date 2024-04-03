@@ -92,7 +92,7 @@ start:
   gnbcuup: true #If false the network function container will run in sleep mode for manually testing
   tcpdump: @START_TCPDUMP@
 
-includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
+includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #If true it will add a tcpdump container inside network function pod for debugging
 
 ## For openshift you can use rhel8/support-tools:8.7-13
 tcpdumpimage:
