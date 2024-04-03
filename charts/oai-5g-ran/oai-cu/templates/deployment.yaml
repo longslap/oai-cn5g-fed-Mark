@@ -87,7 +87,7 @@ spec:
         command: [ "/bin/bash", "-c" ]
         args:
          -  {{- if eq .Values.kubernetesType "Vanilla" }}
-            yum update && yum install iproute -y;
+            dnf install -y iproute;
             {{- end }}
             AMF_IP_ADDRESS=$(getent hosts $AMF_HOST | awk '{print $1}');
             AMF_IP_ADDRESS=$(if [[ $AMF_IP_ADDRESS ]]; then echo $AMF_IP_ADDRESS; else echo $AMF_HOST;fi)
