@@ -3,8 +3,8 @@ kubernetesType: Vanilla  #Vanilla for community kubernetes distribution else Ope
 ## In case of using these charts on Openshift then please use UBI images
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:   # image name either locally present or in a public/private repository
-  repository: @GNB_REPO@ # docker.io/oaisoftwarealliance/oai-gnb
-  version: @GNB_TAG@ # image tag or develop
+  repository: @CUCP_REPO@ # docker.io/oaisoftwarealliance/oai-gnb
+  version: @CUCP_TAG@ # image tag or develop
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
