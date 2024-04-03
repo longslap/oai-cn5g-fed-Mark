@@ -86,7 +86,10 @@ spec:
         {{- if .Values.start.gnbcucp}}
         command: [ "/bin/bash", "-c" ]
         args:
-         -  AMF_IP_ADDRESS=$(getent hosts $AMF_HOST | awk '{print $1}');
+         -  {{- if eq .Values.kubernetesType "Vanilla" }}
+            dnf install -y iproute;
+            {{- end }}
+            AMF_IP_ADDRESS=$(getent hosts $AMF_HOST | awk '{print $1}');
             AMF_IP_ADDRESS=$(if [[ $AMF_IP_ADDRESS ]]; then echo $AMF_IP_ADDRESS; else echo $AMF_HOST;fi)
             N2_IP_ADDRESS=$(ip -f inet addr show $N2_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
             F1_IP_ADDRESS=$(ip -f inet addr show $F1_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
