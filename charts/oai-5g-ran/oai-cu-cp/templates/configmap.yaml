@@ -15,7 +15,7 @@ data:
       (
        {
           ////////// Identification parameters:
-          gNB_ID = 0xe00;
+          gNB_ID = @GNB_ID@;
 
       #     cell_type =  "CELL_MACRO_GNB";
 
@@ -68,7 +68,7 @@ data:
           NETWORK_INTERFACES :
           {
             GNB_INTERFACE_NAME_FOR_NG_AMF            = "{{ .Values.config.n2IfName}}";
-            GNB_IPV4_ADDRESS_FOR_NG_AMF              = "@N2_IP_ADDRESS@";
+            GNB_IPV4_ADDRESS_FOR_NG_AMF              = "@GNB_N2_IP_ADDRESS@";
           };
         }
       );
