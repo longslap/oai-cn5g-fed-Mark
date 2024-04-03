@@ -87,7 +87,7 @@ spec:
         command: [ "/bin/bash", "-c" ]
         args:
          -  {{- if eq .Values.kubernetesType "Vanilla" }}
-            apt update && apt install iproute2 -y;
+            yum update && yum install iproute -y;
             {{- end }}
             CU_CP_IP_ADDRESS=$(getent hosts $CU_CP_HOST | awk '{print $1}');
             CU_CP_IP_ADDRESS=$(if [[ $CU_CP_IP_ADDRESS ]]; then echo $CU_CP_IP_ADDRESS; else echo $CU_CP_HOST;fi)
