@@ -81,8 +81,8 @@ nfs:
 # anchor is set to re-use slice config in SMF
 snssais:
   - &slice1
-    sst: 128
-    sd: 000080 # in hex
+    sst: 1
+    sd: 000001 # in hex
 
 smf:
   support_features:
@@ -97,28 +97,28 @@ smf:
     sNssaiSmfInfoList:
       - sNssai: *slice1
         dnnSmfInfoList:
-          - dnn: "default"
+          - dnn: "oai"
   local_subscription_infos:
     - single_nssai: *slice1
-      dnn: "default"
+      dnn: "oai"
       qos_profile:
         5qi: 5
         session_ambr_ul: "50Mbps"
-        session_ambr_dl: "100Mbps"
+        session_ambr_dl: "400Mbps"
 
 upf:
   support_features:
     enable_bpf_datapath: no    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
     enable_snat: yes           # If "on": Source natting is done for UE, DEFAULT= off
-  remote_n6_gw: localhost      # Dummy host since simple-switch does not use N6 GW
+  remote_n6_gw: 127.0.0.1      # Dummy host since simple-switch does not use N6 GW
   upf_info:
     sNssaiUpfInfoList:
       - sNssai: *slice1
         dnnUpfInfoList:
-          - dnn: "default"
+          - dnn: "oai"
 
 ## DNN configuration
 dnns:
-  - dnn: "default"
+  - dnn: "oai"
     pdu_session_type: "IPV4"
     ipv4_subnet: "12.2.1.0/25"
