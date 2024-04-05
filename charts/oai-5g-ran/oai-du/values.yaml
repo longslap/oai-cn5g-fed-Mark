@@ -73,7 +73,7 @@ multus:
 config:
   mountConfig: true #If config file is mounted then please edit mount.conf in templates/configmap.yaml properly 
   timeZone: "Europe/Paris"
-  useAdditionalOptions: "@ADD_OPTIONS_GNB@"
+  useAdditionalOptions: "@ADD_OPTIONS_GNB@" # same as for GNB
   duName: "@NAME_DU@"
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF

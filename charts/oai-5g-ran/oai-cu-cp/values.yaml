@@ -69,7 +69,7 @@ multus:
 ## It is taken from https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/ci-scripts/conf_files/gnb-cucp.sa.f1.conf
 config:
   timeZone: "Europe/Paris"
-  useAdditionalOptions: "@ADD_OPTIONS_CU_GNB@" #"--sa --log_config.global_log_options level,nocolor,time"
+  useAdditionalOptions: "@ADD_OPTIONS_CUCP@" #"--sa --log_config.global_log_options level,nocolor,time"
   cucpName: "@NAME_CUCP@" # "oai-cu-cp"
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
