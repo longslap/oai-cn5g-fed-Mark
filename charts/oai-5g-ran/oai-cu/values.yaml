@@ -19,7 +19,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name:  @NAME_GNB_CU_SA@ # "oai-cu-sa"
+  name:  @NAME_CU_SA@ # "oai-cu-sa"
 
 # oai-cu can be configured with multiple interface which may correspond to 3GPP logical interfaces. There can be one to one or one to many. 
 # In case of one to one mapping f1, n2, n3 all can have seperate virtual interfaces. 
@@ -28,64 +28,64 @@ serviceAccount:
 ## Change these ip-addresses according to your environment 
 multus:
   # if default gateway is empty then it will be removed
-  defaultGateway: "@DEFAULT_GW_GNB@"
+  defaultGateway: ""
   f1Interface:
-    create: @MULTUS_GNB_F1@ # false
-    IPadd: "@IP_GNB_CU_F1@" # "172.21.16.92"
-    Netmask: "@NETMASK_GNB_F1@" # "22"
+    create: @MULTUS_CU_F1@ # false
+    IPadd: "@IP_CU_F1@" # "172.21.16.92"
+    Netmask: "@NETMASK_CU_F1@" # "22"
     # if mac is empty then it will be removed
-    Mac: "@MAC_GNB_CU_F1@"
+    Mac: "@MAC_CU_F1@"
     # #name inside the pod is hardcoded right now
     # name: "f1"
     # if gateway is commented then it will be removed
-    Gateway: "@GW_GNB_CU_F1@" # "172.21.19.254"
-    routes: @ROUTES_GNB_CU_F1@
-    hostInterface: "@IF_NAME_GNB_CU_F1@"  # Interface of the host machine on which this pod will be scheduled
+    Gateway: "@GW_CU_F1@" # "172.21.19.254"
+    routes: @ROUTES_CU_F1@
+    hostInterface: "@IF_NAME_CU_F1@"  # Interface of the host machine on which this pod will be scheduled
   n2Interface:
-    create: @MULTUS_GNB_N2@
+    create: @MULTUS_CU_N2@
     # #name inside the pod is hardcoded right now
     # name: "n2"
-    IPadd: "@IP_GNB_N2@"
-    Netmask: "@NETMASK_GNB_N2@"
+    IPadd: "@IP_CU_N2@"
+    Netmask: "@NETMASK_CU_N2@"
     # if Mac is empty then it will be removed
-    Mac: "@MAC_GNB_N2@"
+    Mac: "@MAC_CU_N2@"
     # if gateway is empty then it will be removed
-    Gateway: "@GW_GNB_N2@"
-    routes: @ROUTES_GNB_N2@ # [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
-    hostInterface: "@IF_NAME_GNB_N2@" # Interface of the host machine on which this pod will be scheduled
+    Gateway: "@GW_CU_N2@"
+    routes: @ROUTES_CU_N2@ # [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
+    hostInterface: "@IF_NAME_CU_N2@" # Interface of the host machine on which this pod will be scheduled
   n3Interface:
-    create: @MULTUS_GNB_N3@
+    create: @MULTUS_CU_N3@
     # #name inside the pod is hardcoded right now
     # name: "n3"
-    IPadd: "@IP_GNB_N3@"
-    Netmask: "@NETMASK_GNB_N3@"
+    IPadd: "@IP_CU_N3@"
+    Netmask: "@NETMASK_CU_N3@"
     # if mac is empty then it will be removed
-    Mac: "@MAC_GNB_N3@"
+    Mac: "@MAC_CU_N3@"
     # if gateway is empty then it will be removed
-    Gateway:  "@GW_GNB_N3@"
-    routes: @ROUTES_GNB_N3@
-    hostInterface: "@IF_NAME_GNB_N3@" # Interface of the host machine on which this pod will be scheduled
+    Gateway: "@GW_CU_N3@"
+    routes: @ROUTES_CU_N3@
+    hostInterface: "@IF_NAME_CU_N3@" # Interface of the host machine on which this pod will be scheduled
 
 ## If you want to change more configuration parameters then you should mount the config file  
 # in templates/configmap.yaml
 # Example config files --> https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/targets/PROJECTS/GENERIC-NR-5GC/CONF 
 config:
-  mountConfig: @GNB_CU_MOUNTCONFIG@  #If config file is mounted then please edit mount.conf in configmap.yaml properly 
+  mountConfig: true  #If config file is mounted then please edit mount.conf in configmap.yaml properly 
   timeZone: "Europe/Paris"
-  useAdditionalOptions: "@ADD_OPTIONS_CU_GNB@" #"--sa --log_config.global_log_options level,nocolor,time"
+  useAdditionalOptions: "@ADD_OPTIONS_CU@" #"--sa --log_config.global_log_options level,nocolor,time"
   # If mounting the configuration file then below parameters are not used
-  cuName: "@NAME_GNB_CU@" # "oai-cu"
+  cuName: "@NAME_CU@" # "oai-cu"
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
   tac: "@TAC@" # check the information with AMF
   #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap
-  amfhost: "@AMF_IP_ADDRESS@" #  "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
-  n2IfName: "@GNB_CU_N2IFNAME@" # if multus.n2Interface.create is true then use n2
-  n3IfName: "@GNB_CU_N3IFNAME@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
-  f1IfName: "@GNB_CU_F1IFNAME@" # "eth0"   #if multus.f1Interface.create is true then use f1
-  cuHost: "@GNB_CU_HOST@" # "oai-cu" ## Ip-address or hostname
-  f1cuPort: "@GNB_F1_CU_PORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
-  f1duPort: "@GNB_F1_DU_PORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
+  amfhost: "@HOST_AMF@" #  "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
+  n2IfName: "@N2IFNAME_CU@" # if multus.n2Interface.create is true then use n2
+  n3IfName: "N3IFNAME_CU@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
+  f1IfName: "@F1IFNAME@" # "eth0"   #if multus.f1Interface.create is true then use f1
+  cuHost: "@HOST_CU@" # "oai-cu" ## Ip-address or hostname
+  f1cuPort: "@F1CUPORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
+  f1duPort: "@F1DUPORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
   
 ## Debugging section
 podSecurityContext:
@@ -116,7 +116,7 @@ persistent:
 ## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
-  define: @QOS_GNB_DEF@
+  define: @QOS_CU_DEF@
   limits:
     nf:
       cpu: 100m
@@ -143,4 +143,4 @@ terminationGracePeriodSeconds: 5
 
 nodeSelector: {}
 
-nodeName: 
+nodeName: @NODE_CU@

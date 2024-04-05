@@ -19,7 +19,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: @NAME_GNB_CU_UP_SA@ # "oai-cu-up-sa"
+  name: @NAME_CUUP_SA@ # "oai-cu-up-sa"
 
 ## CU-UP can work with 1 virtual ip-address here we are using three different virtual interfaces. 
 ## In case you are using 1 ip-address for all 3 logical interfaces then please change it template/configmap.yaml
@@ -28,59 +28,59 @@ multus:
   #if defaultGateway is empty then it will be removed
   defaultGateway: ""
   e1Interface:
-    create: @MULTUS_GNB_E1@ # false
-    IPadd: "@IP_GNB_CUUP_E1@" # "192.168.18.13"
-    Netmask:  "@NETMASK_GNB_E1@" # "24"
+    create: @MULTUS_CUUP_E1@ # false
+    IPadd: "@IP_CUUP_E1@" # "192.168.18.13"
+    Netmask: "@NETMASK_CUUP_E1@" # "24"
     # if mac is empty then it will be removed
-    Mac: "@MAC_GNB_CUUP_E1@"    
+    Mac: "@MAC_CUUP_E1@"    
     # #name inside the pod is hardcoded right now
     # name: "e1"
     # if gateway is empty then it will be removed
-    Gateway: "@GW_GNB_CUUP_E1@"
-    routes: @ROUTES_GNB_CU_E1@ # [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
-    hostInterface: "@IF_NAME_GNB_CUUP_E1@" # "bond0" # Interface of the host machine on which this pod will be scheduled
+    Gateway: "@GW_CUUP_E1@"
+    routes: @ROUTES_CUUP_E1@ # [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
+    hostInterface: "@IF_NAME_CUUP_E1@" # "bond0" # Interface of the host machine on which this pod will be scheduled
   n3Interface:
-    create: @MULTUS_GNB_N3@
+    create: @MULTUS_CUUP_N3@
     # #name inside the pod is hardcoded right now
     # name: "n3"
-    IPadd: "@IP_GNB_N3@"
-    Netmask: "@NETMASK_GNB_N3@"
+    IPadd: "@IP_CUUP_N3@"
+    Netmask: "@NETMASK_CUUP_N3@"
     # if mac is empty then it will be removed
-    Mac: "@MAC_GNB_N3@"
+    Mac: "@MAC_CUUP_N3@"
     # if gateway is empty then it will be removed
-    Gateway:  "@GW_GNB_N3@"
-    routes: @ROUTES_GNB_N3@
-    hostInterface: "@IF_NAME_GNB_N3@" # Interface of the host machine on which this pod will be scheduled
+    Gateway:  "@GW_CUUP_N3@"
+    routes: @ROUTES_CUUP_N3@
+    hostInterface: "@IF_NAME_CUUP_N3@" # Interface of the host machine on which this pod will be scheduled
   f1uInterface:
-    create: @MULTUS_GNB_F1@ # false
-    IPadd: "@IP_GNB_CUUP_F1@" # "172.21.16.93"
-    Netmask: "@NETMASK_GNB_F1@" # "22"
+    create: @MULTUS_CUUP_F1@ # false
+    IPadd: "@IP_CUUP_F1@" # "172.21.16.93"
+    Netmask: "@NETMASK_CUUP_F1@" # "22"
     # if mac is empty then it will be removed
-    Mac: "@MAC_GNB_CUUP_F1@"
+    Mac: "@MAC_CUUP_F1@"
     # #name inside the pod is hardcoded right now
     # name: "f1u"
     # if gateway is commented then it will be removed
-    Gateway: "@GW_GNB_CUUP_F1@" # "172.21.19.254"
-    routes: @ROUTES_GNB_CUUP_F1@
-    hostInterface: "@IF_NAME_GNB_CUUP_F1@"  # Interface of the host machine on which this pod will be scheduled
+    Gateway: "@GW_CUUP_F1@" # "172.21.19.254"
+    routes: @ROUTES_CUUP_F1@
+    hostInterface: "@IF_NAME_CUUP_F1@"  # Interface of the host machine on which this pod will be scheduled
 
 ## configuration file is in template/config.yaml 
 ## It is taken from https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/ci-scripts/conf_files/gnb-cuup.sa.f1.conf
 config:
   timeZone: "Europe/Paris"
-  useAdditionalOptions: "@ADD_OPTIONS_CUUP_GNB@" # "--sa"
-  cuupName: "@NAME_GNB_CUUP@" # "oai-cuup"
+  useAdditionalOptions: "@ADD_OPTIONS_CUUP@" # "--sa"
+  cuupName: "@NAME_CUUP@" # "oai-cuup"
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
   tac: "@TAC@" # check the information with AMF
   #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap
-  cuCpHost: "@NAME_GNB_CU@" # "oai-cu" #
-  n2IfName: "@GNB_CU_N2IFNAME@" # if multus.n2Interface.create is true then use n2
-  n3IfName: "@GNB_CU_N3IFNAME@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
-  f1IfName: "@GNB_CU_F1IFNAME@" # "eth0"   #if multus.f1Interface.create is true then use f1
-  e1IfName: "@GNB_CU_E1IFNAME@" # "eth0"   #if multus.e1Interface.create is true then use e1
-  f1cuPort: "@GNB_F1_CU_PORT@" # "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
-  f1duPort: "@GNB_F1_DU_PORT@" # "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  cuCpHost: "@HOST_CUCP@" # "oai-cu" #
+  n2IfName: "@N2IFNAME_CUUP@" # if multus.n2Interface.create is true then use n2
+  n3IfName: "@N3IFNAME_CUUP@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
+  f1IfName: "@F1IFNAME@" # "eth0"   #if multus.f1Interface.create is true then use f1
+  e1IfName: "@E1IFNAME@" # "eth0"   #if multus.e1Interface.create is true then use e1
+  f1cuPort: "@F1CUPORT@" # "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  f1duPort: "@F1DUPORT@" # "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
 
 
 ## Debugging section
@@ -111,7 +111,7 @@ persistent:
 ## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
-  define:  @QOS_GNB_DEF@
+  define:  @QOS_CUUP_DEF@
   limits:
     nf:
       cpu: 100m
@@ -137,4 +137,4 @@ terminationGracePeriodSeconds: 5
 
 nodeSelector: {}
 
-nodeName: 
+nodeName: @NODE_CUUP@
