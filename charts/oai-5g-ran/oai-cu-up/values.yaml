@@ -75,7 +75,7 @@ config:
   tac: "@TAC@" # check the information with AMF
   #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap
   cuCpHost: "@HOST_CUCP@" # "oai-cu" #
-  n2IfName: "@N2IFNAME_CUUP@" # if multus.n2Interface.create is true then use n2
+  n2IfName: "@N2IFNAME_CUUP@" # if multus.n3Interface.create is true then use n3, else use eth0
   n3IfName: "@N3IFNAME_CUUP@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
   f1IfName: "@F1IFNAME@" # "eth0"   #if multus.f1Interface.create is true then use f1
   e1IfName: "@E1IFNAME@" # "eth0"   #if multus.e1Interface.create is true then use e1
