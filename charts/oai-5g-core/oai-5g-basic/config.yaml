@@ -15,7 +15,7 @@ http_version: 2
 snssais:
   - &embb_slice1
     sst: @SLICE1_SST@ #1
-    sd: @SLICE1_SD@ # no line before
+    sd: @SLICE1_SD@ # no value before
   - &embb_slice2
     sst: @SLICE2_SST@ #1
     sd: @SLICE2_SD@ #FFFFFF # in hex
@@ -51,7 +51,7 @@ nfs:
       interface_name: @IF_N3@
       port: 2152
     n4:
-      interface_name: @IF_N4@ 
+      interface_name: @IF_N4@
       port: 8805
     n6:
       interface_name: @IF_N6@
@@ -115,7 +115,7 @@ amf:
   plmn_support_list:
     - mcc: @MCC@
       mnc: @MNC@
-      tac: @TAC@ 
+      tac: @TAC@
       nssai:
         - *embb_slice1
         - *embb_slice2
@@ -172,7 +172,7 @@ smf:
 upf:
   support_features:
     enable_bpf_datapath: no    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
-    enable_snat: @ENABLE_SNAT@           # If "on": Source natting is done for UE, DEFAULT= off
+    enable_snat: @ENABLE_SNAT@ # If "on": Source natting is done for UE, DEFAULT= off
   remote_n6_gw: 127.0.0.1      # Dummy host since simple-switch does not use N6 GW
   upf_info:
     sNssaiUpfInfoList:

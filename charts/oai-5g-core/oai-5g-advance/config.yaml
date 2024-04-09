@@ -14,10 +14,11 @@ http_version: 2
 ## Defines YAML anchors, which are reused in the config file
 snssais:
   - &embb_slice1
-    sst: 1
+    sst: @SLICE1_SST@ #1
+    sd: @SLICE1_SD@ # no value before
   - &embb_slice2
-    sst: 1
-    sd: FFFFFF # in hex
+    sst: @SLICE2_SST@ #1
+    sd: @SLICE2_SD@ #FFFFFF # in hex
 
 ############## SBI Interfaces
 ### Each NF takes its local SBI interfaces and remote interfaces from here, unless it gets them using NRF discovery mechanisms
@@ -29,7 +30,7 @@ nfs:
       api_version: v1
       interface_name: eth0
     n2:
-      interface_name: "@IF_N2@"
+      interface_name: @IF_N2@
       port: 38412
   smf:
     host: oai-smf
@@ -38,22 +39,22 @@ nfs:
       api_version: v1
       interface_name: eth0
     n4:
-      interface_name: "@IF_N4@"
+      interface_name: @IF_N4@
       port: 8805
   upf:
     host: oai-upf
     sbi:
       port: 80
       api_version: v1
-      interface_name: eth0
+      interface_name: @IF_SBI@ #eth0
     n3:
-      interface_name: "@IF_N3@"
+      interface_name: @IF_N3@
       port: 2152
     n4:
-      interface_name: "@IF_N4@"
+      interface_name: @IF_N4@
       port: 8805
     n6:
-      interface_name: "@IF_N6@"
+      interface_name: @IF_N6@
     n9:
       interface_name: eth0
       port: 2152
@@ -76,7 +77,7 @@ nfs:
       api_version: v1
       interface_name: eth0
   nrf:
-    host: oai-nrf
+    host: @NFS_NRF_HOST@ #oai-nrf
     sbi:
       port: 80
       api_version: v1
@@ -87,6 +88,7 @@ nfs:
       port: 80
       api_version: v1
       interface_name: eth0
+
 #### Common for UDR and AMF
 database:
   host: mysql
@@ -158,26 +160,26 @@ smf:
           - dnn: "@DNN0@"
       - sNssai: *embb_slice2
         dnnSmfInfoList:
-          - dnn: "ims"
+          - dnn: "@DNN1@"
   local_subscription_infos:
     - single_nssai: *embb_slice1
       dnn: "@DNN0@"
       qos_profile:
-        5qi: 5
-        session_ambr_ul: "200Mbps"
-        session_ambr_dl: "400Mbps"
+        5qi: @SLICE1_5QI@ #5
+        session_ambr_ul: "@SLICE1_UPLINK@" # "200Mbps"
+        session_ambr_dl: "@SLICE1_DOWNLINK@" # "400Mbps"
     - single_nssai: *embb_slice2
-      dnn: "ims"
+      dnn: "@DNN1@"
       qos_profile:
-        5qi: 2
-        session_ambr_ul: "100Mbps"
-        session_ambr_dl: "200Mbps"
+        5qi: @SLICE2_5QI@ #2
+        session_ambr_ul: "@SLICE2_UPLINK@" # "100Mbps"
+        session_ambr_dl: "@SLICE2_DOWNLINK@" # "200Mbps"
 
 upf:
   support_features:
     enable_bpf_datapath: no    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
-    enable_snat: yes           # If "on": Source natting is done for UE, DEFAULT= off
-  remote_n6_gw: localhost      # Dummy host since simple-switch does not use N6 GW
+    enable_snat: @ENABLE_SNAT@ # If "on": Source natting is done for UE, DEFAULT= off
+  remote_n6_gw: 127.0.0.1      # Dummy host since simple-switch does not use N6 GW
   upf_info:
     sNssaiUpfInfoList:
     - sNssai: *embb_slice1
@@ -185,13 +187,13 @@ upf:
         - dnn: @DNN0@
     - sNssai: *embb_slice2
       dnnUpfInfoList:
-        - dnn: ims
+        - dnn: @DNN1@
 
 ## DNN configuration
 dnns:
   - dnn: "@DNN0@"
     pdu_session_type: "IPV4"
     ipv4_subnet: "12.1.1.0/24"
-  - dnn: "ims"
+  - dnn: "@DNN1@"
     pdu_session_type: "IPV4V6"
     ipv4_subnet: "14.1.1.0/24"

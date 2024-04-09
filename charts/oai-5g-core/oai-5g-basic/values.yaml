@@ -114,8 +114,6 @@ oai-upf:
   enabled: @ENABLED_UPF@ #true
   kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
-    #repository: docker.io/r2labuser/oai-upf    ## The image will be pulled from dockerhub
-    #version: v2.0.0                                    ## The branch to be used to pull from dockerhub
     repository: docker.io/oaisoftwarealliance/oai-upf    ## The image will be pulled from dockerhub
     version: v2.0.1                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
@@ -177,7 +175,7 @@ oai-upf:
       hostInterface: "@IF_NAME_UPF_N6@"
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
   nodeSelector: {}
-  nodeName: @NODE_UPF@ 
+  nodeName: @NODE_UPF@
 # oai-traffic-server:
 #  enabled: false
 #  weight: 6
