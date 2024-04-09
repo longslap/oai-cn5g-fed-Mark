@@ -38,6 +38,8 @@ oai-nssf:
   imagePullSecrets:
     - name: "regcred"
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
+  persistent:
+    sharedvolume: @SHAREDVOLUME@
   config:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
