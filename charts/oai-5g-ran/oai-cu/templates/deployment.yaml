@@ -74,9 +74,11 @@ spec:
         securityContext:
            privileged: true
         ports:
+        {{- if ne .Values.config.f1cuPort "2152"}}
         - containerPort: 2152
           name: n3
           protocol: UDP
+        {{- end }}
         - containerPort: 36412
           name: n2
           protocol: SCTP
