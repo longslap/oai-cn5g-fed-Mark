@@ -292,6 +292,7 @@ pipeline {
               }
               try {
                 sh "adb -s ${adb_ue_id} shell cmd connectivity airplane-mode disable"
+                checkSmartPhoneConnectionStatus(adb_ue_id)
               } catch (Exception e) {
                 echo "Test Smartphone attach #0 may have failed"
                 testSP_Attach0 = false
@@ -324,6 +325,7 @@ pipeline {
               }
               try {
                 sh "adb -s ${adb_ue_id} shell cmd connectivity airplane-mode disable"
+                checkSmartPhoneConnectionStatus(adb_ue_id)
               } catch (Exception e) {
                 echo "Test Smartphone attach #1 may have failed"
                 testSP_Attach1 = false
@@ -643,6 +645,25 @@ def checkStatusOnGNB() {
     echo "gNB is connected to AMF"
   } else {
     status += 2
+  }
+  return status
+}
+
+def checkSmartPhoneConnectionStatus(adb_id) {
+  status = true
+  cnt = 0
+  while (cnt < 10) {
+     conStatus = sh returnStdout: true, script: "adb -s ${adb_id} shell ip a s rmnet_data0 || true"
+     if (conStatus.contains('12.1.1')) {
+       echo "Smartphone is connected to core network OAI - DNN"
+       cnt = 30
+     } else {
+      cnt += 1
+      sleep 2
+     }
+  }
+  if (cnt != 30) {
+    status = false
   }
   return status
 }
