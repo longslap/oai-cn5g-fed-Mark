@@ -336,6 +336,114 @@ pipeline {
               sh "docker-compose down -t 3 || true"
             }
             deployedGNB = false
+            if (fullTestToBeDone == false && ranFullImage.contains('porcepix')) {
+              sh "docker rmi ${ranFullImage} || true"
+            }
+          }
+        }
+      }
+    }
+    stage ('Deploy gNB #2') {
+      agent { label gnb_server }
+      when { expression { fullTestToBeDone} }
+      steps {
+        script {
+          echo '\u2705 \u001B[32mDeploy gNB #2 \u001B[0m'
+          dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+            ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
+            sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+            sh "docker-compose up -d"
+            gNBStatus = checkStatusOnGNB()
+            if (gNBStatus > 0) {
+              echo ("gNB did NOT deploy properly")
+            }
+          }
+        }
+      }
+    }
+    stage ('Test COTS-UE #2') {
+      agent { label ue_ctl_server }
+      when { expression { fullTestToBeDone} }
+      steps {
+        lock(ue_ctl_resource) {
+          script {
+            attachSmartPhone(2, adb_ue_id)
+            sh "adb -s ${adb_ue_id} shell ping -c 20 -i 0.2 8.8.8.8 | tee /tmp/test-traffic-sp2.log"
+            // Leaving the smartphone radio on!
+          }
+        }
+      }
+    }
+    stage ('Undeploy gNB #2') {
+      agent { label gnb_server }
+      when { expression { fullTestToBeDone} }
+      steps {
+        script {
+          echo '\u2705 \u001B[32mUndeploy gNB #2 while COTS-UE is still on \u001B[0m'
+          dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+            ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
+            sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+            sh "docker-compose stop -t 3 || true"
+            sleep 2
+            sh "docker logs sa-b210-gnb > oai-gnb-2.logs 2>&1 || true"
+            stash allowEmpty: true, includes: 'oai-gnb-2.logs', name: 'gNB_logs_2'
+            sh "docker-compose down -t 3 || true"
+            sleep 10
+          }
+        }
+      }
+    }
+    stage ('Deploy gNB #3') {
+      agent { label gnb_server }
+      when { expression { fullTestToBeDone} }
+      steps {
+        script {
+          echo '\u2705 \u001B[32mDeploy gNB #3 while COTS-UE is still on \u001B[0m'
+          dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+            ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
+            sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+            sh "docker-compose up -d"
+            gNBStatus = checkStatusOnGNB()
+            if (gNBStatus > 0) {
+              echo ("gNB did NOT deploy properly")
+            }
+          }
+        }
+      }
+    }
+    stage ('Test COTS-UE #3') {
+      agent { label ue_ctl_server }
+      when { expression { fullTestToBeDone} }
+      steps {
+        lock(ue_ctl_resource) {
+          script {
+            // The COTS-UE shall be already on
+            checkSmartPhoneConnectionStatus(adb_ue_id)
+            sh "adb -s ${adb_ue_id} shell ping -c 20 -i 0.2 8.8.8.8 | tee /tmp/test-traffic-sp3.log"
+            detachSmartPhone(3, adb_ue_id)
+            sleep 10
+            attachSmartPhone(4, adb_ue_id)
+            sh "adb -s ${adb_ue_id} shell ping -c 20 -i 0.2 8.8.8.8 | tee /tmp/test-traffic-sp4.log"
+            detachSmartPhone(4, adb_ue_id)
+          }
+        }
+      }
+    }
+    stage ('Undeploy gNB #3') {
+      agent { label gnb_server }
+      when { expression { fullTestToBeDone} }
+      steps {
+        script {
+          echo '\u2705 \u001B[32mUndeploy gNB #3 \u001B[0m'
+          dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+            ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
+            sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+            sh "docker-compose stop -t 3 || true"
+            sleep 2
+            sh "docker logs sa-b210-gnb > oai-gnb-3.logs 2>&1 || true"
+            stash allowEmpty: true, includes: 'oai-gnb-3.logs', name: 'gNB_logs_3'
+            sh "docker-compose down -t 3 || true"
+            sleep 10
             if (ranFullImage.contains('porcepix')) {
               sh "docker rmi ${ranFullImage} || true"
             }
@@ -351,6 +459,10 @@ pipeline {
           unstash 'ue_logs'
           unstash 'gNB_image'
           unstash 'gNB_logs'
+          if (fullTestToBeDone) {
+            unstash 'gNB_logs_2'
+            unstash 'gNB_logs_3'
+          }
           if (fileExists('oai-gnb.logs')) {
             sh 'mv oai-gnb.logs archives'
           }
@@ -410,6 +522,10 @@ pipeline {
             unstash 'gNB_image'
             unstash 'gNB_logs'
             unstash 'ue_logs'
+            if (fullTestToBeDone) {
+              unstash 'gNB_logs_2'
+              unstash 'gNB_logs_3'
+            }
           } catch (Exception e) {
             echo "could not retrieve stashes from gNB or UE server"
           }
