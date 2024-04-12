@@ -367,9 +367,13 @@ pipeline {
       steps {
         lock(ue_ctl_resource) {
           script {
+            sh "mkdir -p archives"
             attachSmartPhone(2, adb_ue_id)
             sh "adb -s ${adb_ue_id} shell ping -c 20 -i 0.2 8.8.8.8 | tee /tmp/test-traffic-sp2.log"
             // Leaving the smartphone radio on!
+
+            sh "cp /tmp/test-traffic-sp2.log archives || true"
+            stash allowEmpty: true, includes: 'archives/test-traffic-sp2.log', name: 'ue_logs_2'
           }
         }
       }
@@ -438,6 +442,10 @@ pipeline {
             sh "adb -s ${adb_ue_id} shell ping -c 20 -i 0.2 8.8.8.8 | tee /tmp/test-traffic-sp5.log"
 
             detachSmartPhone(4, adb_ue_id)
+
+            sh "mkdir -p archives"
+            sh "cp /tmp/test-traffic-sp3.log /tmp/test-traffic-sp4.log /tmp/test-traffic-sp5.log archives || true"
+            stash allowEmpty: true, includes: 'archives/test-traffic-sp3.log, archives/test-traffic-sp4.log, archives/test-traffic-sp5.log', name: 'ue_logs_3'
           }
         }
       }
@@ -475,9 +483,11 @@ pipeline {
           if (fullTestToBeDone) {
             unstash 'gNB_logs_2'
             unstash 'gNB_logs_3'
+            unstash 'ue_logs_2'
+            unstash 'ue_logs_3'
           }
           if (fileExists('oai-gnb.logs')) {
-            sh 'mv oai-gnb.logs archives'
+            sh 'mv oai-gnb*.logs archives'
           }
           if (fileExists('oai-gnb-l2-trace.pcap')) {
             sh 'mv oai-gnb-l2-trace.* archives'
@@ -538,12 +548,17 @@ pipeline {
             if (fullTestToBeDone) {
               unstash 'gNB_logs_2'
               unstash 'gNB_logs_3'
+              unstash 'ue_logs_2'
+              unstash 'ue_logs_3'
             }
           } catch (Exception e) {
             echo "could not retrieve stashes from gNB or UE server"
           }
           if (fileExists('oai-gnb.logs')) {
-            sh 'mv oai-gnb.logs archives'
+            sh 'mv oai-gnb*.logs archives'
+          }
+          if (fileExists('oai-gnb-l2-trace.pcap')) {
+            sh 'mv oai-gnb-l2-trace.* archives'
           }
           dir ('ci-scripts/charts/oai-5g-basic') {
             sh 'helm uninstall $(helm list -aq)'
