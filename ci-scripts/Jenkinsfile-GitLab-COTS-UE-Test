@@ -284,19 +284,8 @@ pipeline {
             dir ('ci-scripts/cots-ue-mbim-scripts') {
               // I don't want that stage to fail.
               // It's easier then to un-deploy gNB.
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start0.log"'
-              } catch (Exception e) {
-                echo "Test-Start #0 seems to have failed!"
-                testStart0 = false
-              }
-              try {
-                sh "adb -s ${adb_ue_id} shell cmd connectivity airplane-mode disable"
-                checkSmartPhoneConnectionStatus(adb_ue_id)
-              } catch (Exception e) {
-                echo "Test Smartphone attach #0 may have failed"
-                testSP_Attach0 = false
-              }
+              testStart0 = attachTrafficTestOnQuectel(0)
+              testSP_Attach0 = attachSmartPhone(0, adb_ue_id)
               if (testStart0) {
                 sh 'sudo traceroute -4 -T -i wwan0 openairinterface.org | tee /tmp/test-traffic0.log'
                 sh 'curl --interface wwan0 https://openairinterface.org/wp-content/uploads/2015/06/cropped-oai_final_logo.png -o /tmp/test-oai_final_logo.png'
@@ -304,47 +293,17 @@ pipeline {
               if (testSP_Attach0) {
                 sh "adb -s ${adb_ue_id} shell ping -c 20 -i 0.2 8.8.8.8 | tee /tmp/test-traffic-sp0.log"
               }
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop0.log"'
-              } catch (Exception e) {
-                echo "Test-Stop #0 seems to have failed!"
-                testStop0 = false
-              }
-              try {
-                sh "adb -s ${adb_ue_id} shell cmd connectivity airplane-mode enable"
-              } catch (Exception e) {
-                echo "Test Smartphone detach #0 may have failed"
-                testSP_Detach0 = false
-              }
+              testStop0 = detachTestOnQuectel(0)
+              testSP_Detach0 = detachSmartPhone(0, adb_ue_id)
+              // Waiting a bit before doing a 2nd attach
               sleep 5
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start1.log"'
-              } catch (Exception e) {
-                echo "Test-Start #1 seems to have failed!"
-                testStart1 = false
-              }
-              try {
-                sh "adb -s ${adb_ue_id} shell cmd connectivity airplane-mode disable"
-                checkSmartPhoneConnectionStatus(adb_ue_id)
-              } catch (Exception e) {
-                echo "Test Smartphone attach #1 may have failed"
-                testSP_Attach1 = false
-              }
+              testStart1 = attachTrafficTestOnQuectel(1)
+              testSP_Attach1 = attachSmartPhone(1, adb_ue_id)
               if (testSP_Attach1) {
                 sh "adb -s ${adb_ue_id} shell ping -c 20 -i 0.2 8.8.8.8 | tee /tmp/test-traffic-sp1.log"
               }
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop1.log"'
-              } catch (Exception e) {
-                echo "Test-Stop #1 seems to have failed!"
-                testStop1 = false
-              }
-              try {
-                sh "adb -s ${adb_ue_id} shell cmd connectivity airplane-mode enable"
-              } catch (Exception e) {
-                echo "Test Smartphone detach #0 may have failed"
-                testSP_Detach1 = false
-              }
+              testStop1 = detachTestOnQuectel(1)
+              testSP_Detach1 = detachSmartPhone(1, adb_ue_id)
             }
             sh 'sudo chmod 666 /tmp/test-st*.log'
             sh 'cp -f /tmp/test-*.log /tmp/test-*.png archives || true'
@@ -649,6 +608,28 @@ def checkStatusOnGNB() {
   return status
 }
 
+def attachTrafficTestOnQuectel(runId) {
+  status = true
+  try {
+    sh "sudo bash -c 'set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start${runId}.log'"
+  } catch (Exception e) {
+    echo "Test-Start #${runId} seems to have failed!"
+    status = false
+  }
+  return status
+}
+
+def detachTestOnQuectel(runId) {
+  status = true
+  try {
+    sh "sudo bash -c 'set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop${runId}.log'"
+  } catch (Exception e) {
+    echo "Test-Stop #${runId} seems to have failed!"
+    status = false
+  }
+  return status
+}
+
 def checkSmartPhoneConnectionStatus(adb_id) {
   status = true
   cnt = 0
@@ -666,4 +647,27 @@ def checkSmartPhoneConnectionStatus(adb_id) {
     status = false
   }
   return status
+}
+
+def attachSmartPhone(runId, adb_id) {
+  aStatus = true
+  try {
+    sh "adb -s ${adb_id} shell cmd connectivity airplane-mode disable"
+    aStatus = checkSmartPhoneConnectionStatus(adb_id)
+  } catch (Exception e) {
+    echo "Test Smartphone attach #${adb_id} may have failed"
+    aStatus = false
+  }
+  return aStatus
+}
+
+def detachSmartPhone(runId, adb_id) {
+  dStatus = true
+  try {
+    sh "adb -s ${adb_id} shell cmd connectivity airplane-mode enable"
+  } catch (Exception e) {
+    echo "Test Smartphone detach #${runId} may have failed"
+    dStatus = false
+  }
+  return dStatus
 }
