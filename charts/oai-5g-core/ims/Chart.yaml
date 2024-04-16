@@ -1,0 +1,27 @@
+## These charts are only made to be used by OAI Core network. 
+# We are only maintaining them temporarily till the time we don't have an IMS
+# We will not provide any support for asterisk. Only if it used with OAI.
+
+apiVersion: v2
+name: asterisk-sip-ims
+description: Helm chart for Asterisk SIP
+
+type: application
+
+icon: https://www.asterisk.org/wp-content/uploads/asterisk-logo.png
+
+version: v1
+
+appVersion: v1
+
+keywords:
+  - asterisk
+  - ims
+
+sources:
+  - https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed
+  - https://www.asterisk.org/
+
+maintainers:
+  - name:  OPENAIRINTERFACE
+    email: contact@openairinterface.org

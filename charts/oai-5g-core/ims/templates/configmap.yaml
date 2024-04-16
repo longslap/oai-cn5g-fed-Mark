@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-conf
+data:
+   users.conf: |
+     [001010000000101]
+     fullname = user1
+     hassip = yes
+     context = users
+     host = dynamic
+     transport=udp
+     [001010000000102]
+     fullname = user2
+     hassip = yes
+     context = users
+     host = dynamic
+     transport=udp
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sip-conf
+data:
+   sip.conf: |
+     [general]
+     language=en
+     tcpenable=yes
+     tcpbindaddr=0.0.0.0
+     tcpbindport={{ .Values.exposedPorts.tcp }}
+     srvlookup=yes
