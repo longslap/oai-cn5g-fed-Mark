@@ -15,10 +15,12 @@ spec:
     metadata:
       labels:
         {{- include "oai-upf.selectorLabels" . | nindent 8 }}
-    {{- if .Values.multus.n3Interface.create }}
+    {{- if or (eq .Values.multus.n3Interface.create true) (eq .Values.multus.n4Interface.create true) (eq .Values.multus.n6Interface.create true) }}
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
-          [{
+          [
+          {{- if .Values.multus.n3Interface.create }}
+          {
                  "name": "{{ .Chart.Name }}-n3",
                  "interface": "n3"
                 {{- if .Values.multus.defaultGateway }}
@@ -28,6 +30,7 @@ spec:
                 ,"gateway": "{{ .Values.multus.n3Interface.Gateway }}"
                 {{- end }}
           }
+          {{- end }}
           {{- if .Values.multus.n4Interface.create }}
           ,{
                  "name": "{{ .Chart.Name }}-n4",
@@ -35,10 +38,10 @@ spec:
                 {{- if .Values.multus.n4Interface.Gateway }}
                 ,"gateway": "{{ .Values.multus.n4Interface.Gateway }}"
                 {{- end }}
-          }
+          },
           {{- end }}
           {{- if .Values.multus.n6Interface.create }}
-          ,{
+          {
                  "name": "{{ .Chart.Name }}-n6",
                  "interface": "n6"
                 {{- if .Values.multus.n6Interface.Gateway }}

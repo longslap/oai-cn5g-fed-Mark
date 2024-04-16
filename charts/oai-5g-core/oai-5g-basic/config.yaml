@@ -142,7 +142,7 @@ smf:
     secondary_ipv4: "8.8.8.8"
     secondary_ipv6: "2001:4860:4860::8888"
   ims:
-    pcscf_ipv4: "192.168.70.139"
+    pcscf_ipv4: "192.168.22.4"
     pcscf_ipv6: "fe80::7915:f408:1787:db8b"
   # the DNN you configure here should be configured in "dnns"
   # follows the SmfInfo datatype from 3GPP TS 29.510

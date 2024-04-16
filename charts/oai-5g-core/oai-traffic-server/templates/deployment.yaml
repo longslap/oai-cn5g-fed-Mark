@@ -21,8 +21,10 @@ spec:
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
               [{
-                   "name": "{{ .Chart.Name }}-net1",
-                   "default-route": ["{{ .Values.multus.defaultGateway }}"]
+                   "name": "{{ .Chart.Name }}-net1"
+                {{- if .Values.multus.defaultGateway }}
+                 ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
+                {{- end }}
               }]
     spec:
       securityContext:
@@ -34,7 +36,7 @@ spec:
           name: scripts
           subPath: script.sh 
         command: ["/tmp/script.sh"]
-        image: "{{ .Values.trafficServer.repository }}:{{ .Values.trafficServer.version }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.version }}"
         imagePullPolicy: IfNotPresent
         securityContext:
            privileged: true

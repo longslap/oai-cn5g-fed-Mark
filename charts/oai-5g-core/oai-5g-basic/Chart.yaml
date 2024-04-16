@@ -55,8 +55,12 @@ dependencies:
   name: oai-upf
   repository: "file://../oai-upf"
   version: v2.0.1
-#- condition: oai-traffic-server.enabled
-#  name: oai-traffic-server
-#  repository: "file://../oai-traffic-server"
-#  version: v1
+- condition: oai-traffic-server.enabled
+  name: oai-traffic-server
+  repository: "file://../oai-traffic-server"
+  version: v1
+- condition: ims.enabled
+  name: asterisk-sip-ims
+  repository: "file://../ims"
+  version: v1
 

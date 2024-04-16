@@ -4,7 +4,7 @@ podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
-trafficServer:
+image:
   repository: docker.io/oaisoftwarealliance/trf-gen-cn5g
   version: latest
   #pullPolicy: IfNotPresent or Never or Always
@@ -19,14 +19,14 @@ serviceAccount:
 
 multus:
   create: false
-  IPadd: "172.21.6.99"
-  Netmask: "22"
-  defaultGateway: "172.21.7.254"
+  IPadd: "192.168.22.3"
+  Netmask: "24"
+  defaultGateway: "192.168.22.1"
   hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
 
 config:
   ueroute: 12.1.1.0/24
-  upfIpadd: 172.21.6.95
+  upfIpadd: 192.168.22.2
   noOfIperf3Server: 10
 
 readinessProbe: true
