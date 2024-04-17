@@ -16,7 +16,7 @@ keywords:
   - UDM
   - UDR
   - AUSF
-#  - Traffic_server
+  - Traffic_server
 
 maintainers:
   - name:  OPENAIRINTERFACE
@@ -59,8 +59,8 @@ dependencies:
   name: oai-upf-local
   repository: "file://../oai-upf-local"
   version: v2.0.1
-#- condition: oai-traffic-server.enabled
-#  name: oai-traffic-server
-#  repository: "file://../oai-traffic-server"
-#  version: v1
+- condition: oai-traffic-server.enabled
+  name: oai-traffic-server
+  repository: "file://../oai-traffic-server"
+  version: v1
 

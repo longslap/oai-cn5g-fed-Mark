@@ -5,10 +5,10 @@ metadata:
   labels:
     {{- include "oai-nrf.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
-  {{- if .Values.global }}{{ if not .Values.global.clusterIpServiceIpAllocation }}
-  clusterIP: None
-  {{- end }}{{ end }}
+  type: {{ .Values.service.type }}
+  {{- if (and (eq .Values.service.type "LoadBalancer") (not (empty .Values.service.loadBalancerIP))) }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
   ports:
     - name: http
       # Port accessible outside cluster

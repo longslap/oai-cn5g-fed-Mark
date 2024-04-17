@@ -28,6 +28,14 @@ podSecurityContext:
 exposedPorts:
   sbi: 80
 
+service:
+  annotations: {}
+  ## Specify a service type
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services---service-types
+  type: LoadBalancer
+  port: 80
+  loadBalancerIP: "172.21.5.10"
+
 ## Debugging section
 start:
   nrf: true #If false the network function container will run in sleep mode for manually testing

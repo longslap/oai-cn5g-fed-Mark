@@ -47,6 +47,16 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
+      initContainers:
+        - name: sysctl
+          image: busybox:1.29
+          imagePullPolicy: IfNotPresent
+          command:
+          - /bin/sh
+          - -c
+          - sysctl -w net.ipv4.ip_forward=1
+          securityContext:
+            privileged: true   
       containers:
       - name: gnbcucp
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"

@@ -15,6 +15,9 @@ http_version: 2
 snssais:
   - &embb_slice1
     sst: 1
+  - &embb_slice1_1
+    sst: 1
+    sd: 000001
   - &embb_slice2
     sst: 2
   - &embb_slice2_1
@@ -31,7 +34,7 @@ nfs:
       api_version: v1
       interface_name: eth0
     n2:
-      interface_name: tun0
+      interface_name: n2
       port: 38412
   smf:
     host: oai-smf
@@ -125,17 +128,18 @@ amf:
   statistics_timer_interval: 20  # in seconds
   emergency_support: false
   served_guami_list:
-    - mcc: 001
-      mnc: 01
+    - mcc: 208
+      mnc: 92
       amf_region_id: 01
       amf_set_id: 001
       amf_pointer: 01
   plmn_support_list:
-    - mcc: 001
-      mnc: 01
+    - mcc: 208
+      mnc: 92
       tac: 0x0001
       nssai:
         - *embb_slice1
+        - *embb_slice1_1
         - *embb_slice2
         - *embb_slice2_1
   supported_integrity_algorithms:
@@ -174,6 +178,9 @@ smf:
       - sNssai: *embb_slice1
         dnnSmfInfoList:
           - dnn: "oai"
+      - sNssai: *embb_slice1_1
+        dnnSmfInfoList:
+          - dnn: "internet"
       - sNssai: *embb_slice2
         dnnSmfInfoList:
           - dnn: "ims"
@@ -183,6 +190,12 @@ smf:
   local_subscription_infos:
     - single_nssai: *embb_slice1
       dnn: "oai"
+      qos_profile:
+        5qi: 5
+        session_ambr_ul: "200Mbps"
+        session_ambr_dl: "400Mbps"       
+    - single_nssai: *embb_slice1_1
+      dnn: "internet"
       qos_profile:
         5qi: 5
         session_ambr_ul: "200Mbps"
@@ -229,6 +242,9 @@ dnns:
   - dnn: "oai"
     pdu_session_type: "IPV4"
     ipv4_subnet: "12.1.1.0/24"
+  - dnn: "internet"
+    pdu_session_type: "IPV4"
+    ipv4_subnet: "12.1.2.0/24"
   - dnn: "ims"
     pdu_session_type: "IPV4"
     ipv4_subnet: "14.1.1.0/24"

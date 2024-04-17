@@ -47,25 +47,8 @@ spec:
             - -c
             - until curl --connect-timeout {{ .Values.global.timeout }} --head -X GET http://oai-nrf/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.global.http2Param }}; do echo waiting for oai-nrf; sleep 1; done
     {{- end }}{{ end }}
-        - name: sysctl
-          image: busybox:1.29
-          imagePullPolicy: IfNotPresent
-          command:
-          - /bin/sh
-          - -c
-          - sysctl -w net.ipv4.ip_forward=1
-          securityContext:
-            privileged: true            
-      containers:
-      - name: openvpnclient
-        image: openvpnclient:latest
-        volumeMounts:
-          - mountPath: "/tmp/ovpn/"
-            name: vpn
-        securityContext:
-          privileged: true
-        command: ["openvpn", "--config","/tmp/ovpn/eurecom-orange.ovpn"]    
     {{- if .Values.includeTcpDumpContainer }}
+      containers:
       - name: tcpdump
         image: "{{ .Values.tcpdumpimage.repository }}:{{ .Values.tcpdumpimage.version }}"
         imagePullPolicy: {{ .Values.tcpdumpimage.pullPolicy }}
@@ -155,9 +138,6 @@ spec:
           - infinity
         {{- end}}
       volumes:
-      - configMap:
-          name: eurecom-orange
-        name: vpn      
       {{- if .Values.includeTcpDumpContainer}}
       {{- if .Values.persistent.sharedvolume}}
       - name: cn5g-pvc

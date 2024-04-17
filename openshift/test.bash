@@ -2,7 +2,7 @@
 export START_UE1=0
 export START_UE2=0
 export START_UE1_LOCAL=0
-export START_UE2_LOCAL=1
+export START_UE2_LOCAL=0
 
 function wait4Podlog {
   UE_POD_NAME=$1
