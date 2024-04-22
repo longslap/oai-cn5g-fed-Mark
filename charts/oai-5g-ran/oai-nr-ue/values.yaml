@@ -35,10 +35,10 @@ config:
   timeZone: "Europe/Paris"
   rfsimHost: "oai-du" 
   rfSimServer: "oai-du"    # ip-address of rfsim or service name oai-gnb or oai-du
-  fullImsi: "001010000000100"       # make sure all the below entries are present in the subscriber database
+  fullImsi: "208920000000001"       # make sure all the below entries are present in the subscriber database
   fullKey: "fec86ba6eb707ed08905757b1bb44b8f" 
   opc: "C42449363BBAD02B66D16BC975D77CC1"
-  dnn: "oai"
+  dnn: "internet"
   sst: 1                     # configure according to gnb and amf, smf and upf 
   sd: "16777215"
   usrp: "rfsim"            # allowed rfsim, b2xx, n3xx, x3xx

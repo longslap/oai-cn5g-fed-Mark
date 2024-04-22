@@ -40,7 +40,7 @@ multus:
     hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
   n2Interface:
     create: true
-    IPadd: "172.21.6.98"
+    IPadd: "172.21.6.190"
     Netmask: "22"
     # #name inside the pod is hardcoded right now
     # name: "n2"
@@ -72,14 +72,14 @@ config:
   snssaiList: "({ sst = 1, sd = 0xffffff },{ sst = 2, sd = 0xffffff },{ sst = 1, sd = 0x000001 },{ sst = 2, sd = 0x000001 })"
   amfhost: "172.21.6.186"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
   n2IfName: "n2"     #if multus.n2Interface.create is true then use n2
-  n3IfName: "n2"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
+  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
   f1IfName: "n2"    #if multus.f1Interface.create is true then use f1
   e1IfName: "n2"     #if multus.f1Interface.create is true then use e1
-  f1cuPort: "2152"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
-  f1duPort: "2152"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
-  e1CuUpIpAddress: "192.168.18.13"  ## CU-UP ip-address 
+  f1cuPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  f1duPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  e1CuUpIpAddress: "172.21.6.191"  ## CU-UP ip-address 
   #Normally you don't have to set this but at the moment it is required
-  f1DuIpAddress: "192.168.20.13"
+  f1DuIpAddress: "172.21.6.193"
  
 # Debugging section
 podSecurityContext:

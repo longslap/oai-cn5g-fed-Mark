@@ -27,11 +27,11 @@ fi
 # DU LOCAL @ is config.f1duIpAddress="192.168.20.17" 
 helm install -f ../charts/oai-5g-ran/oai-cu-up/Chart.yaml cuup1 ../charts/oai-5g-ran/oai-cu-up \
         --set serviceAccount.name=oai-cu-up1-sa \
-        --set multus.e1Interface.IPadd="192.168.18.13" \
-        --set multus.n3Interface.IPadd="192.168.25.4" \
-        --set multus.f1uInterface.IPadd="192.168.20.14" \
-        --set config.cuCpHost="192.168.18.12" \
-        --set config.f1duIpAddress="192.168.20.17" \
+        --set multus.e1Interface.IPadd="172.21.6.191" \
+        --set multus.n3Interface.IPadd="172.21.6.191" \
+        --set multus.f1uInterface.IPadd="172.21.6.191" \
+        --set config.cuCpHost="172.21.6.190" \
+        --set config.f1duIpAddress="172.21.6.193" \
         --set config.nssaiSst="1" \
         --set config.nssaiSd="0xffffff" \
         --set start.tcpdump="true" \
@@ -41,20 +41,20 @@ CUUP1=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-
 echo "CUUP1=$CUUP1"
 oc logs $CUUP1 -c gnbcuup > cuup1-start.log
 
-helm install -f ../charts/oai-5g-ran/oai-cu-up2/Chart.yaml cuup2 ../charts/oai-5g-ran/oai-cu-up2 \
-        --set multus.e1Interface.IPadd="192.168.18.14" \
-        --set multus.n3Interface.IPadd="192.168.25.5" \
-        --set multus.f1uInterface.IPadd="192.168.20.15" \
-        --set config.cuCpHost="192.168.18.12" \
-        --set config.f1duIpAddress="192.168.20.13" \
-        --set config.nssaiSst="2" \
-        --set config.nssaiSd="0xffffff" \
-        --set start.tcpdump="true" \
-        --set includeTcpDumpContainer="true"
-while [[ $(kubectl get pods -l app=oai-cu-up2 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-cu-up2" && sleep 1; done
-CUUP2=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep -v $CUUP1 | grep oai-cu-up2 | grep -v build`
-echo "CUUP2=$CUUP2"
-oc logs $CUUP2 -c gnbcuup > cuup2-start.log
+# helm install -f ../charts/oai-5g-ran/oai-cu-up2/Chart.yaml cuup2 ../charts/oai-5g-ran/oai-cu-up2 \
+#         --set multus.e1Interface.IPadd="172.21.6.192" \
+#         --set multus.n3Interface.IPadd="172.21.6.192" \
+#         --set multus.f1uInterface.IPadd="172.21.6.192" \
+#         --set config.cuCpHost="172.21.6.190" \
+#         --set config.f1duIpAddress="172.21.6.193" \
+#         --set config.nssaiSst="2" \
+#         --set config.nssaiSd="0xffffff" \
+#         --set start.tcpdump="true" \
+#         --set includeTcpDumpContainer="true"
+# while [[ $(kubectl get pods -l app=oai-cu-up2 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-cu-up2" && sleep 1; done
+# CUUP2=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep -v $CUUP1 | grep oai-cu-up2 | grep -v build`
+# echo "CUUP2=$CUUP2"
+# oc logs $CUUP2 -c gnbcuup > cuup2-start.log
 
 helm install -f ../charts/oai-5g-ran/oai-du/Chart.yaml du \
                 ../charts/oai-5g-ran/oai-du \

@@ -62,23 +62,6 @@ nfs:
     n9:
       interface_name: eth0
       port: 2152
-  upf-local:
-    host: oai-upf-local
-    sbi:
-      port: 80
-      api_version: v1
-      interface_name: eth0
-    n3:
-      interface_name: n3
-      port: 2152
-    n4:
-      interface_name: eth0
-      port: 8805
-    n6:
-      interface_name: eth0
-    n9:
-      interface_name: eth0
-      port: 2152
   udm:
     host: oai-udm
     sbi:

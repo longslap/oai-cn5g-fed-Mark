@@ -1,5 +1,5 @@
 #!/bin/bash
-export START_UE1=0
+export START_UE1=1
 export START_UE2=0
 export START_UE1_LOCAL=0
 export START_UE2_LOCAL=0
@@ -48,7 +48,7 @@ sleep 3
 ./deployran.bash
 ret=$?;
 sleep 3
-./deployranlocal.bash
+#./deployranlocal.bash
 ret=$?;
 
 CUCP=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-cu-cp | grep -v build`

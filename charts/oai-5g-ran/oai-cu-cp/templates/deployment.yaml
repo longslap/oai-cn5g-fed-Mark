@@ -16,19 +16,19 @@ spec:
       labels:
         {{- include "oai-cu-cp.selectorLabels" . | nindent 8 }}
         app: oai-cu-cp
-    {{- if .Values.multus.e1Interface.create }}
+    {{- if .Values.multus.n2Interface.create }}
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
           [{
-                 "name": "{{ .Chart.Name }}-e1",
-                 "interface": "e1"
+                 "name": "{{ .Chart.Name }}-n2",
+                 "interface": "n2"
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
                 {{- end }}
           }
-          {{- if .Values.multus.n2Interface.create }}
+          {{- if .Values.multus.e1Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-n2",
+                 "name": "{{ .Chart.Name }}-e1",
                  "interface": "n2"
           }
           {{- end }}
@@ -54,7 +54,7 @@ spec:
           command:
           - /bin/sh
           - -c
-          - sysctl -w net.ipv4.ip_forward=1
+          - sysctl -w net.ipv4.ip_forward=1 && sysctl -w net.ipv4.conf.all.rp_filter=0
           securityContext:
             privileged: true   
       containers:
