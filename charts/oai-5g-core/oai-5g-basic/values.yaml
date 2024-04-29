@@ -103,6 +103,10 @@ oai-upf:
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: false #only for taking pcaps inside network function pod
+  podSecurityContext:
+    sysctls:
+    - name: net.ipv4.conf.all.forwarding
+      value: 1
   imagePullSecrets:
     - name: "regcred"
   # create an extra interface for N3 incase the gNB is outside the cluster network or there is a need to have dedicated interface for N3
