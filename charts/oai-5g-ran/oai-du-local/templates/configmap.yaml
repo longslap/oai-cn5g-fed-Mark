@@ -13,8 +13,8 @@ data:
       (
        {
           ////////// Identification parameters:
-          gNB_ID = 0x005;
-          gNB_DU_ID = 0x005;
+          gNB_ID = 0x007;
+          gNB_DU_ID = 0x007;
 
       #     cell_type =  "CELL_MACRO_GNB";
 

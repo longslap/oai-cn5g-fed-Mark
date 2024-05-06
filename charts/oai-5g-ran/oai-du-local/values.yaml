@@ -31,7 +31,7 @@ multus:
   defaultGateway: ""
   f1Interface:
     create: true
-    IPadd: "192.168.20.17"
+    IPadd: "172.21.6.195"
     Netmask: "22"
     # #name inside the pod is hardcoded right now
     # name: "f1"
@@ -59,16 +59,16 @@ config:
   timeZone: "Europe/Paris"
   useAdditionalOptions: "--sa --rfsim --log_config.global_log_options level,nocolor,time"
   duName: "oai-du-local-rfsim"
-  mcc: "001"   # check the information with AMF, SMF, UPF
-  mnc: "01"    # check the information with AMF, SMF, UPF
+  mcc: "208"   # check the information with AMF, SMF, UPF
+  mnc: "92"    # check the information with AMF, SMF, UPF
   mncLength: "2" # check the information with AMF, SMF, UPF
   tac: "1"     # check the information with AMF
-  snssaiList: "({ sst = 1, sd = 0xffffff },{ sst = 2, sd = 0x000001 })"
+  snssaiList: "({ sst = 1, sd = 0x000001 },{ sst = 2, sd = 0x000001 })"
   usrp: rfsim   #allowed values rfsim, b2xx, n3xx or x3xx
   f1IfName: "f1"   #if multus.f1Interface.create is true then use f1
-  cuHost: "192.168.20.12" # "oai-cu" ## Ip-address or hostname
-  f1cuPort: "2152"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
-  f1duPort: "2152"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  cuHost: "172.21.6.190" # "oai-cu" ## Ip-address or hostname
+  f1cuPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
+  f1duPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
 
 ## Debugging section
 podSecurityContext:

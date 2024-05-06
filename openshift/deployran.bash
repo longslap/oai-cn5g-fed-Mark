@@ -41,20 +41,20 @@ CUUP1=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-
 echo "CUUP1=$CUUP1"
 oc logs $CUUP1 -c gnbcuup > cuup1-start.log
 
-# helm install -f ../charts/oai-5g-ran/oai-cu-up2/Chart.yaml cuup2 ../charts/oai-5g-ran/oai-cu-up2 \
-#         --set multus.e1Interface.IPadd="172.21.6.192" \
-#         --set multus.n3Interface.IPadd="172.21.6.192" \
-#         --set multus.f1uInterface.IPadd="172.21.6.192" \
-#         --set config.cuCpHost="172.21.6.190" \
-#         --set config.f1duIpAddress="172.21.6.193" \
-#         --set config.nssaiSst="2" \
-#         --set config.nssaiSd="0xffffff" \
-#         --set start.tcpdump="true" \
-#         --set includeTcpDumpContainer="true"
-# while [[ $(kubectl get pods -l app=oai-cu-up2 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-cu-up2" && sleep 1; done
-# CUUP2=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep -v $CUUP1 | grep oai-cu-up2 | grep -v build`
-# echo "CUUP2=$CUUP2"
-# oc logs $CUUP2 -c gnbcuup > cuup2-start.log
+helm install -f ../charts/oai-5g-ran/oai-cu-up2/Chart.yaml cuup2 ../charts/oai-5g-ran/oai-cu-up2 \
+        --set multus.e1Interface.IPadd="172.21.6.192" \
+        --set multus.n3Interface.IPadd="172.21.6.192" \
+        --set multus.f1uInterface.IPadd="172.21.6.192" \
+        --set config.cuCpHost="172.21.6.190" \
+        --set config.f1duIpAddress="172.21.6.193" \
+        --set config.nssaiSst="2" \
+        --set config.nssaiSd="0xffffff" \
+        --set start.tcpdump="true" \
+        --set includeTcpDumpContainer="true"
+while [[ $(kubectl get pods -l app=oai-cu-up2 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-cu-up2" && sleep 1; done
+CUUP2=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep -v $CUUP1 | grep oai-cu-up2 | grep -v build`
+echo "CUUP2=$CUUP2"
+oc logs $CUUP2 -c gnbcuup > cuup2-start.log
 
 helm install -f ../charts/oai-5g-ran/oai-du/Chart.yaml du \
                 ../charts/oai-5g-ran/oai-du \
@@ -86,25 +86,25 @@ if [ $START_UE1 -ne 0 ]; then
     exit 1
   fi
 fi
-if [ $START_UE2 -ne 0 ]; then
-  helm install -f ../charts/oai-5g-ran/oai-nr-ue2/Chart.yaml ue2 \
-                  ../charts/oai-5g-ran/oai-nr-ue2 \
-                  --set config.rfsimHost="$DU_IP" \
-                  --set config.rfSimServer="$DU_IP"
+# if [ $START_UE2 -ne 0 ]; then
+#   helm install -f ../charts/oai-5g-ran/oai-nr-ue2/Chart.yaml ue2 \
+#                   ../charts/oai-5g-ran/oai-nr-ue2 \
+#                   --set config.rfsimHost="$DU_IP" \
+#                   --set config.rfSimServer="$DU_IP"
 
-  while [[ $(kubectl get pods -l app=oai-nr-ue2 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-nr-ue2" && sleep 1; done
-  UE2_POD_NAME=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-nr-ue2 | grep -v build`
-  UE2=$UE2_POD_NAME
-  echo "UE2=$UE2_POD_NAME"
+#   while [[ $(kubectl get pods -l app=oai-nr-ue2 -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-nr-ue2" && sleep 1; done
+#   UE2_POD_NAME=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-nr-ue2 | grep -v build`
+#   UE2=$UE2_POD_NAME
+#   echo "UE2=$UE2_POD_NAME"
 
-  RETURN_VAL=''
-  wait4UeIpAddress $UE2_POD_NAME
-  if python3 -c "import ipaddress; ipaddress.ip_address('${RETURN_VAL}')" 2>/dev/null; then
-    echo "UE2 IP_ADDR $RETURN_VAL is a valid IPv4 or IPv6 address"
-    oc rsh -c nr-ue $UE2_POD_NAME ping -c 10 8.8.8.8 -I oaitun_ue1
-  else
-    echo "UE2 IP_ADDR $RETURN_VAL is not a valid IPv4 or IPv6 address"
-    exit 1
-  fi
-fi
+#   RETURN_VAL=''
+#   wait4UeIpAddress $UE2_POD_NAME
+#   if python3 -c "import ipaddress; ipaddress.ip_address('${RETURN_VAL}')" 2>/dev/null; then
+#     echo "UE2 IP_ADDR $RETURN_VAL is a valid IPv4 or IPv6 address"
+#     oc rsh -c nr-ue $UE2_POD_NAME ping -c 10 8.8.8.8 -I oaitun_ue1
+#   else
+#     echo "UE2 IP_ADDR $RETURN_VAL is not a valid IPv4 or IPv6 address"
+#     exit 1
+#   fi
+# fi
 exit 0

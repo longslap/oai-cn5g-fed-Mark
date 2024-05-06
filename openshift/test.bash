@@ -1,7 +1,7 @@
 #!/bin/bash
 export START_UE1=1
 export START_UE2=0
-export START_UE1_LOCAL=0
+export START_UE1_LOCAL=1
 export START_UE2_LOCAL=0
 
 function wait4Podlog {
@@ -48,7 +48,7 @@ sleep 3
 ./deployran.bash
 ret=$?;
 sleep 3
-#./deployranlocal.bash
+./deployranlocal.bash
 ret=$?;
 
 CUCP=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-cu-cp | grep -v build`
@@ -65,6 +65,8 @@ UPF=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-up
 UPFLOCAL=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-upf-local | grep -v build`
 AMF=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-amf | grep -v build`
 SMF=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-smf | grep -v build`
+UDR=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-udr | grep -v build`
+UDM=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-udm | grep -v build`
 
 echo "CUCP=$CUCP"
 echo "CUUP1=$CUUP1"
@@ -80,36 +82,6 @@ echo "UPF=$UPF"
 echo "UPFLOCAL=$UPFLOCAL"
 echo "AMF=$AMF"
 echo "SMF=$SMF"
-
-sleep 20
-echo 'Logging...'
-# disk space not so big
-rm -Rf pcap/*
-rm *.log
-
-oc logs $UE1 -c nr-ue > ue1.log
-oc logs $UE2 -c nr-ue > ue2.log
-oc logs $UE1LOCAL -c nr-ue > ue1local.log
-oc logs $UE2LOCAL -c nr-ue > ue2local.log
-oc logs $DU -c gnbdu > du.log
-oc logs $DULOCAL -c gnbdu > dulocal.log
-oc logs $CUCP -c gnbcucp > cucp.log
-oc logs $CUUP1 -c gnbcuup > cuup1.log
-oc logs $CUUP2 -c gnbcuup > cuup2.log
-oc logs $CUUPLOCAL -c gnbcuup > cuuplocal.log
-oc logs $AMF -c amf > amf.log
-oc logs $SMF -c smf > smf.log
-oc logs $UPF -c upf > upf.log
-
-echo 'Get pcaps from pods...'
-oc rsync -c tcpdump $AMF:/tmp/pcap .
-oc rsync -c tcpdump $CUCP:/tmp/pcap .
-oc rsync -c tcpdump $CUUP1:/tmp/pcap .
-oc rsync -c tcpdump $CUUP2:/tmp/pcap .
-oc rsync -c tcpdump $CUUPLOCAL:/tmp/pcap .
-oc rsync -c tcpdump $DU:/tmp/pcap .
-oc rsync -c tcpdump $DULOCAL:/tmp/pcap .
-#oc rsync -c tcpdump $UPF:/tmp/pcap .
 exit 0
 
 

@@ -13,8 +13,8 @@ data:
       (
        {
           ////////// Identification parameters:
-          gNB_ID = 0x003;
-          gNB_CU_UP_ID = 0x003;
+          gNB_ID = 0x005;
+          gNB_CU_UP_ID = 0x005;
 
       #     cell_type =  "CELL_MACRO_GNB";
 
@@ -68,7 +68,8 @@ data:
 
       log_config : {
         global_log_level = "info";
-        pdcp_log_level   = "info";
-        f1ap_log_level   = "info";
-        ngap_log_level   = "info";
+        pdcp_log_level   = "debug";
+        f1ap_log_level   = "debug";
+        e1ap_log_level   = "debug";
+        ngap_log_level   = "debug";
       };

@@ -10,13 +10,13 @@ AMF_POD_NAME=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | gr
 
 helm install -f ../charts/oai-5g-ran/oai-cu-up-local/Chart.yaml cuuplocal ../charts/oai-5g-ran/oai-cu-up-local \
         --set serviceAccount.name=oai-cu-up-local-sa \
-        --set multus.e1Interface.IPadd="192.168.18.15" \
-        --set multus.n3Interface.IPadd="192.168.25.6" \
-        --set multus.f1uInterface.IPadd="192.168.20.16" \
-        --set config.cuCpHost="192.168.18.12" \
-        --set config.f1uDuIpAddress="192.168.20.17" \
-        --set config.nssaiSst="2" \
-        --set config.nssaiSd="0xffffff" \
+        --set multus.e1Interface.IPadd="172.21.6.196" \
+        --set multus.n3Interface.IPadd="172.21.6.196" \
+        --set multus.f1uInterface.IPadd="172.21.6.196" \
+        --set config.cuCpHost="172.21.6.190" \
+        --set config.f1uDuIpAddress="172.21.6.195" \
+        --set config.nssaiSst="1" \
+        --set config.nssaiSd="0x000001" \
         --set start.tcpdump="true" \
         --set includeTcpDumpContainer="true" 
 while [[ $(kubectl get pods -l app=oai-cu-up-local -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-cu-up-local" && sleep 1; done

@@ -153,6 +153,62 @@ oai-upf:
       hostInterface: "bond0"
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
   nodeSelector: {}
+oai-upf-local:
+  enabled: true
+  kubernetesType: Openshift #Openshift/Vanilla Vanilla for Upstream Kubernetes
+  nfimage:  # image name either locally present or in a public/private repository
+    repository: docker.io/oaisoftwarealliance/oai-upf    ## The image will be pulled from dockerhub
+    version: develop                                    ## The branch to be used to pull from dockerhub
+    # pullPolicy: IfNotPresent or Never or Always
+    pullPolicy: IfNotPresent
+  start:
+    tcpdump: false    
+  includeTcpDumpContainer: false #only for taking pcaps inside network function pod
+  imagePullSecrets:
+    - name: "regcred"
+  # create an extra interface for N3 incase the gNB is outside the cluster network or there is a need to have dedicated interface for N3
+  ## Change these ip-addresses according to your environment
+  ## N4, N6 are optional only if you want that UPF uses different subnets for different 3gpp interfaces. 
+  multus:
+    ## If you don't want to add a default route in your pod then replace this field with ""
+    defaultGateway: ""
+    n3Interface:
+      create: true
+      Ipadd: "172.21.6.197"
+      Netmask: "22"
+      # #name inside the pod is hardcoded right now
+      name: "n3"
+      ## If you do not have a gateway leave the field empty
+      Gateway: ""
+      ## If you don't want to add a default route in your pod then replace this field with ""
+      routes: [{'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
+      hostInterface: "bond0"
+    ## For n4 it is better to re-use eth0 interface inside the pod (primary CNI of Kubernetes)
+    n4Interface:
+      create: false
+      Ipadd: "192.168.24.2"
+      Netmask: "24"
+      # #name inside the pod is hardcoded right now
+      # name: "n4"
+      ## If you do not have a gateway leave the field empty
+      Gateway: ""
+      ## If you do not want to add any routes in your pod then leave this field empty
+      routes: ""
+      hostInterface: "bond0"
+    n6Interface:
+      create: false
+      Ipadd: "192.168.22.2"
+      # #name inside the pod is hardcoded right now
+      # name: "n6"
+      Netmask: "24"
+      ## If you do not have a gateway leave the field empty
+      Gateway: ""
+      ## If you do not want to add any routes in your pod then leave this field empty
+      routes: ""
+      hostInterface: "bond0"
+  #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
+  nodeSelector: {}
+
 oai-traffic-server:
   enabled: true
   weight: 6
