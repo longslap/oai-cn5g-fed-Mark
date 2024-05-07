@@ -1,7 +1,7 @@
 #!/bin/bash
 export START_UE1=1
 export START_UE2=0
-export START_UE1_LOCAL=1
+export START_UE1_LOCAL=0
 export START_UE2_LOCAL=0
 
 function wait4Podlog {
@@ -47,9 +47,9 @@ ret=$?;[[ $ret -ne 0 ]] && exit $ret
 sleep 3
 ./deployran.bash
 ret=$?;
-sleep 3
-./deployranlocal.bash
-ret=$?;
+#sleep 3
+#./deployranlocal.bash
+#ret=$?;
 
 CUCP=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-cu-cp | grep -v build`
 CUUP1=`oc get pods -o custom-columns=POD:.metadata.name --no-headers | grep oai-cu-up | grep -v oai-cu-up2 | grep -v local | grep -v build`

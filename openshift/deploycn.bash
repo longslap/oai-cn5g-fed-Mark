@@ -25,9 +25,9 @@ while [[ $(kubectl get pods -l app=oai-nrf -o 'jsonpath={..status.conditions[?(@
 export NRF_POD_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=oai-nrf" -o jsonpath="{.items[0].metadata.name}")
 echo "NRF ready"
 
-while [[ $(kubectl get pods -l app=oai-upf-local -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-upf-local" && sleep 1; done
-export UPF_LOCAL_POD_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=oai-upf-local" -o jsonpath="{.items[0].metadata.name}")
-echo "UPF-Local ready"
+# while [[ $(kubectl get pods -l app=oai-upf-local -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "waiting for pod oai-upf-local" && sleep 1; done
+# export UPF_LOCAL_POD_NAME=$(kubectl get pods --namespace $NAMESPACE -l "app.kubernetes.io/name=oai-upf-local" -o jsonpath="{.items[0].metadata.name}")
+# echo "UPF-Local ready"
 
 export UPF_log1=$(oc logs $UPF_POD_NAME -c upf | grep 'Received SX HEARTBEAT REQUEST' | wc -l)
 export UPF_log2=$(oc logs $UPF_POD_NAME -c upf | grep 'handle_receive(16 bytes)' | wc -l)

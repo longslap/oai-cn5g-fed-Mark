@@ -154,7 +154,7 @@ oai-upf:
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
   nodeSelector: {}
 oai-upf-local:
-  enabled: true
+  enabled: false
   kubernetesType: Openshift #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-upf    ## The image will be pulled from dockerhub
