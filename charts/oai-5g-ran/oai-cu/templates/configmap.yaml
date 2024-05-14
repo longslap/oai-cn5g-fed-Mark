@@ -29,7 +29,6 @@ data:
 
           tr_s_preference = "f1";
 
-          local_s_if_name = "{{ .Values.config.f1IfName}}";
           local_s_address = "@F1_IP_ADDRESS@";
           remote_s_address = "127.0.0.1";
           local_s_portc   = 501;
@@ -51,9 +50,7 @@ data:
 
           NETWORK_INTERFACES :
           {
-#            GNB_INTERFACE_NAME_FOR_NG_AMF            = "{{ .Values.config.n2IfName}}";
             GNB_IPV4_ADDRESS_FOR_NG_AMF              = "@GNB_N2_IP_ADDRESS@";
-#            GNB_INTERFACE_NAME_FOR_NGU               = "{{ .Values.config.n3IfName}}";
             GNB_IPV4_ADDRESS_FOR_NGU                 = "@GNB_N3_IP_ADDRESS@";
             GNB_PORT_FOR_S1U                         = 2152; # Spec 2152
           };
