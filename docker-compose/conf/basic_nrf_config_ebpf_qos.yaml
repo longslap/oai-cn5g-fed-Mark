@@ -162,8 +162,8 @@ amf:
         - *embb_slice2
         - *custom_slice
   supported_integrity_algorithms:
-    - "NIA0"
     - "NIA1"
+    - "NIA0"
     - "NIA2"
   supported_encryption_algorithms:
     - "NEA0"
@@ -224,6 +224,7 @@ smf:
 upf:
   support_features:
     enable_bpf_datapath: yes    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
+    enable_qos: yes
   remote_n6_gw: oai-ext-dn
   upf_info:
     sNssaiUpfInfoList:
