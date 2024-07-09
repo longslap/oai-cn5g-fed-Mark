@@ -133,5 +133,12 @@ def create_image_info_line(container, image, date, size):
     return f"| {container} | {image} | {date} | {size} | \n"
 
 
-def get_tag(container_name):
+def get_image_tag(container_name):
+    tag = image_tags.get(container_name, "")
+    if tag:
+        return tag
+    # to allow oai-upf, oai-upf-ebpf, oai-upf-2, etc to be interpreted as oai-upf
+    idx = container_name.rfind("-")
+    container_name = container_name[:idx]
+
     return image_tags.get(container_name, "")

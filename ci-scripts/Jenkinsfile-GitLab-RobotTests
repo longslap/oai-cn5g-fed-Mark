@@ -26,6 +26,7 @@ def cn_ci_resource = params.DockerContainers
 def upstreamEvent = false
 
 // Variables that can used in main pipeline and in functions
+DEFAULT=-1
 NRF=0
 AMF=1
 SMF=2
@@ -121,6 +122,49 @@ pipeline {
           }
           sh 'git submodule update --init --recursive ci-scripts/common'
           sh "mkdir -p archives"
+
+          // Having the possibility to run manually as in CI
+          int emulation_run = params.EMULATE_MR_RUN.toInteger()
+          switch (emulation_run) {
+            case NRF:
+              upstreamEvent = true
+              upstreamJobs[NRF] = true
+              break
+            case AMF:
+              upstreamEvent = true
+              upstreamJobs[AMF] = true
+              break
+            case SMF:
+              upstreamEvent = true
+              upstreamJobs[SMF] = true
+              break
+            case UPF:
+              upstreamEvent = true
+              upstreamJobs[UPF] = true
+              break
+            case AUSF:
+              upstreamEvent = true
+              upstreamJobs[AUSF] = true
+              break
+            case UDM:
+              upstreamEvent = true
+              upstreamJobs[UDM] = true
+              break
+            case UDR:
+              upstreamEvent = true
+              upstreamJobs[UDR] = true
+              break
+            case NSSF:
+              upstreamEvent = true
+              upstreamJobs[NSSF] = true
+              break
+            case PCF:
+              upstreamEvent = true
+              upstreamJobs[PCF] = true
+              break
+            case DEFAULT:
+              break
+          }
 
           for (ii = 0; ii < imageNames.size(); ii++) {
             if (ii == NRF) {

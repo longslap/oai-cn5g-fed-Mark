@@ -94,8 +94,8 @@ class CNTestLib:
                     else:
                         nf["depends_on"] = ["oai-nrf"]
                 # replace with tag
-                if service in image_tags:
-                    nf["image"] = image_tags[service]
+                if get_image_tag(service):
+                    nf["image"] = get_image_tag(service)
 
             with open(self.docker_compose_path, "w") as out_file:
                 yaml.dump(parsed, out_file)
@@ -242,10 +242,10 @@ class CNTestLib:
         docu = " = Core Network Images = \n"
         docu += create_image_info_header()
         for container in self.list_of_containers:
-            if container not in image_tags:
+            if not get_image_tag(container):
                 continue
-            size, date = self.docker_api.get_image_info(image_tags[container])
-            docu += create_image_info_line(container, image_tags[container], date, size)
+            size, date = self.docker_api.get_image_info(get_image_tag(container))
+            docu += create_image_info_line(container, get_image_tag(container), date, size)
         return docu
 
     def log_should_contain(self, container, match):

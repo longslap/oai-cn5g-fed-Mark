@@ -373,6 +373,9 @@ def detailsUeTrafficTest(runNb):
             if re.search('oaiocp-gw.oai.cs.eurecom.fr', line) is not None:
                 cnt += 1
                 detailsHtml += generate_list_row(line, 'forward')
+            if re.search('eurecom-gw.eurecom.fr', line) is not None:
+                cnt += 1
+                detailsHtml += generate_list_row(line, 'forward')
             if re.search('openairinterface.org', line) is not None and cnt > 0:
                 cnt += 1
                 detailsHtml += generate_list_row(line, 'forward')
@@ -387,7 +390,7 @@ def detailsUeTrafficTest(runNb):
                 if res is not None:
                     oai_org_final_destination = res.group('ip_address')
     if cnt != 4:
-        detailsHtml += generate_list_row('TraceRoute did NOT complete', 'question-sign')
+        detailsHtml += generate_list_row(f'TraceRoute did NOT complete {cnt}', 'question-sign')
         status = False
     else:
         detailsHtml += generate_list_row('TraceRoute was complete', 'thumbs-up')

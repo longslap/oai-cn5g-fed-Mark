@@ -136,7 +136,8 @@ Run NGAP Tester Test
 
 Test Setup NGAP Tester
     Check Cn Health Status
-    Start Trace   ${TEST_NAME}   signaling_only=${FALSE}   single_interface=${FALSE}
+    # set single interface currently to true to receive better traces, if we have eBPF support, we should fix this
+    Start Trace   ${TEST_NAME}   signaling_only=${FALSE}   single_interface=${True}
 
 Test Teardown NGAP Tester
      Stop Ngap Tester

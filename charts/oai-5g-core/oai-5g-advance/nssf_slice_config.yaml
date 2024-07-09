@@ -6,14 +6,14 @@ configuration:
   nsiInfoList:
     - snssai:
         sst: 222
-        sd: '123'
+        sd: '00007B'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-10.fr:80/nnrf-disc/v1/nf-instances
         nsiId: '11'
         nrfNfMgtUri: http://oai-cn5g-nrf-10.fr:80/nnrf-nfm/v1/nf-instances
     - snssai:
         sst: 1
-        sd: '1'
+        sd: '000001'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-10.fr:80/nnrf-disc/v1/nf-instances
         nsiId: '10'
@@ -24,7 +24,7 @@ configuration:
         nsiId: '20'
     - snssai:
         sst: 131
-        sd: '131'
+        sd: '000083'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-20.fr:80/nnrf-disc/v1/nf-instances
         nsiId: '20'
@@ -35,7 +35,7 @@ configuration:
         nsiId: '20'
     - snssai:
         sst: 133
-        sd: '133'
+        sd: '000085'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-20.fr:80/nnrf-disc/v1/nf-instances
         nsiId: '20'
@@ -46,7 +46,7 @@ configuration:
         nsiId: '20'
     - snssai:
         sst: 135
-        sd: '135'
+        sd: '000087'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-20.fr:80/nnrf-disc/v1/nf-instances
         nsiId: '20'
@@ -63,9 +63,9 @@ configuration:
         tac: '33456'
       supportedSnssaiList:
       - sst: 222
-        sd: '123'
+        sd: '00007B'
       - sst: 1
-        sd: '1'
+        sd: '000001'
       - sst: 2
     - tai:
         plmnId:
@@ -75,7 +75,7 @@ configuration:
       supportedSnssaiList:
       - sst: 130
       - sst: 131
-        sd: '131'
+        sd: '000083'
       - sst: 132
       restrictedSnssaiList:
       - homePlmnId:
@@ -83,7 +83,7 @@ configuration:
           mnc: 97
         sNssaiList:
         - sst: 1
-          sd: '3'
+          sd: '000003'
     - tai:
         plmnId:
           mcc: '208'
@@ -91,7 +91,7 @@ configuration:
         tac: '33458'
       supportedSnssaiList:
       - sst: 133
-        sd: '133'
+        sd: '000085'
     - tai:
         plmnId:
           mcc: '208'
@@ -100,7 +100,7 @@ configuration:
       supportedSnssaiList:
       - sst: 134
       - sst: 135
-        sd: '135'
+        sd: '000087'
   amfInfoList:
     - targetAmfSet: 208-95-128-01
       nrfAmfSet: http://oai-cn5g-nrf.fr:80/nnrf-disc/v1/nf-instances'
@@ -116,7 +116,7 @@ configuration:
               supportedSnssaiList:
                 - sst: 222
                 - sst: '123'
-                  sd: 1
+                  sd: "000001"
                 - sst: '1'
         - nfId: 405e8251-cc5a-45dd-a494-efb9eaf1cd68
           supportedNssaiAvailabilityData:
@@ -128,7 +128,7 @@ configuration:
               supportedSnssaiList:
                 - sst: 130
                 - sst: 131
-                  sd: '131'
+                  sd: '000083'
                 - sst: 132
               taiList:
                 - tai:
@@ -138,7 +138,7 @@ configuration:
                     tac: 33458
                   supportedSnssaiList:
                     - sst: 133
-                      sd: '133'
+                      sd: '000085'
         - nfId: 405e8251-cc5a-45dd-a494-efb9eaf1cd78
           supportedNssaiAvailabilityData:
               tai:
@@ -149,7 +149,7 @@ configuration:
               supportedSnssaiList:
                 - sst: 134
                 - sst: 135
-                  sd: 135
+                  sd: "000087"
     - targetAmfSet: 208-95-128-02
       nrfAmfSet: http://oai-cn5g-nrf.fr:80/nnrf-disc/v1/nf-instances
       nrfAmfSetNfMgtUri: http://oai-cn5g-nrf.fr:80/nnrf-nfm/v1/nf-instances

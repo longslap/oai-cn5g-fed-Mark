@@ -88,8 +88,12 @@ NGAP Tester TC SERVICE_REQUEST_24501_5611d Basic NRF Default
     TRY
         Run NGAP Tester Test   TC_SERVICE_REQUEST_24501_5611d   default
     EXCEPT    AS   ${error_message}
-        Log   Mandatory NGAP Tester test failed: TC_SERVICE_REQUEST_24501_5611d  level=ERROR
+        Log   Non-mandatory NGAP Tester test failed: TC_SERVICE_REQUEST_24501_5611d  level=ERROR
     END
+
+NGAP Tester TC SERVICE_REQUEST_24501_5611d_Easy Basic NRF Default
+    [Tags]    AMF  SMF  UPF
+    Run NGAP Tester Test   TC_SERVICE_REQUEST_24501_5611d_easy   default
 
 NGAP Tester TC SERVICE_REQUEST_24501_5611e Basic NRF Default
     [Tags]    AMF  SMF  UPF

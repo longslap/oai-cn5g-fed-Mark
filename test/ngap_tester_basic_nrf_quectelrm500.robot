@@ -86,10 +86,14 @@ NGAP Tester TC SERVICE_REQUEST_24501_5611d Basic NRF quectelrm500
     [Tags]    AMF  SMF  UPF
     # TODO, this test case should not fail
     TRY
-        Run NGAP Tester Test   TC_SERVICE_REQUEST_24501_5611d   default
+        Run NGAP Tester Test   TC_SERVICE_REQUEST_24501_5611d   quectelrm500
     EXCEPT    AS   ${error_message}
-        Log   Mandatory NGAP Tester test failed: TC_SERVICE_REQUEST_24501_5611d  level=ERROR
+        Log   Non-mandatory NGAP Tester test failed: TC_SERVICE_REQUEST_24501_5611d  level=ERROR
     END
+
+NGAP Tester TC SERVICE_REQUEST_24501_5611d_Easy Basic NRF quectelrm500
+    [Tags]    AMF  SMF  UPF
+    Run NGAP Tester Test   TC_SERVICE_REQUEST_24501_5611d_easy   quectelrm500
 
 NGAP Tester TC SERVICE_REQUEST_24501_5611e Basic NRF quectelrm500
     [Tags]    AMF  SMF  UPF

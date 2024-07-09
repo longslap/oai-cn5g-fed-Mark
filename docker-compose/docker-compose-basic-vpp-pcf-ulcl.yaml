@@ -165,7 +165,7 @@ services:
             - VPP_CORE_WORKER=1
 #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
-            - SNSSAI_SD=123
+            - SNSSAI_SD=00007B
             - SNSSAI_SST=222
             - DNN=default
             - REGISTER_NRF=yes
@@ -213,7 +213,7 @@ services:
             - VPP_CORE_WORKER=3
             #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
-            - SNSSAI_SD=123
+            - SNSSAI_SD=00007B
             - SNSSAI_SST=222
             - DNN=default
             - REGISTER_NRF=yes
@@ -259,7 +259,7 @@ services:
             - VPP_CORE_WORKER=5
             #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
-            - SNSSAI_SD=123
+            - SNSSAI_SD=00007B
             - SNSSAI_SST=222
             - DNN=default
             - REGISTER_NRF=yes

@@ -217,7 +217,7 @@ If you want to run OAI-UPF-eBPF from sources you can first install these depende
 ## 5. Network Functions Configuration
 
 ### i. SMF
-Please follow the [SMF Config tutorial](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/yaml_config_documentation/docs/CONFIGURATION.md?ref_type=heads) for the SMF configuration.
+Please follow the [SMF Config tutorial](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/CONFIGURATION.md?ref_type=heads) for the SMF configuration.
 
 Here we focus on the SMF details that needed to update (if not set by default) in order to make the SMF interacting with both AMF and UPF. Note that the `basic_nrf_config_ebpf.yaml` that is used as a shared volume is used by entire 5GCN functions including the UPF.
 
@@ -275,7 +275,7 @@ smf:
 
 
 ### ii. AMF
-Please refer to the [Documentation](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/yaml_config_documentation/docs/CONFIGURATION.md?ref_type=heads) for more details about the AMF configuration.
+Please refer to the [Documentation](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docs/CONFIGURATION.md?ref_type=heads) for more details about the AMF configuration.
 
 ```console
 $ cat docker-compose-basic-nrf-ebpf.yaml

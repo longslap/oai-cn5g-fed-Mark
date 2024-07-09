@@ -27,6 +27,6 @@ decision_default:
 decision_slice:
   slice: 
     sst: 222
-    sd: "123"
+    sd: "00007B"
   pcc_rules:
     - internet-rule

@@ -230,7 +230,7 @@ services:
             - VPP_CORE_WORKER=1
 #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/
-            - SNSSAI_SD=130
+            - SNSSAI_SD=000082
             - SNSSAI_SST=130
             - DNN=oai.ipv4
             - REGISTER_NRF=yes
