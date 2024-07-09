@@ -113,13 +113,13 @@ amf:
       nssai:
         - sst: 1
         - sst: 1
-          sd: 000001 # in hex
+          sd: 0x000001
         - sst: 222
-          sd: 00007B # in hex
+          sd: 0x00007B
         - sst: 128
-          sd: 000080 # in hex
+          sd: 0x000080
         - sst: 130
-          sd: 000082 # in hex
+          sd: 0x000082
   supported_integrity_algorithms:
     - "NIA1"
     - "NIA2"

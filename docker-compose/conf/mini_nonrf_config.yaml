@@ -98,10 +98,10 @@ snssais:
     sst: 1
   - &embb_slice2
     sst: 1
-    sd: 000001 # in hex
+    sd: 0x000001
   - &custom_slice
     sst: 222
-    sd: 00007B # in hex
+    sd: 0x00007B
 
 ############## NF-specific configuration
 amf:

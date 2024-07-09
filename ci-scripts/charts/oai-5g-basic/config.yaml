@@ -128,7 +128,7 @@ amf:
       nssai:
         - sst: 1
         - sst: 1
-          sd: 000001 # in hex
+          sd: 0x000001
   supported_integrity_algorithms:
     - "NIA1"
     - "NIA2"
