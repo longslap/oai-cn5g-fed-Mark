@@ -1,7 +1,7 @@
 *** Settings ***
 Library    JSONLibrary
-Library    sdk/src/modules/RFsimUEManager.py    WITH NAME    RFsim
-Library    sdk/src/main/init_handler.py    WITH NAME    Handler
+Library    5gcsdk/src/modules/RFsimUEManager.py    WITH NAME    RFsim
+Library    5gcsdk/src/main/init_handler.py    WITH NAME    Handler
 Library    AMFNotificationTest.py     WITH NAME    AMFNotifTest
 
 
