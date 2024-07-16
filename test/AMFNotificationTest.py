@@ -5,10 +5,15 @@ import multiprocessing
 import time
 import yaml
 from pymongo import MongoClient
+import importlib
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, parent_dir)
-from sdk.src.modules.RFsimUEManager import add_ues, remove_ues
-from sdk.src.main.init_handler import start_handler, stop_handler
+RFsimUEManager = importlib.import_module('5gcsdk.src.modules.RFsimUEManager')
+init_handler = importlib.import_module('5gcsdk.src.main.init_handler')
+add_ues = RFsimUEManager.add_ues
+remove_ues = RFsimUEManager.remove_ues
+start_handler = init_handler.start_handler  
+stop_handler = init_handler.stop_handler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
