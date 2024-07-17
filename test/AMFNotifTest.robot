@@ -2,7 +2,7 @@
 Library    JSONLibrary
 Library    5gcsdk/src/modules/RFsimUEManager.py    WITH NAME    RFsim
 Library    5gcsdk/src/main/init_handler.py    WITH NAME    Handler
-Library    AMFNotificationTest.py     WITH NAME    AMFNotifTest
+Library    NotificationTest.py     WITH NAME    NotifTest
 
 
 *** Variables ***
@@ -11,14 +11,8 @@ ${nb_of_users}    ${5}
 
 
 *** Test Cases ***
-Start Handler
+Check AMF Registration Notifications
     [Documentation]    Check MongoDB Status, Start the handler and wait for it to initialize, check Callback registration notification
-    RFsim.Add UEs    ${one}  
-    Sleep    10s
-    RFsim.Remove UEs    ${one}
-    RFsim.Add UEs    ${one}  
-    Sleep    10s
-    RFsim.Remove UEs    ${one}
     ${result}    Run    systemctl is-active mongod
     Should Not Contain    ${result}    inactive
     Run Keyword If    '${result}' == 'active'    Log    MongoDB is active
@@ -29,9 +23,13 @@ Start Handler
          RFsim.Add UEs    ${1}
          Sleep    15s
     END
-    AddUETest.check_imsi_match    ${DOCKER_YAML_PATH}    ${nb_of_users}
+    NotifTest.check_imsi_match    ${DOCKER_YAML_PATH}    ${nb_of_users}
 
-Final Remove UEs
+Check SMF Notifications:
+     ${logs}    Run    docker logs rfsim5g-oai-smf | sed -n '/SMF CONTEXT:/,/^[[:space:]]*$/p' 
+     NotifTest.check_smf_logs_and_callback_notification    '${logs}'
+
+Check AMF Deregistration Notification
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
     ${result1}    Run    systemctl is-active mongod
     Should Not Contain    ${result1}    inactive
@@ -41,5 +39,5 @@ Final Remove UEs
          RFsim.Remove UEs    ${1}
     END
     Sleep    15s
-    AddUETest.check_latest_deregistered_imsis    ${DOCKER_YAML_PATH}    ${nb_of_users}
+    NotifTest.check_latest_deregistered_imsis    ${DOCKER_YAML_PATH}    ${nb_of_users}
     Handler.stop_handler

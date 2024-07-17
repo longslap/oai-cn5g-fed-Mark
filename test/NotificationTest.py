@@ -6,6 +6,7 @@ import time
 import yaml
 from pymongo import MongoClient
 import importlib
+import re
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, parent_dir)
 RFsimUEManager = importlib.import_module('5gcsdk.src.modules.RFsimUEManager')
@@ -60,6 +61,71 @@ def get_imsi_from_handler_collection():
     except Exception as e:
         logger.error(f"Failed to get IMSIs from handler collection: {e}")
         stop_handler()
+        sys.exit(-1)
+        
+def check_smf_logs_and_callback_notification(logs):
+    try:
+        smf_contexts = re.findall(r'SMF CONTEXT:.*?(?=SMF CONTEXT:|$)', logs, re.DOTALL)
+        parsed_log_data = []
+
+        for context in smf_contexts:
+            parsed_context = {}
+            lines = context.split('\n')
+            for line in lines:
+                if "SUPI:" in line:
+                    parsed_context['SUPI'] = line.split(':')[1].strip()
+                if "PDU Session ID:" in line:
+                    parsed_context['PDU Session ID'] = line.split(':')[1].strip()
+                if "DNN:" in line:
+                    parsed_context['DNN'] = line.split(':')[1].strip()
+                if "PAA IPv4:" in line:
+                    parsed_context['PAA IPv4'] = line.split(':')[1].strip()
+                if "PDN type:" in line:
+                    parsed_context['PDN type'] = line.split(':')[1].strip()
+            parsed_log_data.append(parsed_context)
+        logging.getLogger('pymongo').setLevel(logging.INFO)
+        client = MongoClient('mongodb://localhost:27017/')
+        db = client['notification_db']
+        smf_collection = db['smf_notifications']
+        callback_data = []
+
+        for document in smf_collection.find():
+            for report in document["eventNotifs"]:
+                supi = report["supi"]
+                pdu_session_id = report["pduSeId"]
+                dnn = report["dnn"]
+                paa_ipv4 = report["adIpv4Addr"]
+                ip_session_type = report["pduSessType"]
+                callback_data.append({
+                    'SUPI': supi,
+                    'PDU Session ID': f"{pdu_session_id}",
+                    'DNN': dnn,
+                    'PAA IPv4': paa_ipv4,
+                    'PDN type': ip_session_type
+                })
+        if parsed_log_data != []: 
+            for log_entry in parsed_log_data:
+                match_found = False
+                for callback_entry in callback_data:
+                    if (log_entry['SUPI'] == callback_entry['SUPI'] and
+                        log_entry['PDU Session ID'] == callback_entry['PDU Session ID'] and
+                        log_entry['DNN'] == callback_entry['DNN'] and
+                        log_entry['PAA IPv4'] == callback_entry['PAA IPv4']):
+                        match_found = True
+                        break
+                if not match_found:
+                    logger.error(f"Mismatch found for SUPI: {log_entry['SUPI']}")
+                    sys.exit(-1)
+
+            logger.info("All SMF contexts match the callback data.")
+
+        else :
+
+            logger.error(f"No SMF contexts found in logs.{type(logs)}")
+            sys.exit(-1)
+
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
         sys.exit(-1)
 
 def check_imsi_match(docker_yaml_path,nb_of_users):
