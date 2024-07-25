@@ -5,6 +5,8 @@ import yaml
 from pymongo import MongoClient
 import importlib
 import re
+from common import *
+from docker_api import DockerApi
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, parent_dir)
 RFsimUEManager = importlib.import_module('5gcsdk.src.modules.RFsimUEManager')
@@ -33,6 +35,8 @@ def mongo_access(service_type: str):
         sys.exit(-1) 
                
 def extract_imsi_from_docker_yaml(docker_yaml_path):
+    home_dir = os.path.dirname(os.path.abspath(__file__))
+    docker_yaml_path = os.path.normpath(os.path.join(home_dir, '..' ,docker_yaml_path))
     with open(docker_yaml_path, 'r') as file:
         data = yaml.safe_load(file)
     imsis = []
@@ -77,19 +81,18 @@ def check_smf_logs_and_callback_notification(logs):
         callback_data = []
 
         for document in smf_collection.find():
-            for report in document["eventNotifs"]:
-                supi = report["supi"]
-                pdu_session_id = report["pduSeId"]
-                dnn = report["dnn"]
-                paa_ipv4 = report["adIpv4Addr"]
-                ip_session_type = report["pduSessType"]
-                callback_data.append({
-                    'SUPI': supi,
-                    'PDU Session ID': f"{pdu_session_id}",
-                    'DNN': dnn,
-                    'PAA IPv4': paa_ipv4,
-                    'PDN type': ip_session_type
-                })
+            supi = document["supi"]
+            pdu_session_id = document["pduSeId"]
+            dnn = document["dnn"]
+            paa_ipv4 = document["adIpv4Addr"]
+            ip_session_type = document["pduSessType"]
+            callback_data.append({
+                'SUPI': supi,
+                'PDU Session ID': f"{pdu_session_id}",
+                'DNN': dnn,
+                'PAA IPv4': paa_ipv4,
+                'PDN type': ip_session_type
+            })
         if parsed_log_data != []: 
             for log_entry in parsed_log_data:
                 match_found = False
@@ -121,14 +124,13 @@ def get_imsi_from_handler_collection():
         amf_collection = mongo_access("amf")
         latest_imsi_events = {}
         for document in amf_collection.find():
-            for report in document["reportList"]:
-                supi = report["supi"]
-                rm_state = report["rmInfoList"][0]["rmState"]
-                timestamp = report["timeStamp"]
-                if supi.startswith("imsi-"):
-                    supi = supi[5:]
-                if supi not in latest_imsi_events or timestamp > latest_imsi_events[supi]['timestamp']:
-                    latest_imsi_events[supi] = {'rm_state': rm_state, 'timestamp': timestamp}
+            supi = document["supi"]
+            rm_state = document["rmInfoList"][0]["rmState"]
+            timestamp = document["timeStamp"]
+            if supi.startswith("imsi-"):
+                supi = supi[5:]
+            if supi not in latest_imsi_events or timestamp > latest_imsi_events[supi]['timestamp']:
+                latest_imsi_events[supi] = {'rm_state': rm_state, 'timestamp': timestamp}
         latest_registered_imsis = [
             imsi for imsi, event in latest_imsi_events.items()
             if event['rm_state'] == "REGISTERED"]
@@ -151,6 +153,8 @@ def check_imsi_match(docker_yaml_path,nb_of_users):
         
         
 def check_latest_deregistered_imsis(docker_yaml_path, n):
+    home_dir = os.path.dirname(os.path.abspath(__file__))
+    docker_yaml_path = os.path.normpath(os.path.join(home_dir, '..' ,docker_yaml_path))
     try:
         amf_collection = mongo_access("amf")
         imsis_from_yaml = extract_imsi_from_docker_yaml(docker_yaml_path)[:n]      
@@ -162,12 +166,11 @@ def check_latest_deregistered_imsis(docker_yaml_path, n):
             sort=[("timeStamp", -1)]
         )
             for event in events:
-                for report in event["reportList"]:
-                    if report["supi"] == f"imsi-{imsi}" and report["rmInfoList"][0]["rmState"] == "DEREGISTERED":
-                        latest_deregistered_imsis.append(imsi)
-                        break
-                if imsi in latest_deregistered_imsis:
+                if event["supi"] == f"imsi-{imsi}" and event["rmInfoList"][0]["rmState"] == "DEREGISTERED":
+                    latest_deregistered_imsis.append(imsi)
                     break
+            if imsi in latest_deregistered_imsis:
+                break
         if set(latest_deregistered_imsis) == set(imsis_from_yaml):
             logger.info("Deregistered IMSI match successful.")
         else:
@@ -184,4 +187,9 @@ def add_ues_process():
     except Exception as e:
         logger.error(f"Core network is not healthy. UEs were not added: {e}")
         stop_handler()
-        sys.exit(-1)
+        raise e    
+                 
+def check_health_status(docker_compose_file):
+    docker_api = DockerApi()
+    containers = get_docker_compose_services(docker_compose_file)
+    docker_api.check_health_status(containers)

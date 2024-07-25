@@ -84,6 +84,19 @@ Launch EBPF CN
     Start CN
     Check Core Network Health Status
 
+Launch North CN
+    @{list} =    Create List    mysql    oai-amf     oai-smf    oai-ausf    oai-nrf    oai-upf    oai-udm    oai-udr    oai-ext-dn  
+    Prepare Scenario    ${List}    cn-northbound
+    #Run Process    cp    test/5gcsdk/yaml/docker-compose.yaml    archives/robot_framework/Test.AMFNotifTest/docker-compose-cn-northbound.yaml
+    #Run Process    cp    test/5gcsdk/yaml/gnb.sa.band78.106prb.rfsim.conf    archives/robot_framework/Test.AMFNotifTest/
+    #Run Process    cp    -r  test/5gcsdk/yaml/mysql   archives/robot_framework/Test.AMFNotifTest/
+    #Run Process    cp    test/5gcsdk/yaml/basic_vpp_nrf_config.yaml    archives/robot_framework/Test.AMFNotifTest/
+    #Run Process    cp    test/5gcsdk/yaml/nrue.uicc.conf   archives/robot_framework/Test.AMFNotifTest/
+    #Run Process    cp    test/5gcsdk/yaml/docker-compose-ue.yaml   archives/robot_framework/Test.AMFNotifTest/
+    Start CN
+    Check Core Network Health Status
+
+
 Suite Teardown Default
     Stop Cn
     Collect All Logs
