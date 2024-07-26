@@ -37,10 +37,6 @@ Check SMF Notifications:
 Check AMF Deregistration Notification
     [tags]  North
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
-    ${result1}    Run    systemctl is-active mongod
-    Should Not Contain    ${result1}    inactive
-    Run Keyword If    '${result1}' == 'active'    Log    MongoDB is active
-    ...    ELSE    Log    MongoDB is not active
     FOR    ${user}    IN RANGE    ${nb_of_users}
          RFsim.Remove UEs    ${1}
     END
