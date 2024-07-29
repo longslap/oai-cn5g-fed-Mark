@@ -32,7 +32,7 @@ def mongo_access(service_type: str):
             raise ValueError(f"Invalid service type: {service_type}")
     except Exception as e:
         logger.error(f"An error occurred: {e}")
-        sys.exit(-1) 
+        raise e
                
 def extract_imsi_from_docker_yaml(docker_yaml_path):
     home_dir = os.path.dirname(os.path.abspath(__file__))
@@ -55,7 +55,7 @@ def extract_imsi_from_docker_yaml(docker_yaml_path):
         logger.error("No IMSIs found in Docker YAML file")
         raise ValueError("No IMSIs found in Docker YAML file")
 
-def check_smf_logs_and_callback_notification(logs):
+def check_smf_logs_and_callback_notification(logs, nb_of_users):
    
     try:
         smf_contexts = re.findall(r'SMF CONTEXT:.*?(?=SMF CONTEXT:|$)', logs, re.DOTALL)
@@ -76,7 +76,8 @@ def check_smf_logs_and_callback_notification(logs):
                 if "PDN type:" in line:
                     parsed_context['PDN type'] = line.split(':')[1].strip()
             parsed_log_data.append(parsed_context)
-
+        if len(parsed_log_data) != nb_of_users:
+            raise Exception(f"Number of SMF contexts in logs ({len(parsed_log_data)}) does not match the number of users added ({nb_of_users})")
         smf_collection = mongo_access("smf")
         callback_data = []
 
@@ -106,7 +107,6 @@ def check_smf_logs_and_callback_notification(logs):
                         break
                 if not match_found:
                     logger.error(f"Mismatch found for SUPI: {log_entry['SUPI']}")
-                    stop_handler()
                     raise Exception(f"Mismatch found for SUPI: {log_entry['SUPI']}")
                     
 
@@ -115,12 +115,10 @@ def check_smf_logs_and_callback_notification(logs):
         else :
 
             logger.error(f"No SMF contexts found in logs.")
-            stop_handler()
             raise Exception("No SMF contexts found in logs.")
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
-        stop_handler()
         raise e
     
           
@@ -143,7 +141,6 @@ def get_imsi_from_handler_collection():
         return latest_registered_imsis
     except Exception as e:
         logger.error(f"Failed to get IMSIs from handler collection: {e}")
-        stop_handler()
         raise e
 
 def check_imsi_match(docker_yaml_path,nb_of_users):
@@ -183,7 +180,6 @@ def check_latest_deregistered_imsis(docker_yaml_path, n):
             raise ValueError("Deregistered IMSI mismatch.")
     except Exception as e:
         logger.error(f"Failed to check latest deregistered IMSIs: {e}")
-        stop_handler()
         raise e
 
 def add_ues_process():
@@ -192,7 +188,6 @@ def add_ues_process():
         logger.info("UEs were successfully added.")
     except Exception as e:
         logger.error(f"Core network is not healthy. UEs were not added: {e}")
-        stop_handler()
         raise e    
                  
 def check_health_status(docker_compose_file):
