@@ -43,6 +43,9 @@ from common.python.generate_html import (
     generate_list_sub_header,
     generate_list_sub_footer,
     generate_list_sub_row,
+    generate_command_table_header,
+    generate_command_table_row,
+    generate_command_table_footer,
 )
 
 REPORT_NAME = 'test_results_oai_cn5g_load_test.html'
@@ -70,6 +73,7 @@ class HtmlReport():
 
         log_files = sorted(os.listdir(cwd + '/archives/' + testPath))
         deployedContainerImages = []
+        byeMessages = []
         for log_file in log_files:
             if not log_file.endswith(".log"):
                 continue
@@ -104,8 +108,19 @@ class HtmlReport():
                     result = re.search('Date = (?P<date>[a-zA-Z0-9\-\_:]+)', line)
                     if result is not None:
                         imageDate = re.sub('T', '  ', result.group('date'))
-            imageDetailsFile.close()
             deployedContainerImages.append((containerName, f'{imageRootName}{imageTag}', imageSize, imageDate))
+            if fileRootName == '5gc-gnbsim':
+                continue
+            byeMessagePresent = False
+            with open(cwd + f'/archives/{testPath}/{containerName}.log','r') as nfRuntimeLogFile:
+                for line in nfRuntimeLogFile:
+                    result = re.search('system.*info.* Bye. Shutdown Procedure took (?P<duration>[0-9]+) ms', line)
+                    if result is not None and not byeMessagePresent:
+                        byeMessagePresent = True
+                        duration = int(result.group('duration'))
+                        byeMessages.append((containerName, f'{containerName}   -- properly shutdown in {duration} ms  -- See {testPath}/{containerName}.log for details', True))
+            if not byeMessagePresent:
+                byeMessages.append((containerName, f'{containerName}   --   {testPath}/{containerName}.log -- does not show Bye message', False))
 
         instancesDetails = []
         fullTestStatus = True
@@ -160,6 +175,10 @@ class HtmlReport():
                 testDetails += generate_image_table_separator()
             testDetails += generate_image_table_row(cName, iTag, 'N/A', iDate, iSize)
         testDetails += generate_image_table_footer()
+        testDetails += re.sub('Command', 'Shutdown procedure', generate_command_table_header())
+        for (containerName, byeMessage, byeStatus) in byeMessages:
+            testDetails += generate_command_table_row(byeMessage, byeStatus)
+        testDetails += generate_command_table_footer()
         testDetails += generate_list_header()
         for (comp, status, pName, pType, passUe, failUe) in instancesDetails:
             if status:

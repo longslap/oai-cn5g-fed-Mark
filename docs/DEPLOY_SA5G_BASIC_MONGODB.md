@@ -55,7 +55,7 @@ docker-compose-host $: docker exec oai-ext-dn ping 12.1.1.4 -c4
 For CI purposes please ignore this line
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-basic-nrf-mongodb.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf-mongodb.yaml stop -t 30
 ```
 -->
 

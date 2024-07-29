@@ -541,7 +541,7 @@ docker-compose-host $: docker-compose -f docker-compose-gnbsim-vpp.yaml stop -t 
 Then, we stop the NFs. 
 
 ``` shell
-docker-compose-host $: docker-compose -f docker-compose-basic-vpp-pcf-ulcl.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-basic-vpp-pcf-ulcl.yaml stop -t 30
 ```
 
 Now we are able to collect the logs.

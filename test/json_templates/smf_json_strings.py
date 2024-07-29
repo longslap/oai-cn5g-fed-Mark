@@ -13,7 +13,7 @@ smf_config_json = """
                 "arp_preempt_capability":"NOT_PREEMPT",
                 "arp_preempt_vulnerability":"NOT_PREEMPTABLE",
                 "arp_priority":1,
-                "priority":1,
+                "priority":0,
                 "session_ambr_dl":"400Mbps",
                 "session_ambr_ul":"200Mbps"
             },
@@ -30,7 +30,7 @@ smf_config_json = """
                 "arp_preempt_capability":"NOT_PREEMPT",
                 "arp_preempt_vulnerability":"NOT_PREEMPTABLE",
                 "arp_priority":1,
-                "priority":1,
+                "priority":0,
                 "session_ambr_dl":"200Mbps",
                 "session_ambr_ul":"100Mbps"
             },
@@ -47,7 +47,7 @@ smf_config_json = """
                 "arp_preempt_capability":"NOT_PREEMPT",
                 "arp_preempt_vulnerability":"NOT_PREEMPTABLE",
                 "arp_priority":1,
-                "priority":1,
+                "priority":0,
                 "session_ambr_dl":"100Mbps",
                 "session_ambr_ul":"50Mbps"
             },
@@ -64,7 +64,7 @@ smf_config_json = """
                 "arp_preempt_capability":"NOT_PREEMPT",
                 "arp_preempt_vulnerability":"NOT_PREEMPTABLE",
                 "arp_priority":1,
-                "priority":1,
+                "priority":0,
                 "session_ambr_dl":"100Mbps",
                 "session_ambr_ul":"50Mbps"
             },

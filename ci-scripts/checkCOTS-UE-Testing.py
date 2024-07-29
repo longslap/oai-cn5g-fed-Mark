@@ -255,6 +255,32 @@ def detailsCoreDeployment():
     detailsHtml += generate_button_footer()
     return (status, detailsHtml)
 
+def detailsCoreUndeployment():
+    cwd = os.getcwd()
+    status = True
+    detailsHtml = generate_button_header('cn5g-undeploy-details', 'Details on the OAI CN5G Undeployment')
+    detailsHtml += generate_list_header()
+    coreElements = ['oai-nrf', 'oai-amf', 'oai-smf', 'oai-upf', 'oai-ausf', 'oai-udm', 'oai-udr']
+    for element in coreElements:
+        byeMessagePresent = False
+        if not os.path.isfile(f'{cwd}/archives/{element}.logs'):
+            detailsHtml += generate_list_row(f'{element} has NO LOGS', 'remove-sign')
+            status = False
+            continue
+        with open(f'{cwd}/archives/{element}.logs', mode='r', errors='ignore') as nfRuntimeLogFile:
+            for line in nfRuntimeLogFile:
+                result = re.search('system.*info.* Bye. Shutdown Procedure took (?P<duration>[0-9]+) ms', line)
+                if result is not None:
+                    byeMessagePresent = True
+                    duration = int(result.group('duration'))
+                    detailsHtml += generate_list_row(f'{element} has the bye message -- Shutdown took {duration} ms', 'info-sign')
+        if not byeMessagePresent:
+            detailsHtml += generate_list_row(f'{element} has NO Bye message', 'remove-sign')
+            status = False
+    detailsHtml += generate_list_footer()
+    detailsHtml += generate_button_footer()
+    return (status, detailsHtml)
+
 def checkAMFconnection():
     cwd = os.getcwd()
     count = 0
@@ -446,6 +472,7 @@ if __name__ == '__main__':
         ueStop1Status = True
     else:
         ueStop1Status = False
+    (undeployStatus, undeployDetails) = detailsCoreUndeployment()
 
     cwd = os.getcwd()
     with open(os.path.join(cwd, REPORT_NAME), 'w') as wfile:
@@ -464,7 +491,8 @@ if __name__ == '__main__':
         wfile.write(ueStartTest1)
         wfile.write(generate_chapter('Second COTS-UE Deconnection', 'PDU Session release / Deregistration', ueStop1Status))
         wfile.write(ueStopTest1)
-        wfile.write(generate_chapter('Post-Run PCAP Analysis', 'To be done', True))
+        wfile.write(generate_chapter('Shutdown Analysis', 'Status for undeployment', undeployStatus))
+        wfile.write(undeployDetails)
         wfile.write(generate_footer())
     if not coreStatus or not ranStatus or not ueStart0Status or not ueStop0Status or not ueStart1Status or not ueStop1Status:
         sys.exit(1)

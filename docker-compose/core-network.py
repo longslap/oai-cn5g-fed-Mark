@@ -183,7 +183,7 @@ def undeploy(file_name):
         None
     """
     logging.debug('\033[0;34m UnDeploying OAI 5G core components\033[0m....')
-    cmd = f'docker-compose -f {file_name} down -t 0'
+    cmd = f'docker-compose -f {file_name} down -t 30'
     res = run_cmd(cmd, False)
     if res is None:
         sys.exit(f'\033[0;31m Incorrect/Unsupported executing command {cmd}')

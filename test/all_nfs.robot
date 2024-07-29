@@ -21,47 +21,22 @@
 *** Settings ***
 Library    Process
 Library    CNTestLib.py
-Library    RequestsLibrary
-Library    Collections
-
+Library    GNBSimTestLib.py
 Resource   common.robot
-Variables   json_templates/smf_json_strings.py
 
-Suite Setup    Start SMF
+Variables    vars.py
+
+Suite Setup    Launch NRF CN With PCF HTTP1
 Suite Teardown    Suite Teardown Default
 
-*** Variables ***
-${URL}            http://192.168.79.133:8080
-${CONFIG_URL}     ${URL}/nsmf-oai/v1/configuration
-
+Test Setup    Test Setup With Gnbsim
+Test Teardown    Test Teardown With Gnbsim
 
 *** Test Cases ***
 
-SMF Config API Get
-#    [Tags]    SMF
-    ${response} =   GET  ${CONFIG_URL}
-    Status Should Be    200
-    Dictionaries Should Be Equal   ${response.json()}     ${smf_config_dict}
+Attach and Ping HTTP1
+    [Tags]    AMF  SMF  UDM  NRF  UDR  AUSF  UPF  PCF
+    Start Gnbsim    ${GNBSIM_IN_USE}
+    ${ip} =   Check Gnbsim IP    ${GNBSIM_IN_USE}
 
-Update SMF Config
-    [Tags]    SMF
-    TRY
-    ${response} =  PUT  ${CONFIG_URL}   json=${smf_config_dict_updated}
-        Status Should Be    200
-        Dictionaries Should Be Equal    ${response.json()}    ${smf_config_dict_updated}
-    EXCEPT    AS   ${error_message}
-        Log    Update SMF Config Test failed: ${error_message}. Not mandatory at the moment
-    END
-
-
-*** Keywords ***
-
-Start SMF
-    @{list} =    Create List  oai-smf
-    Prepare Scenario    ${list}   smf-only
-    @{replace_list} =   Create List  http_version
-    Replace In Config   ${replace_list}  1
-
-    Start Trace    core_network
-    Start CN
-    Check Core Network Health Status
+    Ping From Gnbsim    ${GNBSIM_IN_USE}  ${EXT_DN1_IP}

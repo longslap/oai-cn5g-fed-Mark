@@ -29,8 +29,8 @@ Variables    vars.py
 Suite Setup    Launch NRF CN For QoS
 Suite Teardown    Suite Teardown Default
 
-Test Setup    Test Setup QoS Tests
-Test Teardown    Test Teardown QoS Tests
+Test Setup    Test Setup With Gnbsim
+Test Teardown    Test Teardown With Gnbsim
 
 *** Test Cases ***
 
@@ -125,15 +125,3 @@ QoS Flow GBR Session AMBR 2
     Wait And Verify Iperf3 Result    ${EXT_DN2_NAME}    5
     Wait And Verify Iperf3 Result    ${EXT_DN3_NAME}    10
 
-*** Keywords ***
-
-Test Setup QoS Tests
-    ${gnbsim_name} =   Prepare Gnbsim
-    Set Test Variable   ${GNBSIM_IN_USE}   ${gnbsim_name}
-    Start Trace    ${TEST_NAME}
-
-Test Teardown QoS Tests
-    Stop Gnbsim   ${GNBSIM_IN_USE}
-    Collect All Gnbsim Logs
-    Down Gnbsim    ${GNBSIM_IN_USE}
-    Stop Trace    ${TEST_NAME}

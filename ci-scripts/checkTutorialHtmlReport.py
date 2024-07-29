@@ -53,7 +53,6 @@ class HtmlReport():
 			wfile.write(generate_header(args))
 
 			tutorials = ['mini-gnbsim', 'static-ue-ip', 'vpp-upf-gnbsim', 'slicing-with-nssf', 'ulcl-scenario', 'mongodb-test', 'upf-ebpf-gnbsim']
-			tutorials = ['mini-gnbsim', 'static-ue-ip', 'vpp-upf-gnbsim', 'slicing-with-nssf', 'ulcl-scenario', 'mongodb-test']
 			for tutorial in tutorials:
 				if not os.path.isfile(cwd + '/archives/' + tutorial + '.log'):
 					continue
@@ -100,6 +99,7 @@ class HtmlReport():
 
 		log_files = sorted(os.listdir(cwd + '/archives/' + tutorial))
 		deployedContainerImages = []
+		byeMessages = []
 		for log_file in log_files:
 			if not log_file.endswith(".log"):
 				continue
@@ -138,8 +138,19 @@ class HtmlReport():
 					result = re.search('Date = (?P<date>[a-zA-Z0-9\-\_:]+)', line)
 					if result is not None:
 						imageDate = re.sub('T', '  ', result.group('date'))
-			imageDetailsFile.close()
 			deployedContainerImages.append((containerName, imageRootName + imageTag, imageSize, imageDate))
+			if re.search('vpp-upf', rootName) is not None:
+				continue
+			byeMessagePresent = False
+			with open(cwd + f'/archives/{tutorial}/{log_file}','r') as nfRuntimeLogFile:
+				for line in nfRuntimeLogFile:
+					result = re.search('system.*info.* Bye. Shutdown Procedure took (?P<duration>[0-9]+) ms', line)
+					if result is not None and not byeMessagePresent:
+						byeMessagePresent = True
+						duration = int(result.group('duration'))
+						byeMessages.append((containerName, f'{containerName}   -- {rootName} properly shutdown in {duration} ms  -- See {tutorial}/{log_file} for details', True))
+			if not byeMessagePresent:
+				byeMessages.append((containerName, f'{containerName}   --   {tutorial}/{log_file} -- {rootName} does not show Bye message', False))
 
 		if tutoName == '':
 			return ''
@@ -158,6 +169,10 @@ class HtmlReport():
 		tutoText += generate_command_table_header()
 		for (cmd,cmdStatus) in listOfCmds:
 			tutoText += generate_command_table_row(cmd, cmdStatus)
+		tutoText += generate_command_table_footer()
+		tutoText += re.sub('Command', 'Shutdown procedure', generate_command_table_header())
+		for (containerName, byeMessage, byeStatus) in byeMessages:
+			tutoText += generate_command_table_row(byeMessage, byeStatus)
 		tutoText += generate_command_table_footer()
 		tutoText += generate_button_footer()
 		return tutoText

@@ -49,7 +49,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udr
+            - oai-nrf
         networks:
             public_net:
 # For CI purposes, we are keeping the line commented
@@ -65,7 +65,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udm
+            - oai-nrf
         networks:
             public_net:
 # For CI purposes, we are keeping the line commented
@@ -96,9 +96,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - mysql
             - oai-nrf
-            - oai-ausf
         networks:
             public_net:
 # For CI purposes, we are keeping the line commented
@@ -116,7 +114,6 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - oai-nrf
-            - oai-amf
         networks:
             public_net:
 # For CI purposes, we are keeping the line commented
@@ -133,7 +130,6 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - oai-nrf
-            - oai-smf
         cap_add:
             - NET_ADMIN
             - SYS_ADMIN

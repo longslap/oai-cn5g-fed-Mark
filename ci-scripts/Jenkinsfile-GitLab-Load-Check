@@ -235,12 +235,12 @@ pipeline {
         unsuccessful {
           script {
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
             }
             sleep 5
             retrieveLogs('archives/registration-test', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
             }
             cleanUpDockerCompose()
           }
@@ -272,12 +272,12 @@ pipeline {
               sh 'docker-compose -f docker-compose-omec-gnbsim.yaml down -t 0'
             }
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
             }
             sleep 5
             retrieveLogs('archives/registration-test', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
             }
             cleanUpDockerCompose()
           }
@@ -288,12 +288,12 @@ pipeline {
       steps {
         script {
           dir ('docker-compose') {
-            sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+            sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
           }
           sleep 5
           retrieveLogs('archives/registration-test', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
           dir ('docker-compose') {
-            sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+            sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
           }
           cleanUpDockerCompose()
         }
@@ -329,12 +329,12 @@ pipeline {
         unsuccessful {
           script {
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
             }
             sleep 5
             retrieveLogs('archives/pdu-sess-est-test', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
             }
             cleanUpDockerCompose()
           }
@@ -367,12 +367,12 @@ pipeline {
               sh 'docker-compose -f docker-compose-omec-gnbsim.yaml down -t 0'
             }
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
             }
             sleep 5
             retrieveLogs('archives/pdu-sess-est-test', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
             }
             cleanUpDockerCompose()
           }
@@ -383,12 +383,12 @@ pipeline {
       steps {
         script {
           dir ('docker-compose') {
-            sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+            sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
           }
           sleep 5
           retrieveLogs('archives/pdu-sess-est-test', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
           dir ('docker-compose') {
-            sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+            sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
           }
           cleanUpDockerCompose()
         }
@@ -424,12 +424,12 @@ pipeline {
         unsuccessful {
           script {
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
             }
             sleep 5
             retrieveLogs('archives/deregistration', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
             }
             cleanUpDockerCompose()
           }
@@ -462,12 +462,12 @@ pipeline {
               sh 'docker-compose -f docker-compose-omec-gnbsim.yaml down -t 0'
             }
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
             }
             sleep 5
             retrieveLogs('archives/deregistration', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
             dir ('docker-compose') {
-              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+              sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
             }
             cleanUpDockerCompose()
           }
@@ -478,12 +478,12 @@ pipeline {
       steps {
         script {
           dir ('docker-compose') {
-            sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 3'
+            sh 'docker-compose -f docker-compose-basic-nrf.yaml stop -t 30'
           }
           sleep 5
           retrieveLogs('archives/deregistration', 'docker-compose/docker-compose-basic-nrf.yaml', 'docker-compose/conf/basic_nrf_config.yaml')
           dir ('docker-compose') {
-            sh 'docker-compose -f docker-compose-basic-nrf.yaml down -t 3'
+            sh 'docker-compose -f docker-compose-basic-nrf.yaml down -v'
           }
           cleanUpDockerCompose()
         }

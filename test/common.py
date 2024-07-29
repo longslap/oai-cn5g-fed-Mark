@@ -108,11 +108,11 @@ def start_docker_compose(path, container=None):
 
 
 def stop_docker_compose(path):
-    __docker_subprocess(["docker-compose", "-f", path, "stop", "-t", "5"])
+    __docker_subprocess(["docker-compose", "-f", path, "stop", "-t", "30"])
 
 
 def down_docker_compose(path):
-    __docker_subprocess(["docker-compose", "-f", path, "down", "-t", "5"])
+    __docker_subprocess(["docker-compose", "-f", path, "down", "-t", "30", "-v"])
 
 
 def get_docker_compose_services(docker_compose_file):

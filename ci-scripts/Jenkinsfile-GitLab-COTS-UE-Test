@@ -163,6 +163,7 @@ pipeline {
           sleep 60
           sh "oc describe pod &>> archives/describe-pods.logs"
           sh "oc get pods -o wide"
+          CollectLogsFromPods()
           coreStatus = checkCoreNetworkDeployment()
           if (coreStatus > 0) {
             error ('Core Deployment went wrong')
@@ -222,6 +223,9 @@ pipeline {
           sleep 2
           // Deploying now
           dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+            sh "sudo b2xx_fx3_utils --reset-device"
+            sh "sudo uhd_find_devices > /dev/null 2>&1 || true"
+            sleep 5
             sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
             if (mountedFileAsMountedDotConf) {
               sh "sed -i -e 's@/opt/oai-gnb/etc/gnb.conf@/opt/oai-gnb/etc/mounted.conf@' docker-compose.yml"
@@ -511,7 +515,7 @@ def checkCoreNetworkDeployment() {
   return status
 }
 
-def retrieveLogsFromPods() {
+def CollectLogsFromPods() {
   sh "mkdir -p archives"
   for (ii = 0; ii < imageNames.size(); ii++) {
     podName = sh returnStdout: true, script: "oc get pods | grep ${imageNames[ii]} | awk {'print \$1'} || true"
@@ -520,11 +524,14 @@ def retrieveLogsFromPods() {
       nrfPod = podName
     }
     try {
-      sh "oc logs ${podName} ${containerInPods[ii]} &> archives/${imageNames[ii]}.logs"
+      sh "nohup oc logs -f ${podName} ${containerInPods[ii]} &> archives/${imageNames[ii]}.logs &"
     } catch (Exception e) {
       echo "Getting logs from ${podName} failed"
     }
   }
+}
+
+def retrieveLogsFromPods() {
   // Retrieving mysql logs
   podName = sh returnStdout: true, script: "oc get pods | grep mysql | awk {'print \$1'} || true"
   podName = podName.trim()

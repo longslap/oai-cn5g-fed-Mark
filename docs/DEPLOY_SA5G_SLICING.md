@@ -318,7 +318,7 @@ rtt min/avg/max/mdev = 5.936/8.226/9.739/1.452 ms
 For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-ransim.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml stop -t 60
 ```
 -->
 
