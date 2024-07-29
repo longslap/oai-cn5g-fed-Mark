@@ -53,7 +53,7 @@ def extract_imsi_from_docker_yaml(docker_yaml_path):
         return imsis
     else:
         logger.error("No IMSIs found in Docker YAML file")
-        sys.exit(-1)
+        raise ValueError("No IMSIs found in Docker YAML file")
 
 def check_smf_logs_and_callback_notification(logs):
    
@@ -81,18 +81,19 @@ def check_smf_logs_and_callback_notification(logs):
         callback_data = []
 
         for document in smf_collection.find():
-            supi = document["supi"]
-            pdu_session_id = document["pduSeId"]
-            dnn = document["dnn"]
-            paa_ipv4 = document["adIpv4Addr"]
-            ip_session_type = document["pduSessType"]
-            callback_data.append({
-                'SUPI': supi,
-                'PDU Session ID': f"{pdu_session_id}",
-                'DNN': dnn,
-                'PAA IPv4': paa_ipv4,
-                'PDN type': ip_session_type
-            })
+            for report in document["eventNotifs"]:
+                supi = report["supi"]
+                pdu_session_id = report["pduSeId"]
+                dnn = report["dnn"]
+                paa_ipv4 = report["adIpv4Addr"]
+                ip_session_type = report["pduSessType"]
+                callback_data.append({
+                    'SUPI': supi,
+                    'PDU Session ID': f"{pdu_session_id}",
+                    'DNN': dnn,
+                    'PAA IPv4': paa_ipv4,
+                    'PDN type': ip_session_type
+                })
         if parsed_log_data != []: 
             for log_entry in parsed_log_data:
                 match_found = False
@@ -105,17 +106,21 @@ def check_smf_logs_and_callback_notification(logs):
                         break
                 if not match_found:
                     logger.error(f"Mismatch found for SUPI: {log_entry['SUPI']}")
+                    stop_handler()
                     raise Exception(f"Mismatch found for SUPI: {log_entry['SUPI']}")
+                    
 
-            logger.info("All SMF contexts match the callback data.")
+            logger.info(f"All SMF contexts match the callback data.{log_entry, callback_entry}")
 
         else :
 
             logger.error(f"No SMF contexts found in logs.")
+            stop_handler()
             raise Exception("No SMF contexts found in logs.")
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
+        stop_handler()
         raise e
     
           
@@ -124,13 +129,14 @@ def get_imsi_from_handler_collection():
         amf_collection = mongo_access("amf")
         latest_imsi_events = {}
         for document in amf_collection.find():
-            supi = document["supi"]
-            rm_state = document["rmInfoList"][0]["rmState"]
-            timestamp = document["timeStamp"]
-            if supi.startswith("imsi-"):
-                supi = supi[5:]
-            if supi not in latest_imsi_events or timestamp > latest_imsi_events[supi]['timestamp']:
-                latest_imsi_events[supi] = {'rm_state': rm_state, 'timestamp': timestamp}
+            for report in document["reportList"]:
+                supi = report["supi"]
+                rm_state = report["rmInfoList"][0]["rmState"]
+                timestamp = report["timeStamp"]
+                if supi.startswith("imsi-"):
+                    supi = supi[5:]
+                if supi not in latest_imsi_events or timestamp > latest_imsi_events[supi]['timestamp']:
+                    latest_imsi_events[supi] = {'rm_state': rm_state, 'timestamp': timestamp}
         latest_registered_imsis = [
             imsi for imsi, event in latest_imsi_events.items()
             if event['rm_state'] == "REGISTERED"]
@@ -147,8 +153,6 @@ def check_imsi_match(docker_yaml_path,nb_of_users):
         logger.info("IMSI match successful.")
     else:
         logger.error(f"IMSI mismatch. Docker YAML IMSI: {imsi_from_yaml}, Handler IMSI: {imsi_from_handler}")
-        remove_ues(nb_of_users)
-        stop_handler()
         raise Exception("IMSI mismatch.")
         
         
@@ -166,11 +170,12 @@ def check_latest_deregistered_imsis(docker_yaml_path, n):
             sort=[("timeStamp", -1)]
         )
             for event in events:
-                if event["supi"] == f"imsi-{imsi}" and event["rmInfoList"][0]["rmState"] == "DEREGISTERED":
-                    latest_deregistered_imsis.append(imsi)
+                for report in event["reportList"]:
+                    if report["supi"] == f"imsi-{imsi}" and report["rmInfoList"][0]["rmState"] == "DEREGISTERED":
+                        latest_deregistered_imsis.append(imsi)
+                        break
+                if imsi in latest_deregistered_imsis:
                     break
-            if imsi in latest_deregistered_imsis:
-                break
         if set(latest_deregistered_imsis) == set(imsis_from_yaml):
             logger.info("Deregistered IMSI match successful.")
         else:
@@ -178,6 +183,7 @@ def check_latest_deregistered_imsis(docker_yaml_path, n):
             raise ValueError("Deregistered IMSI mismatch.")
     except Exception as e:
         logger.error(f"Failed to check latest deregistered IMSIs: {e}")
+        stop_handler()
         raise e
 
 def add_ues_process():
@@ -193,3 +199,11 @@ def check_health_status(docker_compose_file):
     docker_api = DockerApi()
     containers = get_docker_compose_services(docker_compose_file)
     docker_api.check_health_status(containers)
+
+def collect_all_logs(docker_compose_file, folder=None):
+        docker_api = DockerApi()
+        all_services = get_docker_compose_services(docker_compose_file)
+        log_dir = get_log_dir()
+        if folder:
+            log_dir = os.path.join(log_dir, folder)
+        docker_api.store_all_logs(log_dir, all_services)
