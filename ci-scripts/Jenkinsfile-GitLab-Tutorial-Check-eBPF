@@ -148,6 +148,13 @@ pipeline {
                 echo "Upstream Job passed SMF_BRANCH to use: ${branchNames[SMF]}"
                 run_ebpf_upf = true
               }
+              // TODO: temporary work-around until UPF v2.1.0 released
+              if (upstreamEvent && upstreamJobs[UPF]) {
+                branchNames[SMF] = 'master'
+                imageTags[SMF] = 'v2.1.0'
+                echo "SMF_TAG to use: ${imageTags[SMF]}"
+                echo "SMF_BRANCH to use: ${branchNames[SMF]}"
+              }
             }
             if (ii == UPF) {
               branchNames[UPF] = params.UPF_BRANCH

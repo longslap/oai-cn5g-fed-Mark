@@ -58,6 +58,9 @@ destTags = ["", "", "", "", "", "", ""]
 chartKeyTags = ["NRF_TAG", "AMF_TAG", "SMF_TAG", "UPF_TAG", "AUSF_TAG", "UDM_TAG", "UDR_TAG"]
 containerInPods = ["nrf", "amf", "smf", "upf", "ausf", "udm", "udr"]
 
+def upstreamEvent = false
+upstreamJobs = [false, false, false, false, false, false, false, false, false, false]
+
 // Status booleans
 boolean logoutToDo   = false
 boolean deployedCore = false
@@ -87,6 +90,17 @@ pipeline {
       steps {
         script {
           echo '\u2705 \u001B[32mVerify Parameters\u001B[0m'
+          // TODO: temporary work-around until UPF v2.1.0 released
+          // Find out the cause of the trigger
+          for (cause in currentBuild.getBuildCauses()) {
+            if (cause.toString().contains('UpstreamCause')) {
+              upstreamEvent = true
+            }
+            if (cause.toString().contains('OAI-CN5G-UPF')) {
+              upstreamJobs[UPF] = true
+            }
+          }
+
           sh "git clean -x -d -ff > /dev/null 2>&1"
           sh "git submodule foreach --recursive 'git clean -x -d -ff' > /dev/null 2>&1"
           sh "git submodule deinit --force --all > /dev/null 2>&1"
@@ -104,6 +118,13 @@ pipeline {
             if (ii == SMF) {
               branchNames[SMF] = params.SMF_BRANCH
               baseTags[SMF] = params.SMF_TAG
+              // TODO: temporary work-around until UPF v2.1.0 released
+              if (upstreamEvent && upstreamJobs[UPF]) {
+                branchNames[SMF] = 'master'
+                baseTags[SMF] = 'v2.1.0'
+                echo "SMF_TAG to use: ${baseTags[SMF]}"
+                echo "SMF_BRANCH to use: ${branchNames[SMF]}"
+              }
             }
             if (ii == UPF) {
               branchNames[UPF] = params.UPF_BRANCH
