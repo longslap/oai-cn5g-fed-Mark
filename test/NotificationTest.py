@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import yaml
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 import importlib
 import re
 from common import *
@@ -30,9 +30,9 @@ def mongo_access(service_type: str):
             return db['smf_notifications']
         else:
             raise ValueError(f"Invalid service type: {service_type}")
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
-        raise e
+    except errors.ServerSelectionTimeoutError:
+        logger.error(f"Failed to connect to MongoDB server")
+        raise AssertionError("Failed to connect to MongoDB server")
                
 def extract_imsi_from_docker_yaml(docker_yaml_path):
     home_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,6 +58,7 @@ def extract_imsi_from_docker_yaml(docker_yaml_path):
 def check_smf_logs_and_callback_notification(logs, nb_of_users):
    
     try:
+        smf_collection = mongo_access("smf")
         smf_contexts = re.findall(r'SMF CONTEXT:.*?(?=SMF CONTEXT:|$)', logs, re.DOTALL)
         parsed_log_data = []
 
@@ -78,7 +79,6 @@ def check_smf_logs_and_callback_notification(logs, nb_of_users):
             parsed_log_data.append(parsed_context)
         if len(parsed_log_data) != nb_of_users:
             raise Exception(f"Number of SMF contexts in logs ({len(parsed_log_data)}) does not match the number of users added ({nb_of_users})")
-        smf_collection = mongo_access("smf")
         callback_data = []
 
         for document in smf_collection.find():
