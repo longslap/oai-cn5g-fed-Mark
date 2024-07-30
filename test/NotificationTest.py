@@ -110,7 +110,7 @@ def check_smf_logs_and_callback_notification(logs, nb_of_users):
                     raise Exception(f"Mismatch found for SUPI: {log_entry['SUPI']}")
                     
 
-            logger.info(f"All SMF contexts match the callback data.{log_entry, callback_entry}")
+            logger.info(f"All SMF contexts match the callback data.{callback_data}")
 
         else :
 
