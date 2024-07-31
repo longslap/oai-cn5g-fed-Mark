@@ -51,6 +51,7 @@ def extract_imsi_from_docker_yaml(docker_yaml_path):
                 imsi_index = parts.index('--uicc0.imsi') + 1
                 if imsi_index < len(parts):
                     imsis.append(parts[imsi_index])
+            imsis.sort()
     if imsis:
         return imsis
     else:
