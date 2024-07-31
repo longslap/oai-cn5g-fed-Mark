@@ -40,6 +40,7 @@ Check AMF Deregistration Notification
 
 *** Keywords ***
 Launch northbound CN
+     NotifTest.update_docker_compose    ${DOCKER_YAML_PATH}
      FOR     ${container}   IN    @{containers} 
      common.start_docker_compose    ${DOCKER_YAML_PATH}    ${container}     
      END

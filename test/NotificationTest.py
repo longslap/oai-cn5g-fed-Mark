@@ -7,6 +7,7 @@ import importlib
 import re
 from common import *
 from docker_api import DockerApi
+from image_tags import image_tags
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, parent_dir)
 RFsimUEManager = importlib.import_module('5gcsdk.src.modules.RFsimUEManager')
@@ -203,3 +204,14 @@ def collect_all_logs(docker_compose_file, folder=None):
         if folder:
             log_dir = os.path.join(log_dir, folder)
         docker_api.store_all_logs(log_dir, all_services)
+
+def update_docker_compose(compose_file_path):
+    with open(compose_file_path, 'r') as file:
+        compose_data = yaml.safe_load(file)
+        
+    for service_name, service_data in compose_data.get('services', {}).items():
+        if service_name in image_tags:
+            service_data['image'] = image_tags[service_name]
+            
+    with open(compose_file_path, 'w') as file:
+        yaml.safe_dump(compose_data, file, default_flow_style=False)
