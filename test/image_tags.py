@@ -32,6 +32,7 @@ image_tags = {
     "oai-udr": "oaisoftwarealliance/oai-udr:develop",
     "oai-nssf": "oaisoftwarealliance/oai-nssf:develop",
     "oai-pcf": "oaisoftwarealliance/oai-pcf:develop",
+    "vpp-upf": "oaisoftwarealliance/oai-vpp-upf:develop",
     "ngap-tester": "ngap-tester:develop",
     "gnbsim": "gnbsim:latest"
 }
