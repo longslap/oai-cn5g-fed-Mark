@@ -23,6 +23,7 @@ def mongo_access(service_type: str):
     try:
         logging.getLogger('pymongo').setLevel(logging.INFO)
         client = MongoClient('mongodb://localhost:27017/')
+        client.server_info()
         db = client['notification_db']
         if service_type == "amf":
             return db['amf_notifications']
