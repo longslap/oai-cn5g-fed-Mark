@@ -10,6 +10,6 @@ Suite Teardown    Suite Teardown Default
 
 *** Test Cases ***
 Sleep Test
-    [tags]  SLP
+    [tags]  North
     Launch gNB For Northbound
-    Sleep     600s
+    Sleep     40s

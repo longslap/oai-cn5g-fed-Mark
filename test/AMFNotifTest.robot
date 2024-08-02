@@ -18,7 +18,6 @@ ${nb_of_users}    ${5}
 
 *** Test Cases ***
 Check AMF Registration Notifications
-    [tags]  North  AMF
     [Documentation]    Start the handler and wait for it to initialize, check Callback registration notification
     Handler.start_handler
     FOR    ${user}    IN RANGE    ${nb_of_users}
@@ -28,12 +27,10 @@ Check AMF Registration Notifications
     Wait Until Keyword Succeeds  60s  6s    NotifTest.check_imsi_match    ${DOCKER_YAML_PATH}    ${nb_of_users}
 
 Check SMF Notifications: 
-     [tags]  North   SMF   
      ${logs} =    Get UE Info From SMF Log
      NotifTest.check_smf_logs_and_callback_notification    '${logs}'    ${nb_of_users}
 
 Check AMF Deregistration Notification
-    [tags]  North   AMF
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
     RFsim.Remove UEs    ${nb_of_users}
     Wait Until Keyword Succeeds  60s  6s    NotifTest.check_latest_deregistered_imsis    ${DOCKER_YAML_PATH}    ${nb_of_users}
