@@ -33,5 +33,7 @@ image_tags = {
     "oai-nssf": "oaisoftwarealliance/oai-nssf:develop",
     "oai-pcf": "oaisoftwarealliance/oai-pcf:develop",
     "ngap-tester": "ngap-tester:develop",
-    "gnbsim": "gnbsim:latest"
+    "gnbsim": "gnbsim:latest",
+    "oai-gnb": "oaisoftwarealliance/oai-gnb:develop",
+    "oai-nr-ue": "oaisoftwarealliance/oai-nr-ue:develop"
 }

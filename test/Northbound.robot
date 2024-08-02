@@ -1,6 +1,6 @@
 *** Settings ***
 Library    Process
-Library    CNTestLib.py
+Library    RfSimLib.py
 Resource   common.robot
 
 Variables    vars.py
@@ -8,8 +8,13 @@ Variables    vars.py
 Suite Setup    Launch Northbound Test CN
 Suite Teardown    Suite Teardown Default
 
+Test Setup    Test Setup For Northbound
+Test Teardown    Test Teardown With RAN
+
+
 *** Test Cases ***
 Sleep Test
     [tags]  North
-    Launch gNB For Northbound
-    Sleep     40s
+    Sleep   15s
+    Start All NR UE
+    Sleep     100s

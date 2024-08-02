@@ -104,12 +104,8 @@ class RfSimLib:
                 nr_ue_service["networks"]["public_test_net"]["ipv4_address"] = nr_ue_ip
                 nr_ue_service['environment']['USE_ADDITIONAL_OPTIONS'] = nr_ue_service['environment']['USE_ADDITIONAL_OPTIONS'].replace("REPLACE_IMSI", nr_ue_imsi)
                 nr_ue_service['environment']['USE_ADDITIONAL_OPTIONS'] = nr_ue_service['environment']['USE_ADDITIONAL_OPTIONS'].replace("REPLACE_IP", gnb_ip)
-
-
-
                 parsed["services"][nr_ue_name] = nr_ue_service
                 self.nr_ue.append(nr_ue_name)
-
             parsed["services"].pop("oai-gnb", None)
             parsed["services"].pop("oai-nr-ue", None)
 
@@ -147,11 +143,8 @@ class RfSimLib:
                         break
 
             return key_start_indices
-
-            return key_start_indices
         lines = [line for line in lines if not line.strip().startswith('#')]
         key_start_indices = navigate_to_key(lines, path)
-        # Apply the specified operation
         if operation == 'replace':
             for i in key_start_indices:
                 key, sep, old_value = lines[i].partition('=')
@@ -160,10 +153,8 @@ class RfSimLib:
                     new_line = f"{indent}{key.strip()} = {value};\n"
                     lines[i] = new_line
                     break
-
         elif operation == 'add':
-            if not key_start_indices:  # When the path does not exist at all
-                # Only add the new section and value without duplicating the key
+            if not key_start_indices: 
                 new_key = path[0]
                 indent = ''
                 new_line = f"{indent}{new_key} :{value}\n"
@@ -173,26 +164,22 @@ class RfSimLib:
                 indent = ' ' * (len(lines[insertion_point-1]) - len(lines[insertion_point-1].lstrip()))
                 new_line = f"{indent}{path[-1]} = {value};\n"
                 lines.insert(insertion_point, new_line)
-
         elif operation == 'delete':
             for i in key_start_indices:
                 key, sep, old_value = lines[i].partition('=')
                 if key.strip() == path[-1]:
                     lines.pop(i)
                     break
-
         with open(self.gnb_config_path, 'w') as f:
             f.writelines(lines)
-
         logging.info(f"Successfully performed '{operation}' on config value {value} at path {'.'.join(path)}")
 
-
-
-    def check_ran_health_status(self, ran_containers):
+    def check_ran_health_status(self):
+        ran_containers = self.gnb + self.nr_ue
         self.docker_api.check_health_status(ran_containers)
 
     def collect_all_ran_logs(self):
-        self.docker_api.store_all_logs(get_log_dir(), self.gnb, self.nr_ue)
+        self.docker_api.store_all_logs(get_log_dir(), self.gnb + self.nr_ue)
         
     def start_gnb(self, gnb_name):
         start_docker_compose(self.docker_compose_path, container=gnb_name)
@@ -201,13 +188,12 @@ class RfSimLib:
         for gnb in self.gnb:
             self.start_gnb(gnb)
 
-    def stop_gnb(self):
+    def stop_ran_elements(self):
         stop_docker_compose(self.docker_compose_path)
 
-    def down_gnb(self):
+    def down_ran_elements(self):
         down_docker_compose(self.docker_compose_path)
 
-            
     def start_nr_ue(self, nr_ue_name):
         start_docker_compose(self.docker_compose_path, container=nr_ue_name)
         
@@ -215,12 +201,17 @@ class RfSimLib:
         for nr_ue in self.nr_ue:
             self.start_nr_ue(nr_ue)
     
-    def stop_nr_ue(self):
-        stop_docker_compose(self.docker_compose_path)
-        
-    def down_nr_ue(self):
-        down_docker_compose(self.docker_compose_path)
-        
+    def create_ran_docu(self):
+        if len(self.gnb + self.nr_ue) == 0:
+            return ""
+        docu = " = RAN Tester Image = \n"
+        docu += create_image_info_header()
+        size, date = self.docker_api.get_image_info(get_image_tag("oai-gnb"))
+        docu += create_image_info_line("oai-nr-ue", get_image_tag("oai-gnb"), date, size)
+        size, date = self.docker_api.get_image_info(get_image_tag("oai-nr-ue"))
+        docu += create_image_info_line("oai-nr-ue", get_image_tag("oai-nr-ue"), date, size)
+        return docu
+           
         
 # ran = RfSimLib()
 # gnb = ran.prepare_ran(num_gnb=1,num_nr_ue=3)
