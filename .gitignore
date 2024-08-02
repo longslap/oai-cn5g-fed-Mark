@@ -11,3 +11,4 @@ charts/oai-5g-core/oai-5g-basic/Chart.lock
 charts/oai-5g-core/oai-5g-basic/charts/
 charts/oai-5g-core/oai-5g-advance/Chart.lock
 charts/oai-5g-core/oai-5g-advance/charts/
+test/__pycache__/

@@ -23,6 +23,7 @@ Library    Process
 Library    CNTestLib.py
 Library    GNBSimTestLib.py
 Library    NGAPTesterLib.py
+Library    RfSimLib.py
 
 Variables    vars.py
 
@@ -97,6 +98,27 @@ Launch EBPF CN
     Start Trace    core_network
     Start CN
     Check Core Network Health Status
+
+Launch Northbound Test CN
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn   vpp-upf
+    Prepare Scenario    ${list}   Northbound
+
+    @{replace_list} =  Create List    http_version
+    Replace In Config     ${replace_list}   ${1}
+
+    @{replace_list} =  Create List    smf  upfs  ${0}  host
+    Replace In Config    ${replace_list}  vpp-upf.node.5gcn.mnc95.mcc208.3gppnetwork.org
+    
+    @{replace_list} =  Create List  smf  upfs  ${0}  config  enable_usage_reporting
+    Replace In Config    ${replace_list}  yes
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+Launch gNB For Northbound
+    Prepare RAN     ${1}   ${3}
+    
+
 
 Suite Teardown Default
     Stop Cn
