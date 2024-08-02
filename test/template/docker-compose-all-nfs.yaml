@@ -158,7 +158,7 @@ services:
             - IF_3_IP_REMOTE=192.168.81.135 # EXT-DN IP Address
             - IF_3_NWI=internet.oai.org
             - NAME=VPP-UPF
-            - MNC=99
+            - MNC=95
             - MCC=208
             - REALM=3gppnetwork.org
             - VPP_MAIN_CORE=0
