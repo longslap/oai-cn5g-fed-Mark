@@ -127,7 +127,7 @@ class RfSimLib:
         with open(self.gnb_config_path, 'r') as f:
             lines = f.readlines()
 
-        def navigate_to_key(lines, path):
+        def __navigate_to_key(lines, path):
             current_level = 0
             target_level = len(path) - 1
             key_start_indices = []
@@ -144,7 +144,7 @@ class RfSimLib:
 
             return key_start_indices
         lines = [line for line in lines if not line.strip().startswith('#')]
-        key_start_indices = navigate_to_key(lines, path)
+        key_start_indices = __navigate_to_key(lines, path)
         if operation == 'replace':
             for i in key_start_indices:
                 key, sep, old_value = lines[i].partition('=')
