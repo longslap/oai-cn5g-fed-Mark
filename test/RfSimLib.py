@@ -146,12 +146,11 @@ class RfSimLib:
                         found = True
                         break
 
-            if not found and operation != 'add':
-                raise ValueError(f"Path '{'.'.join(path)}' not found in configuration.")
             return key_start_indices
 
+            return key_start_indices
+        lines = [line for line in lines if not line.strip().startswith('#')]
         key_start_indices = navigate_to_key(lines, path)
-
         # Apply the specified operation
         if operation == 'replace':
             for i in key_start_indices:
@@ -225,9 +224,16 @@ class RfSimLib:
         
 # ran = RfSimLib()
 # gnb = ran.prepare_ran(num_gnb=1,num_nr_ue=3)
-# # ran.down_gnb()
-# # ran.down_nr_ue()
-# # ran.start_all_gnb()
-# # ran.start_all_nr_ue()
+# # # ran.down_gnb()
+# # # ran.down_nr_ue()
+# # # ran.start_all_gnb()
+# # # ran.start_all_nr_ue()
 # ran.replace_in_gnb_config(['rfsimulator'], '{ serveraddr = "server"; };', 'add')
-# ran.replace_in_gnb_config(['gNBs', '0', 'servingCellConfigCommon', 'ra_ResponseWindow'], 5, 'replace')
+# ran.replace_in_gnb_config(['ra_ResponseWindow'], 5, 'replace')
+# ran.replace_in_gnb_config(['ulsch_max_frame_inactivity'], None, 'delete')
+# ran.replace_in_gnb_config(['amf_ip_address'], '( { ipv4 = "192.168.79.132"', 'replace')
+# ran.replace_in_gnb_config(['GNB_IPV4_ADDRESS_FOR_NG_AMF'], '"192.168.79.140"', 'replace')
+# ran.replace_in_gnb_config(['GNB_IPV4_ADDRESS_FOR_NGU'], '"192.168.79.140"', 'replace')
+# ran.replace_in_gnb_config(['GNB_INTERFACE_NAME_FOR_NGU'], None, 'delete')
+# ran.replace_in_gnb_config(['GNB_INTERFACE_NAME_FOR_NG_AMF'], None, 'delete')
+# ran.replace_in_gnb_config(['traching_area_code'], '0xa000', 'replace')
