@@ -65,7 +65,7 @@ Test Teardown With RAN
     Handler.Stop Handler
     Down Mongo
     Stop gNB
-    Collect All RAN Logs
+    #Collect All RAN Logs
     ${docu}=   Create RAN Docu
     Set Suite Documentation    ${docu}   append=${TRUE}
     Down gNB
