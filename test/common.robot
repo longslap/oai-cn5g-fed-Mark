@@ -115,7 +115,6 @@ Launch Northbound Test CN
     Start CN
     Check Core Network Health Status
 
-Test Setup For Northbound
     Prepare RAN     ${1}   ${3}
     ${replace_list} =  Create List  rfsimulator
     Replace In gNB Config    ${replace_list}  { serveraddr = "server"; };  add
@@ -156,12 +155,6 @@ Check Core Network Health Status
 Check RAN Elements Health Status
     Wait Until Keyword Succeeds  60s  1s    Check RAN Health Status
 
-Test Teardown With RAN
-    Stop RAN Elements  
-    Collect All RAN Logs
-    ${docu}=   Create RAN Docu
-    Set Suite Documentation    ${docu}   append=${TRUE}
-    Down RAN Elements
 
 Wait and Verify Iperf3 Result
     [Arguments]    ${container}  ${mbits}=50

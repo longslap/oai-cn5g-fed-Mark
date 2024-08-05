@@ -43,7 +43,8 @@ class RfSimLib:
         self.gnb = []
         self.nr_ue = []
         self.start_imsi = 208950000000031
-        self.docker_compose_path = ""
+        self.gnb_docker_compose_path = ""
+        self.ues_docker_compose_path = ""
         self.gnb_config_path = ""
         self.nr_ue_config_path = ""
         prepare_folders()
@@ -71,7 +72,8 @@ class RfSimLib:
         :param num_nr_ue: Number of NR-UE instances to create.
         :return: Path to the generated Docker Compose file.
         """
-        output_path = self.__get_docker_compose_path("ran")
+        gnb_output_path = self.__get_docker_compose_path("ran_gnb")
+        ue_output_path = self.__get_docker_compose_path("ran-ue")
         shutil.copy(os.path.join(DIR_PATH, NR_UE_CONFIG_TEMPLATE), get_out_dir())
         shutil.copy(os.path.join(DIR_PATH, GNB_CONFIG_TEMPLATE), get_out_dir())
         self.nr_ue_config_path = os.path.join(get_out_dir(), 'nr-ue.conf')
@@ -87,19 +89,23 @@ class RfSimLib:
                 gnb_name = self.__generate_gnb_name()
                 gnb_ip = self.__generate_ip(GNB_FIRST_IP, i)
                 gnb_service = gnb_template.copy()
-
                 gnb_service["container_name"] = gnb_name
                 gnb_service["networks"]["public_test_net"]["ipv4_address"] = gnb_ip
-
                 parsed["services"][gnb_name] = gnb_service
                 self.gnb.append(gnb_name)
-
+            parsed["services"].pop("oai-gnb", None)
+            parsed["services"].pop("oai-nr-ue", None)
+            with open(gnb_output_path, "w") as out_file:
+                yaml.dump(parsed, out_file)
+                
+        with open(os.path.join(DIR_PATH, RAN_TEMPLATE)) as f:
+            parsed = yaml.safe_load(f) 
+            nr_ue_template = parsed["services"]["oai-nr-ue"]
             for j in range(num_nr_ue):
                 nr_ue_name = self.__generate_nr_ue_name()
                 nr_ue_ip = self.__generate_ip(NR_UE_FIRST_IP, j)
                 nr_ue_imsi = self.__generate_nr_ue_imsi()
                 nr_ue_service = deepcopy(nr_ue_template)
-
                 nr_ue_service["container_name"] = nr_ue_name
                 nr_ue_service["networks"]["public_test_net"]["ipv4_address"] = nr_ue_ip
                 nr_ue_service['environment']['USE_ADDITIONAL_OPTIONS'] = nr_ue_service['environment']['USE_ADDITIONAL_OPTIONS'].replace("REPLACE_IMSI", nr_ue_imsi)
@@ -108,12 +114,12 @@ class RfSimLib:
                 self.nr_ue.append(nr_ue_name)
             parsed["services"].pop("oai-gnb", None)
             parsed["services"].pop("oai-nr-ue", None)
-
-            
-            with open(output_path, "w") as out_file:
+            with open(ue_output_path, "w") as out_file:
                 yaml.dump(parsed, out_file)
-        self.docker_compose_path = output_path
-        return self.gnb
+        self.ues_docker_compose_path = ue_output_path
+        self.gnb_docker_compose_path = gnb_output_path
+        
+        return self.gnb, self.nr_ue
     
     def replace_in_gnb_config(self, path, value, operation='replace'):
         """
@@ -182,24 +188,30 @@ class RfSimLib:
         self.docker_api.store_all_logs(get_log_dir(), self.gnb + self.nr_ue)
         
     def start_gnb(self, gnb_name):
-        start_docker_compose(self.docker_compose_path, container=gnb_name)
+        start_docker_compose(self.gnb_docker_compose_path, container=gnb_name)
     
     def start_all_gnb(self):
         for gnb in self.gnb:
             self.start_gnb(gnb)
 
-    def stop_ran_elements(self):
-        stop_docker_compose(self.docker_compose_path)
+    def stop_gnb(self):
+        stop_docker_compose(self.gnb_docker_compose_path)
 
-    def down_ran_elements(self):
-        down_docker_compose(self.docker_compose_path)
+    def down_gnb(self):
+        down_docker_compose(self.gnb_docker_compose_path)
 
     def start_nr_ue(self, nr_ue_name):
-        start_docker_compose(self.docker_compose_path, container=nr_ue_name)
+        start_docker_compose(self.ues_docker_compose_path, container=nr_ue_name)
         
     def start_all_nr_ue(self):
         for nr_ue in self.nr_ue:
             self.start_nr_ue(nr_ue)
+            
+    def stop_nr_ue(self):
+        stop_docker_compose(self.ues_docker_compose_path)
+        
+    def down_nr_ue(self):
+        down_docker_compose(self.ues_docker_compose_path)
     
     def create_ran_docu(self):
         if len(self.gnb + self.nr_ue) == 0:
@@ -207,14 +219,14 @@ class RfSimLib:
         docu = " = RAN Tester Image = \n"
         docu += create_image_info_header()
         size, date = self.docker_api.get_image_info(get_image_tag("oai-gnb"))
-        docu += create_image_info_line("oai-nr-ue", get_image_tag("oai-gnb"), date, size)
+        docu += create_image_info_line("oai-gnb", get_image_tag("oai-gnb"), date, size)
         size, date = self.docker_api.get_image_info(get_image_tag("oai-nr-ue"))
         docu += create_image_info_line("oai-nr-ue", get_image_tag("oai-nr-ue"), date, size)
         return docu
            
         
 # ran = RfSimLib()
-# gnb = ran.prepare_ran(num_gnb=1,num_nr_ue=3)
+# gnb,ue = ran.prepare_ran(num_gnb=1,num_nr_ue=3)
 # # # ran.down_gnb()
 # # # ran.down_nr_ue()
 # # # ran.start_all_gnb()

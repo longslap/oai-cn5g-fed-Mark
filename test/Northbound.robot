@@ -1,6 +1,9 @@
 *** Settings ***
-Library    Process
+Library    OperatingSystem
 Library    RfSimLib.py
+Library    NotificationTest.py    WITH NAME    NotifTest
+Library    5gcsdk/src/main/init_handler.py    WITH NAME    Handler
+
 Resource   common.robot
 
 Variables    vars.py
@@ -13,8 +16,56 @@ Test Teardown    Test Teardown With RAN
 
 
 *** Test Cases ***
-Sleep Test
+Check AMF Registration Notifications
     [tags]  North
-    Sleep   15s
+    [Setup]    Test Setup For Northbound
+    [Teardown]    None
+    [Documentation]    Check Callback registration notification
     Start All NR UE
-    Sleep     100s
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}
+    Sleep    30s
+
+Check SMF Notifications
+    [tags]  North
+    [Setup]    None
+    [Teardown]    None
+    ${logs} =    Get UE Info From SMF Log
+    Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
+    Sleep    30s
+
+Check AMF Deregistration Notification
+    [tags]  North
+    [Setup]    None
+    [Teardown]    Test Teardown With RAN
+    [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
+    Stop NR UE
+    Down NR UE
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${3}
+    
+
+
+*** Keywords ***
+Launch Mongo
+     Run    docker run -d -p 27017:27017 --name=mongo-northbound mongo:latest
+
+Down Mongo   
+     Run    docker stop mongo-northbound
+     Run    docker rm mongo-northbound
+
+Get UE Info From SMF Log
+     ${logs}    Run    docker logs oai-smf | sed -n '/SMF CONTEXT:/,/^[[:space:]]*$/p' 
+     RETURN    ${logs}
+
+Test Setup For Northbound
+    Launch Mongo
+    Handler.Start Handler
+
+
+Test Teardown With RAN
+    Handler.Stop Handler
+    Down Mongo
+    Stop gNB
+    Collect All RAN Logs
+    ${docu}=   Create RAN Docu
+    Set Suite Documentation    ${docu}   append=${TRUE}
+    Down gNB

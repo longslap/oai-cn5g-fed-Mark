@@ -94,6 +94,16 @@ class CNTestLib:
                         nf["depends_on"].append("oai-nrf")
                     else:
                         nf["depends_on"] = ["oai-nrf"]
+                        
+                if "vpp-upf" in list_of_containers and service == "oai-smf":
+                    extra_host_entry = "vpp-upf.node.5gcn.mnc95.mcc208.3gppnetwork.org:192.168.79.201"
+                    if 'extra_hosts' in nf:
+                        if extra_host_entry not in nf['extra_hosts']:
+                            nf['extra_hosts'].append(extra_host_entry)
+                    else:
+                        nf['extra_hosts'] = [extra_host_entry]
+                        
+                        
                 # replace with tag
                 if get_image_tag(service):
                     nf["image"] = get_image_tag(service)

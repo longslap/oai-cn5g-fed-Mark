@@ -36,29 +36,19 @@ def mongo_access(service_type: str):
         logger.error(f"Failed to connect to MongoDB server")
         raise AssertionError("Failed to connect to MongoDB server")
                
-def extract_imsi_from_docker_yaml(docker_yaml_path):
-    home_dir = os.path.dirname(os.path.abspath(__file__))
-    docker_yaml_path = os.path.normpath(os.path.join(home_dir, '..' ,docker_yaml_path))
-    with open(docker_yaml_path, 'r') as file:
-        data = yaml.safe_load(file)
+def extract_imsi_from_docker_yaml(n):
+    imsi_initial = 208950000000031
     imsis = []
-    for service_name, config in data['services'].items():
-        if service_name.startswith('oai-nr-ue'):
-            environment = config.get('environment', [])
-            options = environment['USE_ADDITIONAL_OPTIONS']
-            parts = options.split()
-            if '--uicc0.imsi' in parts:
-                imsi_index = parts.index('--uicc0.imsi') + 1
-                if imsi_index < len(parts):
-                    imsis.append(parts[imsi_index])
-            imsis.sort()
+    for i in range(n):
+        imsis.append(f'{imsi_initial}')
+        imsi_initial += 1
     if imsis:
         return imsis
     else:
         logger.error("No IMSIs found in Docker YAML file")
         raise ValueError("No IMSIs found in Docker YAML file")
 
-def check_smf_logs_and_callback_notification(logs, nb_of_users):
+def check_smf_callback(logs, nb_of_users):
    
     try:
         smf_collection = mongo_access("smf")
@@ -146,8 +136,8 @@ def get_imsi_from_handler_collection():
         logger.error(f"Failed to get IMSIs from handler collection: {e}")
         raise e
 
-def check_imsi_match(docker_yaml_path,nb_of_users):
-    imsi_from_yaml = extract_imsi_from_docker_yaml(docker_yaml_path)[:nb_of_users]
+def check_AMF_reg_callback(nb_of_users):
+    imsi_from_yaml = extract_imsi_from_docker_yaml(nb_of_users)
     imsi_from_handler = get_imsi_from_handler_collection()
     if set(imsi_from_yaml) == set(imsi_from_handler):
         logger.info("IMSI match successful.")
@@ -156,12 +146,10 @@ def check_imsi_match(docker_yaml_path,nb_of_users):
         raise Exception("IMSI mismatch.")
         
         
-def check_latest_deregistered_imsis(docker_yaml_path, n):
-    home_dir = os.path.dirname(os.path.abspath(__file__))
-    docker_yaml_path = os.path.normpath(os.path.join(home_dir, '..' ,docker_yaml_path))
+def check_AMF_dereg_callback(n):
     try:
         amf_collection = mongo_access("amf")
-        imsis_from_yaml = extract_imsi_from_docker_yaml(docker_yaml_path)[:n]      
+        imsis_from_yaml = extract_imsi_from_docker_yaml(n)     
         latest_deregistered_imsis = []
         
         for imsi in imsis_from_yaml:
@@ -193,26 +181,26 @@ def add_ues_process():
         logger.error(f"Core network is not healthy. UEs were not added: {e}")
         raise e    
                  
-def check_health_status(docker_compose_file):
-    docker_api = DockerApi()
-    containers = get_docker_compose_services(docker_compose_file)
-    docker_api.check_health_status(containers)
+# def check_health_status(docker_compose_file):
+#     docker_api = DockerApi()
+#     containers = get_docker_compose_services(docker_compose_file)
+#     docker_api.check_health_status(containers)
 
-def collect_all_logs(docker_compose_file, folder=None):
-        docker_api = DockerApi()
-        all_services = get_docker_compose_services(docker_compose_file)
-        log_dir = get_log_dir()
-        if folder:
-            log_dir = os.path.join(log_dir, folder)
-        docker_api.store_all_logs(log_dir, all_services)
+# def collect_all_logs(docker_compose_file, folder=None):
+#         docker_api = DockerApi()
+#         all_services = get_docker_compose_services(docker_compose_file)
+#         log_dir = get_log_dir()
+#         if folder:
+#             log_dir = os.path.join(log_dir, folder)
+#         docker_api.store_all_logs(log_dir, all_services)
 
-def update_docker_compose(compose_file_path):
-    with open(compose_file_path, 'r') as file:
-        compose_data = yaml.safe_load(file)
+# def update_docker_compose(compose_file_path):
+#     with open(compose_file_path, 'r') as file:
+#         compose_data = yaml.safe_load(file)
         
-    for service_name, service_data in compose_data.get('services', {}).items():
-        if service_name in image_tags:
-            service_data['image'] = image_tags[service_name]
+#     for service_name, service_data in compose_data.get('services', {}).items():
+#         if service_name in image_tags:
+#             service_data['image'] = image_tags[service_name]
             
-    with open(compose_file_path, 'w') as file:
-        yaml.safe_dump(compose_data, file, default_flow_style=False)
+#     with open(compose_file_path, 'w') as file:
+#         yaml.safe_dump(compose_data, file, default_flow_style=False)
