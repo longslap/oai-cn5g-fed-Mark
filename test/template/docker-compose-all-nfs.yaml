@@ -167,7 +167,7 @@ services:
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
             - SNSSAI_SD=FFFFFF
             - SNSSAI_SST=1
-            - DNN=default
+            - DNN=oai
             - REGISTER_NRF=yes
             - NRF_IP_ADDR=192.168.79.130
             #changes for HTTP2
