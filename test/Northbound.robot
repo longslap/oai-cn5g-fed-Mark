@@ -22,16 +22,16 @@ Check AMF Registration Notifications
     [Teardown]    None
     [Documentation]    Check Callback registration notification
     Start All NR UE
-    #Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}
-    Sleep    30s
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}
+    #Sleep    30s
 
 Check SMF Notifications
     [tags]  North
     [Setup]    None
     [Teardown]    None
     ${logs} =    Get UE Info From SMF Log
-    #Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
-    Sleep    30s
+    Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
+    #Sleep    30s
 
 Check AMF Deregistration Notification
     [tags]  North
@@ -40,8 +40,8 @@ Check AMF Deregistration Notification
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
     Stop NR UE
     Down NR UE
-    #Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${3}
-    Sleep   10s
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${3}
+    #Sleep   10s
     
 
 
@@ -67,7 +67,7 @@ Test Teardown With RAN
     Handler.Stop Handler
     Down Mongo
     Stop gNB
-    #Collect All RAN Logs
+    Collect All RAN Logs
     ${docu}=   Create RAN Docu
     Set Suite Documentation    ${docu}   append=${TRUE}
     Down gNB
