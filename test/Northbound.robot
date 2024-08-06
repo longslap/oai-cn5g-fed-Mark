@@ -59,11 +59,11 @@ Get UE Info From SMF Log
 
 Test Setup For Northbound
     Launch Mongo
-    #Handler.Start Handler
+    Handler.Start Handler
 
 
 Test Teardown With RAN
-    #Handler.Stop Handler
+    Handler.Stop Handler
     Down Mongo
     Stop gNB
     #Collect All RAN Logs
