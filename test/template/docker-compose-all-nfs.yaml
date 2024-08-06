@@ -165,8 +165,8 @@ services:
             - VPP_CORE_WORKER=1
 #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
-            - SNSSAI_SD=123
-            - SNSSAI_SST=222
+            - SNSSAI_SD=FFFFFF
+            - SNSSAI_SST=1
             - DNN=default
             - REGISTER_NRF=yes
             - NRF_IP_ADDR=192.168.79.130
