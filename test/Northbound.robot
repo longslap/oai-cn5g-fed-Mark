@@ -17,7 +17,7 @@ Test Teardown    Test Teardown With RAN
 
 *** Test Cases ***
 Check AMF Registration Notifications
-    [tags]  North
+    [tags]  North   AMF
     [Setup]    Test Setup For Northbound
     [Teardown]    None
     [Documentation]    Check Callback registration notification
@@ -26,7 +26,7 @@ Check AMF Registration Notifications
     #Sleep    30s
 
 Check SMF Notifications
-    [tags]  North
+    [tags]  North   SMF
     [Setup]    None
     [Teardown]    None
     ${logs} =    Get UE Info From SMF Log
@@ -34,12 +34,10 @@ Check SMF Notifications
     #Sleep    30s
 
 Check AMF Deregistration Notification
-    [tags]  North
-    [Setup]    None
+    [tags]  North   AMF
+    [Setup]    Test Setup for Deregistration
     [Teardown]    Test Teardown With RAN
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
-    Stop NR UE
-    Down NR UE
     Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${3}
     #Sleep   10s
     
@@ -62,6 +60,9 @@ Test Setup For Northbound
     Handler.Start Handler
     Sleep   10s
 
+Test Setup for Deregistration
+    Stop NR UE
+    Down NR UE
 
 Test Teardown With RAN
     Handler.Stop Handler
