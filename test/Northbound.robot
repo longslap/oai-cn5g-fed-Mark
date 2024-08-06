@@ -11,8 +11,8 @@ Variables    vars.py
 Suite Setup    Launch Northbound Test CN
 Suite Teardown    Suite Teardown Default
 
-Test Setup    Test Setup For Northbound
-Test Teardown    Test Teardown With RAN
+#Test Setup    Test Setup For Northbound
+#Test Teardown    Test Teardown With RAN
 
 
 *** Test Cases ***
@@ -23,7 +23,6 @@ Check AMF Registration Notifications
     [Documentation]    Check Callback registration notification
     Start All NR UE
     Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}
-    #Sleep    30s
 
 Check SMF Notifications
     [tags]  North   SMF
@@ -31,7 +30,6 @@ Check SMF Notifications
     [Teardown]    None
     ${logs} =    Get UE Info From SMF Log
     Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
-    #Sleep    30s
 
 Check AMF Deregistration Notification
     [tags]  North   AMF
@@ -39,7 +37,6 @@ Check AMF Deregistration Notification
     [Teardown]    Test Teardown With RAN
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
     Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${3}
-    #Sleep   10s
     
 
 
