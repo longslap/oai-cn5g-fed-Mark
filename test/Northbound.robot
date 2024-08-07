@@ -22,7 +22,23 @@ Check AMF Registration Notifications
     [Teardown]    None
     [Documentation]    Check Callback registration notification
     Start All NR UE
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}
+    Sleep   20s
+    ${logs} =    Get AMF Report Logs
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    '${logs}'
+
+Check AMF Location Report  
+    [tags]  North   AMF
+    [Setup]    None
+    [Teardown]    None  
+    [Documentation]    Check Callback Location Notification
+    ${logs} =    Get AMF Location Report Logs
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Location Report Callback    ${3}    '${logs}'
+
+
+
+
+
+
 
 Check SMF Notifications
     [tags]  North   SMF
@@ -36,9 +52,9 @@ Check AMF Deregistration Notification
     [Setup]    Test Setup for Deregistration
     [Teardown]    Test Teardown With RAN
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${3}
+    ${logs} =    Get AMF Report Logs
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    '${logs}'    ${3}
     
-
 
 *** Keywords ***
 Launch Mongo
@@ -55,7 +71,7 @@ Get UE Info From SMF Log
 Test Setup For Northbound
     Launch Mongo
     Handler.Start Handler
-    Sleep   10s
+    Sleep   2s
 
 Test Setup for Deregistration
     Stop NR UE
@@ -69,3 +85,11 @@ Test Teardown With RAN
     ${docu}=   Create RAN Docu
     Set Suite Documentation    ${docu}   append=${TRUE}
     Down gNB
+
+Get AMF Report Logs
+    ${logs}    Run    docker logs oai-amf | sed -n '/--UEs. information--/,/----------------------------/p' 
+    RETURN    ${logs}
+
+Get AMF Location Report Logs
+    ${logs}    Run    docker logs oai-amf | sed -n sed -n '/"type":"LOCATION_REPORT"/p' 
+    RETURN    ${logs}

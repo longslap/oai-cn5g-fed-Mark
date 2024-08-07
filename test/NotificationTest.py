@@ -26,10 +26,14 @@ def mongo_access(service_type: str):
         client = MongoClient('mongodb://localhost:27017/')
         client.server_info()
         db = client['notification_db']
-        if service_type == "amf":
+        if service_type == "amf notifications":
             return db['amf_notifications']
-        elif service_type == "smf":
+        elif service_type == "smf notifications":
             return db['smf_notifications']
+        elif service_type == "smf traffic report":
+            return db['smf_notification_traffic']
+        elif service_type == "amf location report":
+            return db['amf_location_report']
         else:
             raise ValueError(f"Invalid service type: {service_type}")
     except errors.ServerSelectionTimeoutError:
@@ -51,7 +55,7 @@ def extract_imsi_from_docker_yaml(n):
 def check_smf_callback(logs, nb_of_users):
    
     try:
-        smf_collection = mongo_access("smf")
+        smf_collection = mongo_access("smf notifications")
         smf_contexts = re.findall(r'SMF CONTEXT:.*?(?=SMF CONTEXT:|$)', logs, re.DOTALL)
         parsed_log_data = []
 
@@ -115,92 +119,148 @@ def check_smf_callback(logs, nb_of_users):
         raise e
     
           
-def get_imsi_from_handler_collection():
+def amf_report_from_handler(service_type: str):
     try:
-        amf_collection = mongo_access("amf")
+        amf_collection = mongo_access(service_type)
         latest_imsi_events = {}
         for document in amf_collection.find():
             for report in document["reportList"]:
                 supi = report["supi"]
                 rm_state = report["rmInfoList"][0]["rmState"]
                 timestamp = report["timeStamp"]
+                ran_ue_ngap_id = report.get("ranUeNgapId", "")
+                amf_ue_ngap_id = report.get("amfUeNgapId", "")
+
                 if supi.startswith("imsi-"):
                     supi = supi[5:]
                 if supi not in latest_imsi_events or timestamp > latest_imsi_events[supi]['timestamp']:
-                    latest_imsi_events[supi] = {'rm_state': rm_state, 'timestamp': timestamp}
+                    latest_imsi_events[supi] = {
+                        'rm_state': rm_state,
+                        'timestamp': timestamp,
+                        'ran_ue_ngap_id': ran_ue_ngap_id,
+                        'amf_ue_ngap_id': amf_ue_ngap_id,
+                    }
         latest_registered_imsis = [
-            imsi for imsi, event in latest_imsi_events.items()
-            if event['rm_state'] == "REGISTERED"]
+            {'imsi': imsi, 'details': event}
+            for imsi, event in latest_imsi_events.items()
+        ]
         return latest_registered_imsis
     except Exception as e:
         logger.error(f"Failed to get IMSIs from handler collection: {e}")
         raise e
 
-def check_AMF_reg_callback(nb_of_users):
-    imsi_from_yaml = extract_imsi_from_docker_yaml(nb_of_users)
-    imsi_from_handler = get_imsi_from_handler_collection()
-    if set(imsi_from_yaml) == set(imsi_from_handler):
-        logger.info("IMSI match successful.")
-    else:
-        logger.error(f"IMSI mismatch. Docker YAML IMSI: {imsi_from_yaml}, Handler IMSI: {imsi_from_handler}")
-        raise Exception("IMSI mismatch.")
-        
-        
-def check_AMF_dereg_callback(n):
+
+def get_location_report_info(service_type: str):
     try:
-        amf_collection = mongo_access("amf")
-        imsis_from_yaml = extract_imsi_from_docker_yaml(n)     
-        latest_deregistered_imsis = []
-        
-        for imsi in imsis_from_yaml:
-            events = amf_collection.find(
-            {"reportList.supi": f"imsi-{imsi}"},
-            sort=[("timeStamp", -1)]
-        )
-            for event in events:
-                for report in event["reportList"]:
-                    if report["supi"] == f"imsi-{imsi}" and report["rmInfoList"][0]["rmState"] == "DEREGISTERED":
-                        latest_deregistered_imsis.append(imsi)
-                        break
-                if imsi in latest_deregistered_imsis:
-                    break
-        if set(latest_deregistered_imsis) == set(imsis_from_yaml):
-            logger.info("Deregistered IMSI match successful.")
+        amf_collection = mongo_access(service_type)
+        latest_location_events = {}
+        for document in amf_collection.find():
+            for report in document["reportList"]:
+                if report["type"] == "LOCATION_REPORT":
+                    supi = report["supi"]
+                    location_info = report.get("location", {})
+                    nr_location = location_info.get("nrLocation", {})
+                    global_gnb_id = nr_location.get("globalGnbId", {})
+                    gnb_value = global_gnb_id.get("gNbId", {}).get("gNBValue", "")
+                    plmn_id = global_gnb_id.get("plmnId", {})
+                    mcc = plmn_id.get("mcc", "")
+                    mnc = plmn_id.get("mnc", "")
+                    nr_cell_id = nr_location.get("ncgi", {}).get("nrCellId", "")
+                    tac = nr_location.get("tai", {}).get("tac", "")
+                    timestamp = report["timeStamp"]
+
+                    if supi.startswith("imsi-"):
+                        supi = supi[5:]
+                    if supi not in latest_location_events or timestamp > latest_location_events[supi]['timestamp']:
+                        latest_location_events[supi] = {
+                            'gnb_value': gnb_value,
+                            'plmn_id': f"{mcc}, {mnc}",
+                            'nr_cell_id': nr_cell_id,
+                            'tac': tac,
+                            'timestamp': timestamp
+                        }
+        latest_location_reports = [
+            {'imsi': imsi, 'details': event}
+            for imsi, event in latest_location_events.items()
+        ]
+        return latest_location_reports
+    except Exception as e:
+        logger.error(f"Failed to get location reports from handler collection: {e}")
+        raise e
+
+
+
+def check_AMF_reg_callback(nb_of_users, logs):
+    report_from_handler = amf_report_from_handler(service_type="amf notifications")
+    report_from_AMF = exract_ue_info_from_AMF_logs(logs, nb_of_users)
+    handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
+
+    for report in report_from_AMF:
+        imsi = report['IMSI']
+        if report['5GMM state'] != '5GMM-REGISTERED':
+            logger.error(f"UE {imsi} is {report['5GMM state']}")
+            raise Exception(f"UE {imsi} is {report['5GMM state']}")
         else:
-            logger.error(f"Deregistered IMSI mismatch. Docker YAML IMSIs: {imsis_from_yaml}, Deregistered IMSIs: {latest_deregistered_imsis}")
-            raise ValueError("Deregistered IMSI mismatch.")
+            if imsi in handler_dict:
+                handler_details = handler_dict[imsi]
+                if (report['RAN UE NGAP ID'] == str(handler_details['ran_ue_ngap_id']) and
+                    report['AMF UE ID'] == str(handler_details['amf_ue_ngap_id']) and
+                    handler_details['rm_state'] == "REGISTERED"):
+                    continue
+                else:
+                    logger.error(f"{imsi} callback data does not match AMF data.")
+                    raise Exception(f"Data mismatch for IMSI {imsi}.")
+            else:
+                logger.error(f"UE {imsi} not found in handler collection.")
+                raise Exception(f"UE {imsi} not found in handler collection.")
+    logger.info("AMF UE Data match the callback data.")
+
+def check_AMF_dereg_callback(logs,nb_of_users):
+    try:
+        report_from_handler = amf_report_from_handler(service_type="amf notifications")
+        report_from_AMF = exract_ue_info_from_AMF_logs(logs, nb_of_users)    
+        handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
+
+        for report in report_from_AMF:
+            imsi = report['IMSI']
+            if report['5GMM state'] != '5GMM-DEREGISTERED':
+                logger.error(f"UE {imsi} is {report['5GMM state']}")
+                raise Exception(f"UE {imsi} is {report['5GMM state']}")
+            else:
+                if imsi in handler_dict:
+                    handler_details = handler_dict[imsi]
+                    if (report['RAN UE NGAP ID'] == str(handler_details['ran_ue_ngap_id']) and
+                        report['AMF UE ID'] == str(handler_details['amf_ue_ngap_id']) and
+                        handler_details['rm_state'] == "DEREGISTERED"):
+                        continue
+                    else:
+                        logger.error(f"{imsi} callback data does not match AMF data.")
+                        raise Exception(f"Data mismatch for IMSI {imsi}.")
+                else:
+                    logger.error(f"UE {imsi} not found in handler collection.")
+                    raise Exception(f"UE {imsi} not found in handler collection.")
+        logger.info("AMF UE Data match the callback data.")
     except Exception as e:
         logger.error(f"Failed to check latest deregistered IMSIs: {e}")
         raise e
 
-def add_ues_process():
-    try:
-        add_ues(1)
-        logger.info("UEs were successfully added.")
-    except Exception as e:
-        logger.error(f"Core network is not healthy. UEs were not added: {e}")
-        raise e    
-                 
-# def check_health_status(docker_compose_file):
-#     docker_api = DockerApi()
-#     containers = get_docker_compose_services(docker_compose_file)
-#     docker_api.check_health_status(containers)
+def check_AMF_Location_report_callback(logs, nb_of_users):
+    report_from_handler = get_location_report_info("amf location report")
+    report_from_amf = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_sbi\] \[info\] HTTP message Body:', '', logs)
+    return True
 
-# def collect_all_logs(docker_compose_file, folder=None):
-#         docker_api = DockerApi()
-#         all_services = get_docker_compose_services(docker_compose_file)
-#         log_dir = get_log_dir()
-#         if folder:
-#             log_dir = os.path.join(log_dir, folder)
-#         docker_api.store_all_logs(log_dir, all_services)
 
-# def update_docker_compose(compose_file_path):
-#     with open(compose_file_path, 'r') as file:
-#         compose_data = yaml.safe_load(file)
-        
-#     for service_name, service_data in compose_data.get('services', {}).items():
-#         if service_name in image_tags:
-#             service_data['image'] = image_tags[service_name]
-            
-#     with open(compose_file_path, 'w') as file:
-#         yaml.safe_dump(compose_data, file, default_flow_style=False)
+def exract_ue_info_from_AMF_logs(logs, nb_of_users):
+    cleaned_logs = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_app\] \[info\] ', '', logs)
+    tables = cleaned_logs.split("|----------------------------------------------------UEs' information------------------------------------------------|")
+    last_table = tables[-1].strip()
+    if not last_table:
+        return []
+    ue_info_lines = last_table.split('\n')
+    raw_headers = [header.strip() for header in ue_info_lines[0].split('|')[1:-1]]
+    ue_info_list = []
+    for line in ue_info_lines[1:nb_of_users+1]:
+        values = [value.strip() for value in line.split('|')[1:-1]]
+        ue_info = dict(zip(raw_headers, values))
+        ue_info_list.append(ue_info)
+    return ue_info_list
