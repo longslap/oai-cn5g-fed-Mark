@@ -305,7 +305,6 @@ def extract_ue_info_from_AMF_logs(logs, nb_of_users):
         ue_info_lines = cleaned_logs.split('\n')
         start_index = None
         end_index = None
-
         for i, line in enumerate(ue_info_lines):
             if 'UEs\' Information' in line:
                 start_index = i + 2 
