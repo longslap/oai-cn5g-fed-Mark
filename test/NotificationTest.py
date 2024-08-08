@@ -1,21 +1,13 @@
 import os
 import sys
 import logging
-import yaml
 from pymongo import MongoClient, errors
-import importlib
 import re
 from common import *
 from docker_api import DockerApi
 from image_tags import image_tags
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, parent_dir)
-RFsimUEManager = importlib.import_module('5gcsdk.src.modules.RFsimUEManager')
-init_handler = importlib.import_module('5gcsdk.src.main.init_handler')
-add_ues = RFsimUEManager.add_ues
-remove_ues = RFsimUEManager.remove_ues
-start_handler = init_handler.start_handler  
-stop_handler = init_handler.stop_handler
+import json
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,27 +25,15 @@ def mongo_access(service_type: str):
         elif service_type == "smf traffic report":
             return db['smf_notification_traffic']
         elif service_type == "amf location report":
-            return db['amf_location_report']
+            return db['amf_location_notification']
         else:
             raise ValueError(f"Invalid service type: {service_type}")
     except errors.ServerSelectionTimeoutError:
         logger.error(f"Failed to connect to MongoDB server")
         raise AssertionError("Failed to connect to MongoDB server")
-               
-def extract_imsi_from_docker_yaml(n):
-    imsi_initial = 208950000000031
-    imsis = []
-    for i in range(n):
-        imsis.append(f'{imsi_initial}')
-        imsi_initial += 1
-    if imsis:
-        return imsis
-    else:
-        logger.error("No IMSIs found in Docker YAML file")
-        raise ValueError("No IMSIs found in Docker YAML file")
-
+    
+    
 def check_smf_callback(logs, nb_of_users):
-   
     try:
         smf_collection = mongo_access("smf notifications")
         smf_contexts = re.findall(r'SMF CONTEXT:.*?(?=SMF CONTEXT:|$)', logs, re.DOTALL)
@@ -188,7 +168,38 @@ def get_location_report_info(service_type: str):
         logger.error(f"Failed to get location reports from handler collection: {e}")
         raise e
 
+def parse_location_log_data(log_data):
+    log_data = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_sbi\] \[info\] HTTP message Body: ', '', log_data)
+    log_entries = log_data.strip().split('\n')
+    cleaned_log_entries = [entry.strip().strip('\'') for entry in log_entries]
+    parsed_logs = [json.loads(entry) for entry in cleaned_log_entries]
+    location_reports = []
+    for log in parsed_logs:
+        for report in log.get("reportList", []):
+            if report.get("type") == "LOCATION_REPORT":
+                supi = report.get("supi", "")
+                if supi.startswith("imsi-"):
+                    supi = supi[5:]
+                location_info = report.get("location", {})
+                nr_location = location_info.get("nrLocation", {})
+                global_gnb_id = nr_location.get("globalGnbId", {})
+                gnb_value = global_gnb_id.get("gNbId", {}).get("gNBValue", "")
+                plmn_id = global_gnb_id.get("plmnId", {})
+                mcc = plmn_id.get("mcc", "")
+                mnc = plmn_id.get("mnc", "")
+                nr_cell_id = nr_location.get("ncgi", {}).get("nrCellId", "")
+                tac = nr_location.get("tai", {}).get("tac", "")
+                timestamp = report.get("timeStamp", 0)
 
+                location_reports.append({
+                    'imsi': supi,
+                    'gnb_value': gnb_value,
+                    'plmn_id': f"{mcc}, {mnc}",
+                    'nr_cell_id': nr_cell_id,
+                    'tac': tac,
+                    'timestamp': timestamp
+                })
+    return location_reports
 
 def check_AMF_reg_callback(nb_of_users, logs):
     report_from_handler = amf_report_from_handler(service_type="amf notifications")
@@ -245,9 +256,34 @@ def check_AMF_dereg_callback(logs,nb_of_users):
         raise e
 
 def check_AMF_Location_report_callback(logs, nb_of_users):
-    report_from_handler = get_location_report_info("amf location report")
-    report_from_amf = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_sbi\] \[info\] HTTP message Body:', '', logs)
-    return True
+    report_from_handler = get_location_report_info(service_type="amf location report")
+    report_from_amf = parse_location_log_data(logs)
+    handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
+    if len(report_from_handler) != nb_of_users:
+        logger.error(f"Number of UE Location Reports ({len(report_from_handler)}) does not match the number of users added ({nb_of_users})")
+        raise Exception(f"Number of UE Location Reports Callbacks does not match the number of users added.")
+    for report in report_from_amf:
+        imsi = report['imsi']
+        if imsi in handler_dict:
+            handler_details = handler_dict[imsi]
+            if handler_details['gnb_value'] != report['gnb_value']:
+                logger.error(f"IMSI {imsi} gNB Value mismatch: Handler({handler_details['gnb_value']}) != AMF({report['gnb_value']})")
+                raise Exception(f"Data mismatch for IMSI {imsi}: gNB Value mismatch.")
+            if handler_details['plmn_id'] != report['plmn_id']:
+                logger.error(f"IMSI {imsi} PLMN ID mismatch: Handler({handler_details['plmn_id']}) != AMF({report['plmn_id']})")
+                raise Exception(f"Data mismatch for IMSI {imsi}: PLMN ID mismatch.")
+            if handler_details['nr_cell_id'] != report['nr_cell_id']:
+                logger.error(f"IMSI {imsi} NR Cell ID mismatch: Handler({handler_details['nr_cell_id']}) != AMF({report['nr_cell_id']})")
+                raise Exception(f"Data mismatch for IMSI {imsi}: NR Cell ID mismatch.")
+            if handler_details['tac'] != report['tac']:
+                logger.error(f"IMSI {imsi} TAC mismatch: Handler({handler_details['tac']}) != AMF({report['tac']})")
+                raise Exception(f"Data mismatch for IMSI {imsi}: TAC mismatch.")
+            logger.info(f"IMSI {imsi} matches all fields.")
+        else:
+            logger.error(f"UE {imsi} not found in handler collection.")
+            raise Exception(f"UE {imsi} not found in handler collection.")
+    
+    logger.info("All callback data matches the AMF UEs location Data.")
 
 
 def exract_ue_info_from_AMF_logs(logs, nb_of_users):

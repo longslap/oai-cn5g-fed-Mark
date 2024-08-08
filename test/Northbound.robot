@@ -32,13 +32,7 @@ Check AMF Location Report
     [Teardown]    None  
     [Documentation]    Check Callback Location Notification
     ${logs} =    Get AMF Location Report Logs
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Location Report Callback    ${3}    '${logs}'
-
-
-
-
-
-
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Location Report Callback    '${logs}'    ${3}
 
 Check SMF Notifications
     [tags]  North   SMF
@@ -53,7 +47,7 @@ Check AMF Deregistration Notification
     [Teardown]    Test Teardown With RAN
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
     ${logs} =    Get AMF Report Logs
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    '${logs}'    ${3}
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${logs}    ${3}
     
 
 *** Keywords ***
@@ -91,5 +85,5 @@ Get AMF Report Logs
     RETURN    ${logs}
 
 Get AMF Location Report Logs
-    ${logs}    Run    docker logs oai-amf | sed -n sed -n '/"type":"LOCATION_REPORT"/p' 
+    ${logs}    Run    docker logs oai-amf | sed -n '/"type":"LOCATION_REPORT"/p' 
     RETURN    ${logs}

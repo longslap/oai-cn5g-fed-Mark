@@ -204,8 +204,7 @@ class RfSimLib:
         start_docker_compose(self.ues_docker_compose_path, container=nr_ue_name)
         
     def start_all_nr_ue(self):
-        for nr_ue in self.nr_ue:
-            self.start_nr_ue(nr_ue)
+        start_docker_compose(self.ues_docker_compose_path)
             
     def stop_nr_ue(self):
         stop_docker_compose(self.ues_docker_compose_path)
