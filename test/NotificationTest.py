@@ -215,8 +215,8 @@ def check_AMF_reg_callback(nb_of_users, logs):
             else:
                 if imsi in handler_dict:
                     handler_details = handler_dict[imsi]
-                    if (report['RAN UE NGAP ID'] == str(handler_details['ran_ue_ngap_id']) and
-                        report['AMF UE NGAP ID'] == str(handler_details['amf_ue_ngap_id']) and
+                    if (int(report['RAN UE NGAP ID'],16) == int(handler_details['ran_ue_ngap_id']) and
+                        int(report['AMF UE NGAP ID'],16) == int(handler_details['amf_ue_ngap_id']) and
                         handler_details['rm_state'] == "REGISTERED"):
                         continue
                     else:
@@ -244,8 +244,8 @@ def check_AMF_dereg_callback(logs,nb_of_users):
             else:
                 if imsi in handler_dict:
                     handler_details = handler_dict[imsi]
-                    if (report['RAN UE NGAP ID'] == str(handler_details['ran_ue_ngap_id']) and
-                        report['AMF UE NGAP ID'] == str(handler_details['amf_ue_ngap_id']) and
+                    if (int(report['RAN UE NGAP ID'],16) == int(handler_details['ran_ue_ngap_id']) and
+                        int(report['AMF UE NGAP ID'],16) == int(handler_details['amf_ue_ngap_id']) and
                         handler_details['rm_state'] == "DEREGISTERED"):
                         continue
                     else:
