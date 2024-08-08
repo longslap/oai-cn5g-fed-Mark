@@ -204,7 +204,7 @@ def parse_location_log_data(log_data):
 def check_AMF_reg_callback(nb_of_users, logs):
     try:
         report_from_handler = amf_report_from_handler(service_type="amf notifications")
-        report_from_AMF = exract_ue_info_from_AMF_logs(logs, nb_of_users)
+        report_from_AMF = extract_ue_info_from_AMF_logs(logs, nb_of_users)
         handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
 
         for report in report_from_AMF:
@@ -233,7 +233,7 @@ def check_AMF_reg_callback(nb_of_users, logs):
 def check_AMF_dereg_callback(logs,nb_of_users):
     try:
         report_from_handler = amf_report_from_handler(service_type="amf notifications")
-        report_from_AMF = exract_ue_info_from_AMF_logs(logs, nb_of_users)    
+        report_from_AMF = extract_ue_info_from_AMF_logs(logs, nb_of_users)    
         handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
 
         for report in report_from_AMF:
@@ -297,23 +297,32 @@ def check_AMF_Location_report_callback(logs, nb_of_users):
         raise e
 
 
-def exract_ue_info_from_AMF_logs(logs, nb_of_users):
+def extract_ue_info_from_AMF_logs(logs, nb_of_users):
     try:
-        if logs == "":
+        if not logs.strip():
             raise Exception("No logs found.")
-        cleaned_logs = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_app\] \[info\] ', '', logs)
-        tables = cleaned_logs.split("|----------------------------------------------------UEs' Information------------------------------------------------|")
-        last_table = tables[-1].strip()
-        ue_info_lines = last_table.split('\n')
-        raw_headers = [header.strip() for header in ue_info_lines[0].split('|')[1:-1]]
+        cleaned_logs = logs.strip()
+        ue_info_lines = cleaned_logs.split('\n')
+        start_index = None
+        end_index = None
+
+        for i, line in enumerate(ue_info_lines):
+            if 'UEs\' Information' in line:
+                start_index = i + 2 
+            elif '|-----------------------------------------------------------------------------------------------------------------------------------------------------------|' in line:
+                end_index = i
+        if start_index is None or end_index is None:
+            raise ValueError("Could not locate UE information table in logs.")
+        raw_headers = [header.strip() for header in ue_info_lines[start_index - 1].split('|')[1:-1]]
+        ue_info_lines = ue_info_lines[start_index:end_index]
         ue_info_list = []
-        for line in ue_info_lines[1:nb_of_users+1]:
+        for line in ue_info_lines[:nb_of_users]:
             values = [value.strip() for value in line.split('|')[1:-1]]
             ue_info = dict(zip(raw_headers, values))
             ue_info_list.append(ue_info)
         if len(ue_info_list) != nb_of_users:
-            raise Exception(f"Number of UEs in logs ({len(ue_info_list)}) does not match the number of users added ({nb_of_users})")   
+            raise ValueError(f"Number of UEs in logs ({len(ue_info_list)}) does not match the number of users added ({nb_of_users}).")
         return ue_info_list
     except Exception as e:
         logger.error(f"Failed to extract UE information from logs: {e}")
-        raise e 
+        raise e
