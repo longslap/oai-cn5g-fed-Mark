@@ -202,29 +202,33 @@ def parse_location_log_data(log_data):
     return location_reports
 
 def check_AMF_reg_callback(nb_of_users, logs):
-    report_from_handler = amf_report_from_handler(service_type="amf notifications")
-    report_from_AMF = exract_ue_info_from_AMF_logs(logs, nb_of_users)
-    handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
+    try:
+        report_from_handler = amf_report_from_handler(service_type="amf notifications")
+        report_from_AMF = exract_ue_info_from_AMF_logs(logs, nb_of_users)
+        handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
 
-    for report in report_from_AMF:
-        imsi = report['IMSI']
-        if report['5GMM state'] != '5GMM-REGISTERED':
-            logger.error(f"UE {imsi} is {report['5GMM state']}")
-            raise Exception(f"UE {imsi} is {report['5GMM state']}")
-        else:
-            if imsi in handler_dict:
-                handler_details = handler_dict[imsi]
-                if (report['RAN UE NGAP ID'] == str(handler_details['ran_ue_ngap_id']) and
-                    report['AMF UE ID'] == str(handler_details['amf_ue_ngap_id']) and
-                    handler_details['rm_state'] == "REGISTERED"):
-                    continue
-                else:
-                    logger.error(f"{imsi} callback data does not match AMF data.")
-                    raise Exception(f"Data mismatch for IMSI {imsi}.")
+        for report in report_from_AMF:
+            imsi = report['IMSI']
+            if report['5GMM state'] != '5GMM-REGISTERED':
+                logger.error(f"UE {imsi} is {report['5GMM state']}")
+                raise Exception(f"UE {imsi} is {report['5GMM state']}")
             else:
-                logger.error(f"UE {imsi} not found in handler collection.")
-                raise Exception(f"UE {imsi} not found in handler collection.")
-    logger.info("AMF UE Data match the callback data.")
+                if imsi in handler_dict:
+                    handler_details = handler_dict[imsi]
+                    if (report['RAN UE NGAP ID'] == str(handler_details['ran_ue_ngap_id']) and
+                        report['AMF UE NGAP ID'] == str(handler_details['amf_ue_ngap_id']) and
+                        handler_details['rm_state'] == "REGISTERED"):
+                        continue
+                    else:
+                        logger.error(f"{imsi} callback data does not match AMF data.")
+                        raise Exception(f"Data mismatch for IMSI {imsi}.")
+                else:
+                    logger.error(f"UE {imsi} not found in handler collection.")
+                    raise Exception(f"UE {imsi} not found in handler collection.")
+        logger.info("AMF UE Data match the callback data.")
+    except Exception as e:
+        logger.error(f"Failed to check latest registered IMSIs: {e}")
+        raise e
 
 def check_AMF_dereg_callback(logs,nb_of_users):
     try:
@@ -241,7 +245,7 @@ def check_AMF_dereg_callback(logs,nb_of_users):
                 if imsi in handler_dict:
                     handler_details = handler_dict[imsi]
                     if (report['RAN UE NGAP ID'] == str(handler_details['ran_ue_ngap_id']) and
-                        report['AMF UE ID'] == str(handler_details['amf_ue_ngap_id']) and
+                        report['AMF UE NGAP ID'] == str(handler_details['amf_ue_ngap_id']) and
                         handler_details['rm_state'] == "DEREGISTERED"):
                         continue
                     else:
@@ -256,47 +260,60 @@ def check_AMF_dereg_callback(logs,nb_of_users):
         raise e
 
 def check_AMF_Location_report_callback(logs, nb_of_users):
-    report_from_handler = get_location_report_info(service_type="amf location report")
-    report_from_amf = parse_location_log_data(logs)
-    handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
-    if len(report_from_handler) != nb_of_users:
-        logger.error(f"Number of UE Location Reports ({len(report_from_handler)}) does not match the number of users added ({nb_of_users})")
-        raise Exception(f"Number of UE Location Reports Callbacks does not match the number of users added.")
-    for report in report_from_amf:
-        imsi = report['imsi']
-        if imsi in handler_dict:
-            handler_details = handler_dict[imsi]
-            if handler_details['gnb_value'] != report['gnb_value']:
-                logger.error(f"IMSI {imsi} gNB Value mismatch: Handler({handler_details['gnb_value']}) != AMF({report['gnb_value']})")
-                raise Exception(f"Data mismatch for IMSI {imsi}: gNB Value mismatch.")
-            if handler_details['plmn_id'] != report['plmn_id']:
-                logger.error(f"IMSI {imsi} PLMN ID mismatch: Handler({handler_details['plmn_id']}) != AMF({report['plmn_id']})")
-                raise Exception(f"Data mismatch for IMSI {imsi}: PLMN ID mismatch.")
-            if handler_details['nr_cell_id'] != report['nr_cell_id']:
-                logger.error(f"IMSI {imsi} NR Cell ID mismatch: Handler({handler_details['nr_cell_id']}) != AMF({report['nr_cell_id']})")
-                raise Exception(f"Data mismatch for IMSI {imsi}: NR Cell ID mismatch.")
-            if handler_details['tac'] != report['tac']:
-                logger.error(f"IMSI {imsi} TAC mismatch: Handler({handler_details['tac']}) != AMF({report['tac']})")
-                raise Exception(f"Data mismatch for IMSI {imsi}: TAC mismatch.")
-            logger.info(f"IMSI {imsi} matches all fields.")
-        else:
-            logger.error(f"UE {imsi} not found in handler collection.")
-            raise Exception(f"UE {imsi} not found in handler collection.")
-    
-    logger.info("All callback data matches the AMF UEs location Data.")
+    try: 
+        if logs == "":
+            logger.error("No location reports found in logs.")
+            raise Exception("No location reports found in logs.")
+        report_from_handler = get_location_report_info(service_type="amf location report")
+        report_from_amf = parse_location_log_data(logs)
+        handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
+        if len(report_from_handler) != nb_of_users:
+            logger.error(f"Number of UE Location Reports ({len(report_from_handler)}) does not match the number of users added ({nb_of_users})")
+            raise Exception(f"Number of UE Location Reports Callbacks does not match the number of users added.")
+        for report in report_from_amf:
+            imsi = report['imsi']
+            if imsi in handler_dict:
+                handler_details = handler_dict[imsi]
+                if handler_details['gnb_value'] != report['gnb_value']:
+                    logger.error(f"IMSI {imsi} gNB Value mismatch: Handler({handler_details['gnb_value']}) != AMF({report['gnb_value']})")
+                    raise Exception(f"Data mismatch for IMSI {imsi}: gNB Value mismatch.")
+                if handler_details['plmn_id'] != report['plmn_id']:
+                    logger.error(f"IMSI {imsi} PLMN ID mismatch: Handler({handler_details['plmn_id']}) != AMF({report['plmn_id']})")
+                    raise Exception(f"Data mismatch for IMSI {imsi}: PLMN ID mismatch.")
+                if handler_details['nr_cell_id'] != report['nr_cell_id']:
+                    logger.error(f"IMSI {imsi} NR Cell ID mismatch: Handler({handler_details['nr_cell_id']}) != AMF({report['nr_cell_id']})")
+                    raise Exception(f"Data mismatch for IMSI {imsi}: NR Cell ID mismatch.")
+                if handler_details['tac'] != report['tac']:
+                    logger.error(f"IMSI {imsi} TAC mismatch: Handler({handler_details['tac']}) != AMF({report['tac']})")
+                    raise Exception(f"Data mismatch for IMSI {imsi}: TAC mismatch.")
+                logger.info(f"IMSI {imsi} matches all fields.")
+            else:
+                logger.error(f"UE {imsi} not found in handler collection.")
+                raise Exception(f"UE {imsi} not found in handler collection.")
+        
+        logger.info("All callback data matches the AMF UEs location Data.")
+    except Exception as e:
+        logger.error(f"Failed to check latest location reports: {e}")
+        raise e
 
 
 def exract_ue_info_from_AMF_logs(logs, nb_of_users):
-    cleaned_logs = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_app\] \[info\] ', '', logs)
-    tables = cleaned_logs.split("|----------------------------------------------------UEs' information------------------------------------------------|")
-    last_table = tables[-1].strip()
-    if not last_table:
-        return []
-    ue_info_lines = last_table.split('\n')
-    raw_headers = [header.strip() for header in ue_info_lines[0].split('|')[1:-1]]
-    ue_info_list = []
-    for line in ue_info_lines[1:nb_of_users+1]:
-        values = [value.strip() for value in line.split('|')[1:-1]]
-        ue_info = dict(zip(raw_headers, values))
-        ue_info_list.append(ue_info)
-    return ue_info_list
+    try:
+        if logs == "":
+            raise Exception("No logs found.")
+        cleaned_logs = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_app\] \[info\] ', '', logs)
+        tables = cleaned_logs.split("|----------------------------------------------------UEs' Information------------------------------------------------|")
+        last_table = tables[-1].strip()
+        ue_info_lines = last_table.split('\n')
+        raw_headers = [header.strip() for header in ue_info_lines[0].split('|')[1:-1]]
+        ue_info_list = []
+        for line in ue_info_lines[1:nb_of_users+1]:
+            values = [value.strip() for value in line.split('|')[1:-1]]
+            ue_info = dict(zip(raw_headers, values))
+            ue_info_list.append(ue_info)
+        if len(ue_info_list) != nb_of_users:
+            raise Exception(f"Number of UEs in logs ({len(ue_info_list)}) does not match the number of users added ({nb_of_users})")   
+        return ue_info_list
+    except Exception as e:
+        logger.error(f"Failed to extract UE information from logs: {e}")
+        raise e 

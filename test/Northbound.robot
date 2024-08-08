@@ -24,7 +24,7 @@ Check AMF Registration Notifications
     Start All NR UE
     Sleep   20s
     ${logs} =    Get AMF Report Logs
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    '${logs}'
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    ${logs}
 
 Check AMF Location Report  
     [tags]  North   AMF
@@ -81,7 +81,7 @@ Test Teardown With RAN
     Down gNB
 
 Get AMF Report Logs
-    ${logs}    Run    docker logs oai-amf | sed -n '/--UEs. information--/,/----------------------------/p' 
+    ${logs}    Run    docker logs oai-amf | sed -n '/--UEs. Information--/,/----------------------------/p' 
     RETURN    ${logs}
 
 Get AMF Location Report Logs
