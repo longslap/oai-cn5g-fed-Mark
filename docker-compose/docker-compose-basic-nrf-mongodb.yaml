@@ -46,7 +46,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udr
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.137
@@ -61,7 +61,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udm
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.138
@@ -90,9 +90,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - mongodb
             - oai-nrf
-            - oai-ausf
         networks:
             public_net:
                 ipv4_address: 192.168.70.132
@@ -109,7 +107,6 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - oai-nrf
-            - oai-amf
         networks:
             public_net:
                 ipv4_address: 192.168.70.133
@@ -125,7 +122,6 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - oai-nrf
-            - oai-smf
         cap_add:
             - NET_ADMIN
             - SYS_ADMIN

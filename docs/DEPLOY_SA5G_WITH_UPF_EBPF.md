@@ -1127,7 +1127,7 @@ Stopping gnbsim-ebpf ... done
 docker-compose-host $: sleep 10
 docker-compose-host $: docker-compose -f docker-compose-basic-nrf-ebpf.yaml ps -a
 docker-compose-host $: docker logs oai-upf 2>&1 | tail -20
-docker-compose-host $: docker-compose -f docker-compose-basic-nrf-ebpf.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf-ebpf.yaml stop -t 30
 Stopping oai-ext-dn ... done
 Stopping oai-smf    ... done
 Stopping oai-amf    ... done

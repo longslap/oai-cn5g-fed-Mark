@@ -22,6 +22,7 @@ For more information about the OpenAirInterface (OAI) Software Alliance:
 
 import shutil
 import time
+import re
 
 from common import *
 from docker_api import DockerApi
@@ -137,7 +138,21 @@ class CNTestLib:
         log_dir = get_log_dir()
         if folder:
             log_dir = os.path.join(log_dir, folder)
-        self.docker_api.store_all_logs(log_dir, all_services)
+        cn_log_list = self.docker_api.store_all_logs(log_dir, all_services)
+        for filename in cn_log_list:
+            if re.search('mysql', filename) is not None or re.search('oai-ext-dn', filename) is not None or re.search('trace_dummy', filename) is not None:
+                continue
+            name_split = filename.split('logs/')
+            bye_message_present = False
+            with open(filename, 'r') as f:
+                for line in f:
+                    result = re.search('system.*info.* Bye. Shutdown Procedure took (?P<duration>[0-9]+) ms', line)
+                    if result is not None and not bye_message_present:
+                        bye_message_present = True
+                        duration = int(result.group('duration'))
+                        logging.info(f'{name_split[1]} container properly shutdown in {duration} ms.')
+            if not bye_message_present:
+                logging.error(f'{name_split[1]} container did NOT properly shutdown.')
 
     def configure_default_qos(self, five_qi=9, session_ambr=50):
         print("TODO implement me")

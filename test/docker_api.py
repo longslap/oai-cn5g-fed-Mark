@@ -76,6 +76,7 @@ class DockerApi:
 
     def store_all_logs(self, log_dir, container_list=None):
         containers = self.client.containers(all=True)
+        list_of_logs = []
         for container in containers:
             name = container["Names"][0][1:]
             if container_list and name not in container_list:
@@ -87,6 +88,8 @@ class DockerApi:
                 os.makedirs(log_dir)
             with open(file_name, "w") as f:
                 f.write(log)
+            list_of_logs.append(file_name)
+        return list_of_logs
 
     def get_log(self, container):
         return self.client.logs(container).decode()

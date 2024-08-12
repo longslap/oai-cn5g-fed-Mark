@@ -442,7 +442,7 @@ Let recover one last time the logs:
 For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-mini-nonrf.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-mini-nonrf.yaml stop -t 30
 ```
 -->
 

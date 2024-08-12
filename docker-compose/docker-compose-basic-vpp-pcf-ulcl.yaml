@@ -47,7 +47,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udr
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.137
@@ -62,7 +62,7 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udm
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.138
@@ -92,12 +92,7 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - mysql
-            - vpp-upf-ulcl
-            - vpp-upf-aupf1
-            - vpp-upf-aupf2
-            - oai-ext-dn-internet
-            - oai-ext-dn-edge
-            - oai-ausf
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.132
@@ -117,8 +112,7 @@ services:
             - "aupf1.node.5gcn.mnc95.mcc208.3gppnetwork.org:192.168.70.202"
             - "aupf2.node.5gcn.mnc95.mcc208.3gppnetwork.org:192.168.70.203"
         depends_on:
-            - oai-amf
-            - oai-pcf
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.133

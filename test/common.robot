@@ -42,6 +42,20 @@ Launch NRF CN with PCF
     Start CN
     Check Core Network Health Status
 
+Launch NRF CN with PCF HTTP1
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn  oai-upf  oai-pcf
+    Prepare Scenario    ${list}   nrf-cn-pcf
+    @{replace_list} =  Create List  smf  support_features  use_local_pcc_rules
+    Replace In Config    ${replace_list}  no
+    @{replace_list} =  Create List  smf  support_features  use_local_subscription_info
+    Replace In Config    ${replace_list}  no
+    @{replace_list} =  Create List   http_version
+    Replace In Config    ${replace_list}  1
+
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
 Launch NRF CN For QoS
     @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn  oai-ext-dn-2  oai-ext-dn-3  oai-upf  oai-pcf
     Prepare Scenario    ${list}   nrf-cn-qos
@@ -152,3 +166,14 @@ Deactive NF Registration in CN Config
     Replace In Config    ${replace_list}  no
     @{replace_list} =  Create List  amf  support_features_options  enable_smf_selection
     Replace In Config    ${replace_list}  no
+
+Test Setup With Gnbsim
+    ${gnbsim_name} =   Prepare Gnbsim
+    Set Test Variable   ${GNBSIM_IN_USE}   ${gnbsim_name}
+    Start Trace    ${TEST_NAME}
+
+Test Teardown With Gnbsim
+    Stop Gnbsim   ${GNBSIM_IN_USE}
+    Collect All Gnbsim Logs
+    Down Gnbsim    ${GNBSIM_IN_USE}
+    Stop Trace    ${TEST_NAME}
