@@ -177,9 +177,10 @@ smf:
     use_local_pcc_rules: no # Use infos from local_pcc_rules or from PCF
   # we resolve from NRF, this is just to configure usage_reporting
   upfs:
-    - host: oai-upf
+    - host: 192.168.70.129
       config:
         enable_usage_reporting: no
+        enable_qers: yes
   ue_dns:
     primary_ipv4: "172.21.3.100"
     primary_ipv6: "2001:4860:4860::8888"
