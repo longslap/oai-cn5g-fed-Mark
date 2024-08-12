@@ -102,9 +102,11 @@ class CNTestLib:
                             nf['extra_hosts'].append(extra_host_entry)
                     else:
                         nf['extra_hosts'] = [extra_host_entry]
-                        
-                        
-                # replace with tag
+                if "vpp-upf" in list_of_containers and service == "oai-ext-dn":
+                    entry_point = "/bin/bash -c \"ip route add 12.1.1.0/24 via 192.168.81.201; ip route; sleep infinity\""
+                    nf['entrypoint'] = entry_point
+                    if 'networks' in nf:
+                        nf['networks'] = {'n6_test_net': {'ipv4_address': '192.168.81.141'}}  
                 if get_image_tag(service):
                     nf["image"] = get_image_tag(service)
 

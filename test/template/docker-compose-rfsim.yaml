@@ -10,6 +10,9 @@ services:
         networks:
             public_test_net:
                 ipv4_address: REPLACE_IP
+            n3_test_net:
+                ipv4_address: REPLACE_IP
+
         volumes:
             - ./gnb.conf:/opt/oai-gnb/etc/gnb.conf
         healthcheck:
@@ -44,6 +47,9 @@ services:
             retries: 5
 
 networks:
-    public_test_net:
-        external: 
-            name: test-oai-public-net
+  n3_test_net:
+    external:
+      name: test-oai-n3-net
+  public_test_net:
+    external:
+      name: test-oai-public-net

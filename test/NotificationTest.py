@@ -325,3 +325,46 @@ def extract_ue_info_from_AMF_logs(logs, nb_of_users):
     except Exception as e:
         logger.error(f"Failed to extract UE information from logs: {e}")
         raise e
+
+
+def get_ue_traffic(ue_supi):
+    smf_traffic_collection = mongo_access("smf traffic report")
+    query = {'eventNotifs.supi': ue_supi}
+    try:
+        records = smf_traffic_collection.find(query)
+        if smf_traffic_collection.count_documents(query) == 0:
+            raise ValueError(f"No records found for SUPI: {ue_supi}")
+    except Exception as e:
+        logger.error(f"Failed to retrieve records from MongoDB: {str(e)}")
+        raise RuntimeError(f"Failed to retrieve records from MongoDB: {str(e)}") from e
+
+    total_uplink = 0
+    total_downlink = 0
+
+    for record in records:
+        for event in record.get('eventNotifs', []):
+            usage_report = event.get('customized_data', {}).get('Usage Report', {})
+            total_uplink += usage_report.get('Volume', {}).get('Uplink', 0)
+            total_downlink += usage_report.get('Volume', {}).get('Downlink', 0)
+    
+    logger.info(f"Total Uplink: {total_uplink} bytes, Total Downlink: {total_downlink} bytes")
+
+    # Return the results
+    return {
+        'TOTAL_UPLINK': total_uplink,
+        'TOTAL_DOWNLINK': total_downlink
+    }
+
+def Check_traffic_callback_report(ue_supi, expected_uplink, expected_downlink):
+    try:
+        traffic_report = get_ue_traffic(ue_supi)
+        if traffic_report['TOTAL_UPLINK'] != expected_uplink:
+            logger.error(f"Uplink Traffic mismatch: Expected({expected_uplink}) != Actual({traffic_report['TOTAL_UPLINK']})")
+            raise Exception(f"Uplink Traffic mismatch for SUPI: {ue_supi}")
+        if traffic_report['TOTAL_DOWNLINK'] != expected_downlink:
+            logger.error(f"Downlink Traffic mismatch: Expected({expected_downlink}) != Actual({traffic_report['TOTAL_DOWNLINK']})")
+            raise Exception(f"Downlink Traffic mismatch for SUPI: {ue_supi}")
+        logger.info(f"Traffic report matches the expected values for SUPI: {ue_supi}")
+    except Exception as e:
+        logger.error(f"Failed to check traffic report: {e}")
+        raise e

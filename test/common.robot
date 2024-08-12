@@ -126,7 +126,7 @@ Launch Northbound Test CN
     ${replace_list} =  Create List  GNB_IPV4_ADDRESS_FOR_NG_AMF
     Replace In gNB Config    ${replace_list}  "192.168.79.140"  replace
     ${replace_list} =  Create List  GNB_IPV4_ADDRESS_FOR_NGU
-    Replace In gNB Config    ${replace_list}  "192.168.79.140"  replace
+    Replace In gNB Config    ${replace_list}  "192.168.80.140"  replace
     ${replace_list} =  Create List  GNB_INTERFACE_NAME_FOR_NGU
     Replace In gNB Config    ${replace_list}  None  delete
     ${replace_list} =  Create List  GNB_INTERFACE_NAME_FOR_NG_AMF

@@ -30,6 +30,7 @@ from copy import deepcopy
 
 RAN_TEMPLATE = "template/docker-compose-rfsim.yaml"
 GNB_FIRST_IP = "192.168.79.140"
+GNB_N3_FIRST_IP = "192.168.80.140"
 NR_UE_FIRST_IP = "192.168.79.150"
 NR_UE_CONFIG_TEMPLATE = "../docker-compose/ran-conf/nr-ue.conf"
 GNB_CONFIG_TEMPLATE = "../docker-compose/ran-conf/gnb.conf"
@@ -88,9 +89,11 @@ class RfSimLib:
             for i in range(num_gnb):
                 gnb_name = self.__generate_gnb_name()
                 gnb_ip = self.__generate_ip(GNB_FIRST_IP, i)
+                gnb_n3_ip = self.__generate_ip(GNB_N3_FIRST_IP, i)
                 gnb_service = gnb_template.copy()
                 gnb_service["container_name"] = gnb_name
                 gnb_service["networks"]["public_test_net"]["ipv4_address"] = gnb_ip
+                gnb_service["networks"]["n3_test_net"]["ipv4_address"] = gnb_n3_ip
                 parsed["services"][gnb_name] = gnb_service
                 self.gnb.append(gnb_name)
             parsed["services"].pop("oai-gnb", None)
@@ -222,8 +225,26 @@ class RfSimLib:
         size, date = self.docker_api.get_image_info(get_image_tag("oai-nr-ue"))
         docu += create_image_info_line("oai-nr-ue", get_image_tag("oai-nr-ue"), date, size)
         return docu
-           
-        
+    
+    def get_ue_container_names(self):
+        return self.nr_ue
+    
+    def get_gnb_container_names(self):
+        return self.gnb
+    
+    def get_ue_IP_address(self, container):
+        log = self.docker_api.get_log(container)
+        for line in log.split("\n"):
+            if "ip address" in line.lower():
+                parts = line.split(",")
+                for part in parts:
+                    if "ip address" in part.lower():
+                        ip_part = part.strip().split(" ")
+                        ip_address = ip_part[-1].strip()
+                        logging.info("PDU session establishment successful")
+                        return ip_address
+        raise Exception(f"PDU session establishment ongoing for {container}")
+            
 # ran = RfSimLib()
 # gnb,ue = ran.prepare_ran(num_gnb=1,num_nr_ue=3)
 # # # ran.down_gnb()

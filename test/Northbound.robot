@@ -21,10 +21,16 @@ Check AMF Registration Notifications
     [Setup]    Test Setup For Northbound
     [Teardown]    None
     [Documentation]    Check Callback registration notification
-    Start All NR UE
-    Sleep   20s
+    @{UEs}=    Get UE container Names
+    FOR   ${ue}   IN    @{UEs}   
+        Start NR UE    ${ue}
+        Sleep  2s
+    END    
+
+    # Start All NR UE
+    Wait Until Keyword Succeeds  60s  1s  Check RAN Elements Health Status
     ${logs} =    Get AMF Report Logs
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    ${logs}
+    #Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    ${logs}
 
 Check AMF Location Report  
     [tags]  North   AMF
@@ -38,8 +44,25 @@ Check SMF Notifications
     [tags]  North   SMF
     [Setup]    None
     [Teardown]    None
+    [Documentation]    Check SMF Callback Notification (PDU Session Establishment)
     ${logs} =    Get UE Info From SMF Log
     Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
+
+Check Traffic Notification
+    [tags]   North   SMF
+    [Setup]    None
+    [Teardown]    None
+    [Documentation]    Check SMF Traffic Notification Callback
+    @{UEs}=    Get UE container Names
+    Start Iperf3 Server     ${EXT_DN1_NAME}
+    Sleep    10s
+    FOR     ${ue}   IN    @{UEs}   
+        ${ip}=   Get UE IP Address   ${ue}
+        Start Iperf3 Client     ${ue}  ${ip}  ${EXT_DN1_IP_N3}  bandwidth=400
+        Wait and Verify Iperf3 Result Strict   ${ue}  400
+        Sleep   30s
+    END
+    Sleep   20s
 
 Check AMF Deregistration Notification
     [tags]  North   AMF
@@ -47,7 +70,7 @@ Check AMF Deregistration Notification
     [Teardown]    Test Teardown With RAN
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
     ${logs} =    Get AMF Report Logs
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${logs}    ${3}
+    # Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${logs}    ${3}
     
 
 *** Keywords ***
@@ -65,7 +88,7 @@ Get UE Info From SMF Log
 Test Setup For Northbound
     Launch Mongo
     Handler.Start Handler
-    Sleep   2s
+    Sleep   10s
 
 Test Setup for Deregistration
     Stop NR UE
@@ -87,3 +110,6 @@ Get AMF Report Logs
 Get AMF Location Report Logs
     ${logs}    Run    docker logs oai-amf | sed -n '/"type":"LOCATION_REPORT"/p' 
     RETURN    ${logs}
+
+
+

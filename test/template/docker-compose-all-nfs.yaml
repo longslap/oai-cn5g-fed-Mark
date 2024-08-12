@@ -155,7 +155,7 @@ services:
             - IF_2_NWI=access.oai.org
             - IF_3_IP=192.168.81.201
             - IF_3_TYPE=N6
-            - IF_3_IP_REMOTE=192.168.81.135 # EXT-DN IP Address
+            - IF_3_IP_REMOTE=192.168.81.141 # EXT-DN IP Address
             - IF_3_NWI=internet.oai.org
             - NAME=VPP-UPF
             - MNC=95
