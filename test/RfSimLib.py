@@ -244,6 +244,15 @@ class RfSimLib:
                         logging.info("PDU session establishment successful")
                         return ip_address
         raise Exception(f"PDU session establishment ongoing for {container}")
+    
+    def get_ue_IMSI(self, container):
+        log = self.docker_api.get_log(container)
+        for line in log.split("\n"):
+            if "--uicc0.imsi" in line.lower():
+                parts = line.split(" ")
+                imsi = parts[10]
+                return str(imsi)
+        raise Exception(f"IMSI not found for {container}")
             
 # ran = RfSimLib()
 # gnb,ue = ran.prepare_ran(num_gnb=1,num_nr_ue=3)

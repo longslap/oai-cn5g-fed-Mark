@@ -223,7 +223,10 @@ class CNTestLib:
 
         if bandwidth_receiver < min_b or bandwidth_receiver > max_b:
             raise Exception(f"Bandwidth should be in interval [{min_b}, {max_b}], but it is {bandwidth_receiver}")
-
+        
+    def get_iperf3_results(self, container):
+        return self.last_iperf_result[container]
+    
     def start_cn(self):
         print("Starting Core Network ....")
         start_docker_compose(self.docker_compose_path)

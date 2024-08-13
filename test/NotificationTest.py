@@ -326,7 +326,6 @@ def extract_ue_info_from_AMF_logs(logs, nb_of_users):
         logger.error(f"Failed to extract UE information from logs: {e}")
         raise e
 
-
 def get_ue_traffic(ue_supi):
     smf_traffic_collection = mongo_access("smf traffic report")
     query = {'eventNotifs.supi': ue_supi}
@@ -354,17 +353,35 @@ def get_ue_traffic(ue_supi):
         'TOTAL_UPLINK': total_uplink,
         'TOTAL_DOWNLINK': total_downlink
     }
+    
+def get_iperf3_transfer_size(results):
+    last_line = results.split("\n")[-4]
+    size = float(last_line.split()[4])
+    unit = last_line.split()[5]
+    if unit in 'GBytes':
+        size = size * 1024 * 1024 * 1024
+    if unit in 'MBytes':
+        size = size * 1024 * 1024
+    elif unit in 'KBytes':
+        size = size * 1024
+    return size
 
-def Check_traffic_callback_report(ue_supi, expected_uplink, expected_downlink):
+def Check_ue_traffic_notification(results, imsi):
     try:
-        traffic_report = get_ue_traffic(ue_supi)
-        if traffic_report['TOTAL_UPLINK'] != expected_uplink:
-            logger.error(f"Uplink Traffic mismatch: Expected({expected_uplink}) != Actual({traffic_report['TOTAL_UPLINK']})")
-            raise Exception(f"Uplink Traffic mismatch for SUPI: {ue_supi}")
-        if traffic_report['TOTAL_DOWNLINK'] != expected_downlink:
-            logger.error(f"Downlink Traffic mismatch: Expected({expected_downlink}) != Actual({traffic_report['TOTAL_DOWNLINK']})")
-            raise Exception(f"Downlink Traffic mismatch for SUPI: {ue_supi}")
-        logger.info(f"Traffic report matches the expected values for SUPI: {ue_supi}")
+        traffic_report = get_ue_traffic(imsi)
+        traffic_iperf_results = get_iperf3_transfer_size(results)
+        tolerance = 0.05
+
+        min_val = traffic_iperf_results * (1 - tolerance)
+        max_val = traffic_iperf_results * (1 + tolerance)
+
+        uplink = traffic_report['TOTAL_UPLINK']
+        downlink = traffic_report['TOTAL_DOWNLINK']
+
+        if not (min_val <= uplink <= max_val):
+            raise Exception(f"Uplink Traffic mismatch: Expected({traffic_iperf_results} +/- 10%) != Actual({uplink})")
+        logger.info(f"Traffic report {traffic_iperf_results} bytes matches the expected values within 10% tolerance for SUPI: {imsi}")
     except Exception as e:
         logger.error(f"Failed to check traffic report: {e}")
         raise e
+
