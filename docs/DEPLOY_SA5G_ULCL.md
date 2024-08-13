@@ -260,32 +260,32 @@ docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/u
 
 This capture contains all the UP network interfaces.
 
-Then, we generate ICMP traffic to `1.1.1.1` and `1.1.1.2`:
+Then, we generate ICMP traffic to `192.168.75.160` (ext-dn internet) and `192.168.76.160` (ext-dn edge):
 
 ``` console 
-docker-compose-host $: docker exec -it gnbsim-vpp ping -I 12.1.1.2 -c4 1.1.1.2
-PING 1.1.1.2 (1.1.1.2) from 12.1.1.2 : 56(84) bytes of data.
-64 bytes from 1.1.1.2: icmp_seq=1 ttl=54 time=10.7 ms
-64 bytes from 1.1.1.2: icmp_seq=2 ttl=54 time=10.9 ms
-64 bytes from 1.1.1.2: icmp_seq=3 ttl=54 time=9.28 ms
-64 bytes from 1.1.1.2: icmp_seq=4 ttl=54 time=9.12 ms
+docker-compose-host $: docker exec -it gnbsim-vpp ping -I 12.1.1.2 -c4 192.168.75.160
+PING 192.168.75.160 (192.168.75.160) from 12.1.1.2 : 56(84) bytes of data.
+64 bytes from 192.168.75.160: icmp_seq=1 ttl=63 time=9.87 ms
+64 bytes from 192.168.75.160: icmp_seq=2 ttl=63 time=0.368 ms
+64 bytes from 192.168.75.160: icmp_seq=3 ttl=63 time=0.401 ms
+64 bytes from 192.168.75.160: icmp_seq=4 ttl=63 time=0.423 ms
 
---- 1.1.1.2 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3003ms
-rtt min/avg/max/mdev = 9.116/10.005/10.934/0.815 ms
+--- 192.168.75.160 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3043ms
+rtt min/avg/max/mdev = 0.368/2.764/9.867/4.100 ms
 ```
 
 ``` console 
 docker-compose-host $: docker exec -it gnbsim-vpp ping -I 12.1.1.2 -c4 1.1.1.1
-PING 1.1.1.1 (1.1.1.1) from 12.1.1.2 : 56(84) bytes of data.
-64 bytes from 1.1.1.1: icmp_seq=1 ttl=54 time=12.7 ms
-64 bytes from 1.1.1.1: icmp_seq=2 ttl=54 time=11.0 ms
-64 bytes from 1.1.1.1: icmp_seq=3 ttl=54 time=9.73 ms
-64 bytes from 1.1.1.1: icmp_seq=4 ttl=54 time=17.2 ms
+PING 192.168.76.160 (192.168.76.160) from 12.1.1.2 : 56(84) bytes of data.
+64 bytes from 192.168.76.160: icmp_seq=1 ttl=63 time=5.71 ms
+64 bytes from 192.168.76.160: icmp_seq=2 ttl=63 time=0.487 ms
+64 bytes from 192.168.76.160: icmp_seq=3 ttl=63 time=0.459 ms
+64 bytes from 192.168.76.160: icmp_seq=4 ttl=63 time=0.468 ms
 
---- 1.1.1.1 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3005ms
-rtt min/avg/max/mdev = 9.725/12.668/17.231/2.843 ms
+--- 192.168.76.160 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3050ms
+rtt min/avg/max/mdev = 0.459/1.781/5.710/2.268 ms
 ```
 
 <!--
@@ -294,10 +294,10 @@ For CI purposes please ignore these lines
  * 192.168.76.160 is oai-ext-dn-edge
 
 ``` shell
-docker-compose-host $: docker exec gnbsim-vpp /bin/bash -c 'traceroute -4 -T -s 12.1.1.2 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue0-test0.log
-docker-compose-host $: docker exec gnbsim-vpp /bin/bash -c 'traceroute -4 -T -s 12.1.1.2 1.1.1.2' 2>&1 | tee /tmp/oai/ulcl-scenario/ue0-test1.log
-docker-compose-host $: grep 192.168.75.160 /tmp/oai/ulcl-scenario/ue0-test0.log
-docker-compose-host $: grep 192.168.76.160 /tmp/oai/ulcl-scenario/ue0-test1.log
+docker-compose-host $: docker exec gnbsim-vpp /bin/bash -c 'traceroute -4 -T -s 12.1.1.2 192.168.75.160' 2>&1 | tee /tmp/oai/ulcl-scenario/ue0-test0.log
+docker-compose-host $: docker exec gnbsim-vpp /bin/bash -c 'traceroute -4 -T -s 12.1.1.2 192.168.76.160' 2>&1 | tee /tmp/oai/ulcl-scenario/ue0-test1.log
+docker-compose-host $: tail -1 /tmp/oai/ulcl-scenario/ue0-test0.log | grep 192.168.75.160 
+docker-compose-host $: tail -1 /tmp/oai/ulcl-scenario/ue0-test1.log | grep 192.168.76.160
 ```
 -->
 
@@ -351,43 +351,42 @@ docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/u
 ```
 -->
 
-Then, as before, we ping `1.1.1.1` and `1.1.1.2`. 
+Now we ping `192.168.76.160` (ext-dn edge) and `8.8.8.8` (any IP). 
 
 ``` console 
-docker-compose-host $: docker exec -it gnbsim-vpp2 ping -I 12.1.1.3 -c4 1.1.1.2
-PING 1.1.1.2 (1.1.1.2) from 12.1.1.3 : 56(84) bytes of data.
-64 bytes from 1.1.1.2: icmp_seq=1 ttl=114 time=29.3 ms
-64 bytes from 1.1.1.2: icmp_seq=2 ttl=114 time=18.8 ms
-64 bytes from 1.1.1.2: icmp_seq=3 ttl=114 time=25.4 ms
-64 bytes from 1.1.1.2: icmp_seq=4 ttl=114 time=15.2 ms
+docker-compose-host $: docker exec -it gnbsim-vpp2 ping -I 12.1.1.3 -c4 192.168.76.160
+PING 192.168.76.160 (192.168.76.160) from 12.1.1.3 : 56(84) bytes of data.
+64 bytes from 192.168.76.160: icmp_seq=1 ttl=63 time=0.577 ms
+64 bytes from 192.168.76.160: icmp_seq=2 ttl=63 time=0.402 ms
+64 bytes from 192.168.76.160: icmp_seq=3 ttl=63 time=0.405 ms
+64 bytes from 192.168.76.160: icmp_seq=4 ttl=63 time=0.411 ms
 
---- 1.1.1.2 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3003ms
-rtt min/avg/max/mdev = 15.200/22.169/29.265/5.484 ms
+--- 192.168.76.160 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3080ms
+rtt min/avg/max/mdev = 0.402/0.448/0.577/0.074 ms
 ```
 
 ``` console 
-docker-compose-host $: docker exec -it gnbsim-vpp2 ping -I 12.1.1.3 -c4 1.1.1.1
-PING 1.1.1.1 (1.1.1.1) from 12.1.1.3 : 56(84) bytes of data.
-64 bytes from 1.1.1.1: icmp_seq=1 ttl=55 time=15.7 ms
-64 bytes from 1.1.1.1: icmp_seq=2 ttl=55 time=19.8 ms
-64 bytes from 1.1.1.1: icmp_seq=3 ttl=55 time=9.77 ms
-64 bytes from 1.1.1.1: icmp_seq=4 ttl=55 time=12.3 ms
+docker-compose-host $: docker exec -it gnbsim-vpp2 ping -I 12.1.1.3 -c4 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) from 12.1.1.3 : 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=112 time=28.9 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=112 time=22.8 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=112 time=22.6 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=112 time=21.4 ms
 
---- 1.1.1.1 ping statistics ---
+--- 8.8.8.8 ping statistics ---
 4 packets transmitted, 4 received, 0% packet loss, time 3005ms
-rtt min/avg/max/mdev = 9.766/14.397/19.823/3.785 ms
+rtt min/avg/max/mdev = 21.407/23.939/28.871/2.899 ms
 ```
 
 <!--
 For CI purposes please ignore these lines
-we use 1.1.1.1 and 1.1.1.2 as it serves HTTP, so we can verify if the UL CL works properly in the generated traces 
  * 192.168.76.160 is oai-ext-dn-edge
 
 ``` shell
-docker-compose-host $: docker exec gnbsim-vpp2 /bin/bash -c 'traceroute -4 -T -s 12.1.1.3 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue1-test0.log
-docker-compose-host $: docker exec gnbsim-vpp2 /bin/bash -c 'traceroute -4 -T -s 12.1.1.3 1.1.1.2' 2>&1 | tee /tmp/oai/ulcl-scenario/ue1-test1.log
-docker-compose-host $: grep 192.168.76.160 /tmp/oai/ulcl-scenario/ue1-test0.log
+docker-compose-host $: docker exec gnbsim-vpp2 /bin/bash -c 'traceroute -4 -T -s 12.1.1.3 192.168.76.160' 2>&1 | tee /tmp/oai/ulcl-scenario/ue1-test0.log
+docker-compose-host $: docker exec gnbsim-vpp2 /bin/bash -c 'traceroute -4 -T -s 12.1.1.3 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue1-test1.log
+docker-compose-host $: tail -1 /tmp/oai/ulcl-scenario/ue1-test0.log | grep 192.168.76.160 
 docker-compose-host $: grep 192.168.76.160 /tmp/oai/ulcl-scenario/ue1-test1.log
 ```
 -->
@@ -433,43 +432,41 @@ docker-compose-host $: ../ci-scripts/checkTsharkCapture.py --log_file /tmp/oai/u
 ```
 -->
 
-Again, we generate traffic using pings to 1.1.1.2 and 1.1.1.1.
+We generate traffic using pings to 192.168.75.160 (ext-dn Internet) and 8.8.8.8.
 
 ``` console
-docker-compose-host $: docker exec -it gnbsim-vpp3 ping -I 12.1.1.4 -c4 1.1.1.2
-PING 1.1.1.2 (1.1.1.2) from 12.1.1.4 : 56(84) bytes of data.
-64 bytes from 1.1.1.2: icmp_seq=1 ttl=114 time=29.3 ms
-64 bytes from 1.1.1.2: icmp_seq=2 ttl=114 time=18.8 ms
-64 bytes from 1.1.1.2: icmp_seq=3 ttl=114 time=25.4 ms
-64 bytes from 1.1.1.2: icmp_seq=4 ttl=114 time=15.2 ms
+docker-compose-host $: docker exec -it gnbsim-vpp3 ping -I 12.1.1.4 -c4 192.168.75.160
+64 bytes from 192.168.75.160: icmp_seq=1 ttl=63 time=0.690 ms
+64 bytes from 192.168.75.160: icmp_seq=2 ttl=63 time=0.451 ms
+64 bytes from 192.168.75.160: icmp_seq=3 ttl=63 time=0.560 ms
+64 bytes from 192.168.75.160: icmp_seq=4 ttl=63 time=0.419 ms
 
---- 1.1.1.2 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3003ms
-rtt min/avg/max/mdev = 15.200/22.169/29.265/5.484 ms
+--- 192.168.75.160 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3066ms
+rtt min/avg/max/mdev = 0.419/0.530/0.690/0.106 ms
 ```
 
 ``` console 
-docker-compose-host $: docker exec -it gnbsim-vpp3 ping -I 12.1.1.4 -c4 1.1.1.1
-PING 1.1.1.1 (1.1.1.1) from 12.1.1.4 : 56(84) bytes of data.
-64 bytes from 1.1.1.1: icmp_seq=1 ttl=55 time=15.7 ms
-64 bytes from 1.1.1.1: icmp_seq=2 ttl=55 time=19.8 ms
-64 bytes from 1.1.1.1: icmp_seq=3 ttl=55 time=9.77 ms
-64 bytes from 1.1.1.1: icmp_seq=4 ttl=55 time=12.3 ms
+docker-compose-host $: docker exec -it gnbsim-vpp3 ping -I 12.1.1.4 -c4 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) from 12.1.1.4 : 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=112 time=24.6 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=112 time=22.4 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=112 time=21.3 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=112 time=21.8 ms
 
---- 1.1.1.1 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3005ms
-rtt min/avg/max/mdev = 9.766/14.397/19.823/3.785 ms
+--- 8.8.8.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3004ms
+rtt min/avg/max/mdev = 21.264/22.507/24.612/1.275 ms
 ```
 
 <!--
 For CI purposes please ignore these lines
-we use 1.1.1.1 and 1.1.1.2 as it serves HTTP, so we can verify if the UL CL works properly in the generated traces 
  * 192.168.75.160 is oai-ext-dn-internet
 
 ``` shell
-docker-compose-host $: docker exec gnbsim-vpp3 /bin/bash -c 'traceroute -4 -T -s 12.1.1.4 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue2-test0.log
-docker-compose-host $: docker exec gnbsim-vpp3 /bin/bash -c 'traceroute -4 -T -s 12.1.1.4 1.1.1.2' 2>&1 | tee /tmp/oai/ulcl-scenario/ue2-test1.log
-docker-compose-host $: grep 192.168.75.160 /tmp/oai/ulcl-scenario/ue2-test0.log
+docker-compose-host $: docker exec gnbsim-vpp3 /bin/bash -c 'traceroute -4 -T -s 12.1.1.4 192.168.75.160' 2>&1 | tee /tmp/oai/ulcl-scenario/ue2-test0.log
+docker-compose-host $: docker exec gnbsim-vpp3 /bin/bash -c 'traceroute -4 -T -s 12.1.1.4 1.1.1.1' 2>&1 | tee /tmp/oai/ulcl-scenario/ue2-test1.log
+docker-compose-host $: tail -1 /tmp/oai/ulcl-scenario/ue2-test0.log | grep 192.168.75.160 
 docker-compose-host $: grep 192.168.75.160 /tmp/oai/ulcl-scenario/ue2-test1.log
 ```
 -->

@@ -7,7 +7,7 @@ internet-rule:
 
 edge-rule-restricted:
   flowInfos:
-    - flowDescription: permit out ip from 1.1.1.2 to assigned
+    - flowDescription: permit out ip from 192.168.76.160 to assigned
   precedence: 9
   refTcData:
     - edge-scenario
