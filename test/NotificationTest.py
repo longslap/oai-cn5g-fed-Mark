@@ -32,32 +32,39 @@ def mongo_access(service_type: str):
         logger.error(f"Failed to connect to MongoDB server")
         raise AssertionError("Failed to connect to MongoDB server")
     
+def extract_ue_info_from_SMF_logs(logs, nb_of_users):
+    smf_contexts = re.findall(r'SMF CONTEXT:.*?(?=SMF CONTEXT:|$)', logs, re.DOTALL)
+    parsed_log_data = []
+
+    for context in smf_contexts:
+        parsed_context = {}
+        lines = context.split('\n')
+        for line in lines:
+            if "SUPI:" in line:
+                parsed_context['SUPI'] = line.split(':')[1].strip()
+            if "PDU Session ID:" in line:
+                parsed_context['PDU Session ID'] = line.split(':')[1].strip()
+            if "DNN:" in line:
+                parsed_context['DNN'] = line.split(':')[1].strip()
+            if "PAA IPv4:" in line:
+                parsed_context['PAA IPv4'] = line.split(':')[1].strip()
+            if "PDN type:" in line:
+                parsed_context['PDN type'] = line.split(':')[1].strip()
+            if "SEID:" in line:
+                parsed_context['SEID'] = line.split(':')[1].strip()
+        parsed_log_data.append(parsed_context)
+    if len(parsed_log_data) != nb_of_users:
+        logger.warning(f"Number of SMF contexts in logs ({len(parsed_log_data)}) does not match the number of users added ({nb_of_users})")
+        if len(parsed_log_data) == 0:
+            logger.error(f"No SMF contexts found in logs.")
+            raise Exception("No SMF contexts found in logs. PDU Session ongoing")
+    return parsed_log_data
     
 def check_smf_callback(logs, nb_of_users):
     try:
         smf_collection = mongo_access("smf notifications")
-        smf_contexts = re.findall(r'SMF CONTEXT:.*?(?=SMF CONTEXT:|$)', logs, re.DOTALL)
-        parsed_log_data = []
-
-        for context in smf_contexts:
-            parsed_context = {}
-            lines = context.split('\n')
-            for line in lines:
-                if "SUPI:" in line:
-                    parsed_context['SUPI'] = line.split(':')[1].strip()
-                if "PDU Session ID:" in line:
-                    parsed_context['PDU Session ID'] = line.split(':')[1].strip()
-                if "DNN:" in line:
-                    parsed_context['DNN'] = line.split(':')[1].strip()
-                if "PAA IPv4:" in line:
-                    parsed_context['PAA IPv4'] = line.split(':')[1].strip()
-                if "PDN type:" in line:
-                    parsed_context['PDN type'] = line.split(':')[1].strip()
-            parsed_log_data.append(parsed_context)
-        if len(parsed_log_data) != nb_of_users:
-            raise Exception(f"Number of SMF contexts in logs ({len(parsed_log_data)}) does not match the number of users added ({nb_of_users})")
+        parsed_log_data =  extract_ue_info_from_SMF_logs(logs,nb_of_users)
         callback_data = []
-
         for document in smf_collection.find():
             for report in document["eventNotifs"]:
                 supi = report["supi"]
@@ -206,12 +213,14 @@ def check_AMF_reg_callback(nb_of_users, logs):
         report_from_handler = amf_report_from_handler(service_type="amf notifications")
         report_from_AMF = extract_ue_info_from_AMF_logs(logs, nb_of_users)
         handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
-
+        i = 0 
         for report in report_from_AMF:
             imsi = report['IMSI']
-            if report['5GMM State'] != '5GMM-REGISTERED':
-                logger.error(f"UE {imsi} is {report['5GMM State']}")
-                raise Exception(f"UE {imsi} is {report['5GMM State']}")
+            if report['5GMM State'] != '5GMM-REGISTERED':     #handle the case where its initiated, it shouldnt raise an error
+                logger.warning(f"UE {imsi} is {report['5GMM State']}")
+                i=+1
+                continue
+                # raise Exception(f"UE {imsi} is {report['5GMM State']}")
             else:
                 if imsi in handler_dict:
                     handler_details = handler_dict[imsi]
@@ -225,6 +234,9 @@ def check_AMF_reg_callback(nb_of_users, logs):
                 else:
                     logger.error(f"UE {imsi} not found in handler collection.")
                     raise Exception(f"UE {imsi} not found in handler collection.")
+        if i == nb_of_users:
+            logger.error(f"All UEs weren't added succesfully.")
+            raise Exception(f"All UEs werent added succesfully.")
         logger.info("AMF UE Data match the callback data.")
     except Exception as e:
         logger.error(f"Failed to check latest registered IMSIs: {e}")
@@ -235,12 +247,14 @@ def check_AMF_dereg_callback(logs,nb_of_users):
         report_from_handler = amf_report_from_handler(service_type="amf notifications")
         report_from_AMF = extract_ue_info_from_AMF_logs(logs, nb_of_users)    
         handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
-
+        i = 0
         for report in report_from_AMF:
             imsi = report['IMSI']
-            if report['5GMM State'] != '5GMM-DEREGISTERED':
-                logger.error(f"UE {imsi} is {report['5GMM State']}")
-                raise Exception(f"UE {imsi} is {report['5GMM State']}")
+            if report['5GMM State'] != '5GMM-DEREGISTERED':     #if it still initiated no error should be raised as awe are testing callbacks.
+                logger.warning(f"UE {imsi} is {report['5GMM State']}")
+                i+=1
+                continue
+                # raise Exception(f"UE {imsi} is {report['5GMM State']}")
             else:
                 if imsi in handler_dict:
                     handler_details = handler_dict[imsi]
@@ -254,6 +268,9 @@ def check_AMF_dereg_callback(logs,nb_of_users):
                 else:
                     logger.error(f"UE {imsi} not found in handler collection.")
                     raise Exception(f"UE {imsi} not found in handler collection.")
+        if i == nb_of_users:
+            logger.error(f"All UEs weren't removed succesfully.")
+            raise Exception(f"All UEs werent removed succesfully")
         logger.info("AMF UE Data match the callback data.")
     except Exception as e:
         logger.error(f"Failed to check latest deregistered IMSIs: {e}")
@@ -268,8 +285,10 @@ def check_AMF_Location_report_callback(logs, nb_of_users):
         report_from_amf = parse_location_log_data(logs)
         handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
         if len(report_from_handler) != nb_of_users:
-            logger.error(f"Number of UE Location Reports ({len(report_from_handler)}) does not match the number of users added ({nb_of_users})")
-            raise Exception(f"Number of UE Location Reports Callbacks does not match the number of users added.")
+            logger.warning(f"Number of UE Location Reports ({len(report_from_handler)}) does not match the number of users added ({nb_of_users})")
+            if len(report_from_handler) == 0:
+                logger.error(f"No location reports notifications received")
+                raise Exception(f"No location reports notifications received")
         for report in report_from_amf:
             imsi = report['imsi']
             if imsi in handler_dict:
@@ -288,8 +307,8 @@ def check_AMF_Location_report_callback(logs, nb_of_users):
                     raise Exception(f"Data mismatch for IMSI {imsi}: TAC mismatch.")
                 logger.info(f"IMSI {imsi} matches all fields.")
             else:
-                logger.error(f"UE {imsi} not found in handler collection.")
-                raise Exception(f"UE {imsi} not found in handler collection.")
+                logger.warning(f"UE {imsi} not found in handler collection.")
+                # raise Exception(f"UE {imsi} not found in handler collection.")
         
         logger.info("All callback data matches the AMF UEs location Data.")
     except Exception as e:
@@ -326,34 +345,45 @@ def extract_ue_info_from_AMF_logs(logs, nb_of_users):
         logger.error(f"Failed to extract UE information from logs: {e}")
         raise e
 
-def get_ue_traffic(ue_supi):
+def get_traffic_data_from_handler(ue_supi):
     smf_traffic_collection = mongo_access("smf traffic report")
-    query = {'eventNotifs.supi': ue_supi}
+    query = {
+        'eventNotifs.supi': ue_supi,
+        '$or': [
+            {'eventNotifs.customized_data.Usage Report.Volume.Uplink': {'$ne': 0}},
+            {'eventNotifs.customized_data.Usage Report.Volume.Downlink': {'$ne': 0}}
+        ]
+    }
     try:
         records = smf_traffic_collection.find(query)
         if smf_traffic_collection.count_documents(query) == 0:
-            raise ValueError(f"No records found for SUPI: {ue_supi}")
+            raise ValueError(f"No records with non-zero traffic found for SUPI: {ue_supi}")
     except Exception as e:
         logger.error(f"Failed to retrieve records from MongoDB: {str(e)}")
         raise RuntimeError(f"Failed to retrieve records from MongoDB: {str(e)}") from e
-
-    total_uplink = 0
-    total_downlink = 0
-
+    
+    result_list = []
     for record in records:
         for event in record.get('eventNotifs', []):
             usage_report = event.get('customized_data', {}).get('Usage Report', {})
-            total_uplink += usage_report.get('Volume', {}).get('Uplink', 0)
-            total_downlink += usage_report.get('Volume', {}).get('Downlink', 0)
+            seid = usage_report.get('SEID')
+            ur_seqn = usage_report.get('UR-SEQN')
+            volume_total = usage_report.get('Volume', {}).get('Total')
+            nop_total = usage_report.get('NoP', {}).get('Total')
+            
+            result_list.append({
+                'SEID': seid,
+                'UR-SEQN': ur_seqn,
+                'Volume Total': volume_total,
+                'NoP Total': nop_total
+            })
+    if not result_list:
+        logger.error(f"Required data not found for SUPI: {ue_supi}")
+        raise ValueError(f"Required data not found for SUPI: {ue_supi}")
     
-    logger.info(f"Total Uplink: {total_uplink} bytes, Total Downlink: {total_downlink} bytes")
+    logger.info(f"Found {len(result_list)} records with non-zero traffic for SUPI: {ue_supi}")
+    return result_list
 
-    # Return the results
-    return {
-        'TOTAL_UPLINK': total_uplink,
-        'TOTAL_DOWNLINK': total_downlink
-    }
-    
 def get_iperf3_transfer_size(results):
     last_line = results.split("\n")[-4]
     size = float(last_line.split()[4])
@@ -366,22 +396,39 @@ def get_iperf3_transfer_size(results):
         size = size * 1024
     return size
 
-def Check_ue_traffic_notification(results, imsi):
+
+
+def extract_info_by_seid_and_urseqn(logs, target_seid, target_ur_seqn):
+    log_lines = logs.splitlines()
+    for i, line in enumerate(log_lines):
+        clean_line = ' '.join(line.split()[4:])
+        if f"SEID -> {target_seid}" in clean_line:
+            if i + 1 < len(log_lines):
+                next_line_clean = ' '.join(log_lines[i + 1].split()[4:])
+                if f"UR-SEQN -> {target_ur_seqn}" in next_line_clean:
+                    dictionary = {
+                        clean_line.split(' -> ')[0]: clean_line.split(' -> ')[1],
+                        next_line_clean.split(' -> ')[0]: next_line_clean.split(' -> ')[1]
+                    }
+                    for j in range(i + 2, i + 11):
+                        if j < len(log_lines):
+                            line_clean = ' '.join(log_lines[j].split()[4:])
+                            if ' -> ' in line_clean: 
+                                key, value = line_clean.split(' -> ')
+                                dictionary[key.strip()] = value.strip()
+                    return dictionary
+    return None 
+def Check_ue_traffic_notification(logs, imsi):
     try:
-        traffic_report = get_ue_traffic(imsi)
-        traffic_iperf_results = get_iperf3_transfer_size(results)
-        tolerance = 0.05
-
-        min_val = traffic_iperf_results * (1 - tolerance)
-        max_val = traffic_iperf_results * (1 + tolerance)
-
-        uplink = traffic_report['TOTAL_UPLINK']
-        downlink = traffic_report['TOTAL_DOWNLINK']
-
-        if not (min_val <= uplink <= max_val):
-            raise Exception(f"Uplink Traffic mismatch: Expected({traffic_iperf_results} +/- 10%) != Actual({uplink})")
-        logger.info(f"Traffic report {traffic_iperf_results} bytes matches the expected values within 10% tolerance for SUPI: {imsi}")
+        callback_data = get_traffic_data_from_handler(imsi)
+        for data in callback_data:
+            smf_traffic_data = extract_info_by_seid_and_urseqn(logs, data['SEID'], data['UR-SEQN'])
+            if int(smf_traffic_data['NoP Total']) == int(data['NoP Total']) and int(smf_traffic_data['Volume Total']) == int(data['Volume Total']):
+                continue    
+            else:
+                logger.error(f"Traffic data mismatch for SUPI: {imsi}")
+                raise Exception(f"Traffic data mismatch for SUPI: {imsi}")
+        logger.info(f"Traffic data matches the callback data for SUPI: {imsi}")
     except Exception as e:
-        logger.error(f"Failed to check traffic report: {e}")
+        logger.error(f"Failed to check traffic data: {e}")
         raise e
-

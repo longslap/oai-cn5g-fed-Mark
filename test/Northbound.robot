@@ -62,7 +62,7 @@ Check Traffic Notification
         Start Iperf3 Client     ${ue}  ${ip}  ${EXT_DN1_IP_N3}  bandwidth=3
         Wait and Verify Iperf3 Result    ${ue}  ${3}  #for bandwidth check, not important
         Sleep   6s
-        ${result}=    Get Iperf3 Results   ${ue}
+        ${result}=    Get SMF Logs
         Check Ue Traffic Notification  ${result}  ${imsi}
     END
 
@@ -82,10 +82,6 @@ Launch Mongo
 Down Mongo   
      Run    docker stop mongo-northbound
      Run    docker rm mongo-northbound
-
-Get UE Info From SMF Log
-     ${logs}    Run    docker logs oai-smf | sed -n '/SMF CONTEXT:/,/^[[:space:]]*$/p' 
-     RETURN    ${logs}
 
 Test Setup For Northbound
     Launch Mongo
@@ -113,5 +109,10 @@ Get AMF Location Report Logs
     ${logs}    Run    docker logs oai-amf | sed -n '/"type":"LOCATION_REPORT"/p' 
     RETURN    ${logs}
 
+Get SMF Logs
+    ${logs}    Run    docker logs oai-smf
+    RETURN    ${logs}
 
-
+Get UE Info From SMF Log
+     ${logs}    Run    docker logs oai-smf | sed -n '/SMF CONTEXT:/,/^[[:space:]]*$/p' 
+     RETURN    ${logs}
