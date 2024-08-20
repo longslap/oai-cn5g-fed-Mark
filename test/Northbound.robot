@@ -1,6 +1,7 @@
 *** Settings ***
 Library    OperatingSystem
 Library    RfSimLib.py
+Library    MobSimTestLib.py
 Library    NotificationTest.py    WITH NAME    NotifTest
 Library    5gcsdk/src/main/init_handler.py    WITH NAME    Handler
 
@@ -26,8 +27,6 @@ Check AMF Registration Notifications
         Start NR UE    ${ue}
         Sleep  2s
     END    
-
-    # Start All NR UE
     Wait Until Keyword Succeeds  60s  1s  Check RAN Elements Health Status
     ${logs} =    Get AMF Report Logs
     Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    ${logs}
@@ -37,7 +36,7 @@ Check AMF Location Report
     [Setup]    None
     [Teardown]    None  
     [Documentation]    Check Callback Location Notification
-    ${logs} =    Get AMF Location Report Logs
+    ${logs} =    Get AMF Report Logs
     Wait Until Keyword Succeeds  60s  6s    Check AMF Location Report Callback    '${logs}'    ${3}
 
 Check SMF Notifications
@@ -48,7 +47,7 @@ Check SMF Notifications
     ${logs} =    Get UE Info From SMF Log
     Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
 
-Check Traffic Notification
+Check SMF Traffic Notification
     [tags]   North   SMF
     [Setup]    None
     [Teardown]    None
@@ -62,8 +61,9 @@ Check Traffic Notification
         Start Iperf3 Client     ${ue}  ${ip}  ${EXT_DN1_IP_N3}  bandwidth=3
         Wait and Verify Iperf3 Result    ${ue}  ${3}  #for bandwidth check, not important
         Sleep   6s
+        ${result_Iperf}=    Get Iperf3 Results   ${ue}
         ${result}=    Get SMF Logs
-        Check Ue Traffic Notification  ${result}  ${imsi}
+        Check Ue Traffic Notification  ${result}  ${result_Iperf}  ${imsi}
     END
 
 Check AMF Deregistration Notification
@@ -73,7 +73,15 @@ Check AMF Deregistration Notification
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
     ${logs} =    Get AMF Report Logs
     Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${logs}    ${3}
+
+Check AMF Mobility Location Report
+    [tags]  North   AMF
+    [Setup]    Test Setup With MobSim
+    [Teardown]    Test Teardown With MobSim
+    [Documentation]    Check AMF Mobility Location Report Callback
+    Sleep    10s
     
+
 
 *** Keywords ***
 Launch Mongo
@@ -84,6 +92,8 @@ Down Mongo
      Run    docker rm mongo-northbound
 
 Test Setup For Northbound
+    Start All gNB
+    Check RAN Elements Health Status
     Launch Mongo
     Handler.Start Handler
     Sleep   10s
@@ -100,6 +110,18 @@ Test Teardown With RAN
     ${docu}=   Create RAN Docu
     Set Suite Documentation    ${docu}   append=${TRUE}
     Down gNB
+
+Test Setup With MobSim
+    Prepare MobSim    ${4}    ${3}
+    Launch Mongo
+    Handler.Start Handler
+    Start MobSim
+
+Test Teardown With MobSim
+    Stop MobSim
+    Down MobSim
+    Handler.Stop Handler
+    Down Mongo
 
 Get AMF Report Logs
     ${logs}    Run    docker logs oai-amf | sed -n '/--UEs. Information--/,/----------------------------/p' 

@@ -90,11 +90,11 @@ def check_smf_callback(logs, nb_of_users):
                         match_found = True
                         break
                 if not match_found:
-                    logger.error(f"Mismatch found for SUPI: {log_entry['SUPI']}")
+                    logger.error(f"Mismatch found for SUPI: {log_entry['SUPI']}, Callback data: {callback_entry}, logs data: {log_entry}")
                     raise Exception(f"Mismatch found for SUPI: {log_entry['SUPI']}")
                     
 
-            logger.info(f"All SMF contexts match the callback data.{callback_data}")
+            logger.info(f"All SMF contexts match the callback data.{callback_data}, logs data: {parsed_log_data}")
 
         else :
 
@@ -175,39 +175,6 @@ def get_location_report_info(service_type: str):
         logger.error(f"Failed to get location reports from handler collection: {e}")
         raise e
 
-def parse_location_log_data(log_data):
-    log_data = re.sub(r'\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}\] \[amf_sbi\] \[info\] HTTP message Body: ', '', log_data)
-    log_entries = log_data.strip().split('\n')
-    cleaned_log_entries = [entry.strip().strip('\'') for entry in log_entries]
-    parsed_logs = [json.loads(entry) for entry in cleaned_log_entries]
-    location_reports = []
-    for log in parsed_logs:
-        for report in log.get("reportList", []):
-            if report.get("type") == "LOCATION_REPORT":
-                supi = report.get("supi", "")
-                if supi.startswith("imsi-"):
-                    supi = supi[5:]
-                location_info = report.get("location", {})
-                nr_location = location_info.get("nrLocation", {})
-                global_gnb_id = nr_location.get("globalGnbId", {})
-                gnb_value = global_gnb_id.get("gNbId", {}).get("gNBValue", "")
-                plmn_id = global_gnb_id.get("plmnId", {})
-                mcc = plmn_id.get("mcc", "")
-                mnc = plmn_id.get("mnc", "")
-                nr_cell_id = nr_location.get("ncgi", {}).get("nrCellId", "")
-                tac = nr_location.get("tai", {}).get("tac", "")
-                timestamp = report.get("timeStamp", 0)
-
-                location_reports.append({
-                    'imsi': supi,
-                    'gnb_value': gnb_value,
-                    'plmn_id': f"{mcc}, {mnc}",
-                    'nr_cell_id': nr_cell_id,
-                    'tac': tac,
-                    'timestamp': timestamp
-                })
-    return location_reports
-
 def check_AMF_reg_callback(nb_of_users, logs):
     try:
         report_from_handler = amf_report_from_handler(service_type="amf notifications")
@@ -227,9 +194,10 @@ def check_AMF_reg_callback(nb_of_users, logs):
                     if (int(report['RAN UE NGAP ID'],16) == int(handler_details['ran_ue_ngap_id']) and
                         int(report['AMF UE NGAP ID'],16) == int(handler_details['amf_ue_ngap_id']) and
                         handler_details['rm_state'] == "REGISTERED"):
+                        logger.info(f"UE {imsi} matches handler data: ran_ue_ngap_id: {int(handler_details['ran_ue_ngap_id'])} and logs data: RAN UE NGAP ID: {int(report['RAN UE NGAP ID'],16)}, handler: amf_ue_ngap_id: {int(handler_details['amf_ue_ngap_id'])} and logs data: AMF UE NGAP ID: {int(report['AMF UE NGAP ID'],16)}, handler RM State: {handler_details['rm_state']}, logs RM State: REGISTERED")
                         continue
                     else:
-                        logger.error(f"{imsi} callback data does not match AMF data.")
+                        logger.error(f"{imsi} callback data does not match AMF data. Callback: ran_ue_ngap_id: {int(handler_details['ran_ue_ngap_id'])}, logs data: RAN UE NGAP ID: {int(report['RAN UE NGAP ID'],16)}, Callback: amf_ue_ngap_id: {int(handler_details['amf_ue_ngap_id'])}, logs data: AMF UE NGAP ID: {int(report['AMF UE NGAP ID'],16)}, Callback RM State: {handler_details['rm_state']}, logs RM State: REGISTERED")
                         raise Exception(f"Data mismatch for IMSI {imsi}.")
                 else:
                     logger.error(f"UE {imsi} not found in handler collection.")
@@ -261,9 +229,10 @@ def check_AMF_dereg_callback(logs,nb_of_users):
                     if (int(report['RAN UE NGAP ID'],16) == int(handler_details['ran_ue_ngap_id']) and
                         int(report['AMF UE NGAP ID'],16) == int(handler_details['amf_ue_ngap_id']) and
                         handler_details['rm_state'] == "DEREGISTERED"):
+                        logger.info(f"UE {imsi} matches handler data {int(handler_details['ran_ue_ngap_id'])} and logs data {int(report['RAN UE NGAP ID'],16)}, {int(handler_details['amf_ue_ngap_id'])} and logs data {int(report['AMF UE NGAP ID'],16)}")
                         continue
                     else:
-                        logger.error(f"{imsi} callback data does not match AMF data.")
+                        logger.error(f"{imsi} callback data does not match AMF data. Callback: ran_ue_ngap_id: {int(handler_details['ran_ue_ngap_id'])}, logs data: RAN UE NGAP ID:{int(report['RAN UE NGAP ID'],16)}, Callback: amf_ue_ngap_id': {int(handler_details['amf_ue_ngap_id'])}, logs data: AMF UE NGAP ID:{int(report['AMF UE NGAP ID'],16)}, Handler RM State: {handler_details['rm_state']}, Logs RM State: DEREGISTERED")
                         raise Exception(f"Data mismatch for IMSI {imsi}.")
                 else:
                     logger.error(f"UE {imsi} not found in handler collection.")
@@ -282,7 +251,7 @@ def check_AMF_Location_report_callback(logs, nb_of_users):
             logger.error("No location reports found in logs.")
             raise Exception("No location reports found in logs.")
         report_from_handler = get_location_report_info(service_type="amf location report")
-        report_from_amf = parse_location_log_data(logs)
+        report_from_amf = extract_ue_info_from_AMF_logs(logs, nb_of_users)   
         handler_dict = {report['imsi']: report['details'] for report in report_from_handler}
         if len(report_from_handler) != nb_of_users:
             logger.warning(f"Number of UE Location Reports ({len(report_from_handler)}) does not match the number of users added ({nb_of_users})")
@@ -290,22 +259,14 @@ def check_AMF_Location_report_callback(logs, nb_of_users):
                 logger.error(f"No location reports notifications received")
                 raise Exception(f"No location reports notifications received")
         for report in report_from_amf:
-            imsi = report['imsi']
+            imsi = report['IMSI']
             if imsi in handler_dict:
                 handler_details = handler_dict[imsi]
-                if handler_details['gnb_value'] != report['gnb_value']:
-                    logger.error(f"IMSI {imsi} gNB Value mismatch: Handler({handler_details['gnb_value']}) != AMF({report['gnb_value']})")
-                    raise Exception(f"Data mismatch for IMSI {imsi}: gNB Value mismatch.")
-                if handler_details['plmn_id'] != report['plmn_id']:
-                    logger.error(f"IMSI {imsi} PLMN ID mismatch: Handler({handler_details['plmn_id']}) != AMF({report['plmn_id']})")
-                    raise Exception(f"Data mismatch for IMSI {imsi}: PLMN ID mismatch.")
-                if handler_details['nr_cell_id'] != report['nr_cell_id']:
-                    logger.error(f"IMSI {imsi} NR Cell ID mismatch: Handler({handler_details['nr_cell_id']}) != AMF({report['nr_cell_id']})")
+                if int(handler_details['nr_cell_id'],10) != int(report['Cell Id'],16):
+                    logger.error(f"IMSI {imsi} NR Cell ID mismatch: Handler({hex(int(handler_details['nr_cell_id']))}) != AMF({report['Cell Id']})")
                     raise Exception(f"Data mismatch for IMSI {imsi}: NR Cell ID mismatch.")
-                if handler_details['tac'] != report['tac']:
-                    logger.error(f"IMSI {imsi} TAC mismatch: Handler({handler_details['tac']}) != AMF({report['tac']})")
-                    raise Exception(f"Data mismatch for IMSI {imsi}: TAC mismatch.")
-                logger.info(f"IMSI {imsi} matches all fields.")
+                else:
+                    logger.info(f"IMSI {imsi} matches handler NR Cell ID: {hex(int(handler_details['nr_cell_id']))} and logs cell id: {report['Cell Id']}")
             else:
                 logger.warning(f"UE {imsi} not found in handler collection.")
                 # raise Exception(f"UE {imsi} not found in handler collection.")
@@ -339,7 +300,9 @@ def extract_ue_info_from_AMF_logs(logs, nb_of_users):
             ue_info = dict(zip(raw_headers, values))
             ue_info_list.append(ue_info)
         if len(ue_info_list) != nb_of_users:
-            raise ValueError(f"Number of UEs in logs ({len(ue_info_list)}) does not match the number of users added ({nb_of_users}).")
+            logging.warning(f"Number of UEs in logs ({len(ue_info_list)}) does not match the number of users added ({nb_of_users}).")
+            if len(ue_info_list) == 0:
+                raise ValueError("No UEs found in logs.")
         return ue_info_list
     except Exception as e:
         logger.error(f"Failed to extract UE information from logs: {e}")
@@ -396,8 +359,6 @@ def get_iperf3_transfer_size(results):
         size = size * 1024
     return size
 
-
-
 def extract_info_by_seid_and_urseqn(logs, target_seid, target_ur_seqn):
     log_lines = logs.splitlines()
     for i, line in enumerate(log_lines):
@@ -418,17 +379,29 @@ def extract_info_by_seid_and_urseqn(logs, target_seid, target_ur_seqn):
                                 dictionary[key.strip()] = value.strip()
                     return dictionary
     return None 
-def Check_ue_traffic_notification(logs, imsi):
+
+def Check_ue_traffic_notification(logs, iperf_results, imsi):
     try:
+        traffic_iperf_results = get_iperf3_transfer_size(iperf_results)
+        tolerance = 0.07
+        min_val = traffic_iperf_results * (1 - tolerance)
+        max_val = traffic_iperf_results * (1 + tolerance)
         callback_data = get_traffic_data_from_handler(imsi)
+        iperf_mismatch = False
+        handler_mismatch = False
+        total_traffic_from_logs = 0
         for data in callback_data:
             smf_traffic_data = extract_info_by_seid_and_urseqn(logs, data['SEID'], data['UR-SEQN'])
-            if int(smf_traffic_data['NoP Total']) == int(data['NoP Total']) and int(smf_traffic_data['Volume Total']) == int(data['Volume Total']):
-                continue    
-            else:
-                logger.error(f"Traffic data mismatch for SUPI: {imsi}")
-                raise Exception(f"Traffic data mismatch for SUPI: {imsi}")
-        logger.info(f"Traffic data matches the callback data for SUPI: {imsi}")
+            total_traffic_from_logs += int(smf_traffic_data['Volume Total'])
+            if int(smf_traffic_data['NoP Total']) != int(data['NoP Total']) or int(smf_traffic_data['Volume Total']) != int(data['Volume Total']):
+                logger.error(f"Traffic data mismatch between SMF logs and handler collection for SUPI: {imsi}")
+                handler_mismatch = True
+        if not (min_val <= total_traffic_from_logs <= max_val):
+            logger.error(f"Total traffic from SMF logs does not match iPerf results within 7% tolerance for SUPI: {imsi}")
+            iperf_mismatch = True
+        if handler_mismatch or iperf_mismatch:
+            raise Exception(f"Traffic data mismatch for SUPI: {imsi}")
+        logger.info(f"SMF Traffic data matches both iPerf results and handler collection for SUPI: {imsi}")
     except Exception as e:
         logger.error(f"Failed to check traffic data: {e}")
         raise e

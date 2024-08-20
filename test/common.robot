@@ -108,6 +108,12 @@ Launch Northbound Test CN
 
     @{replace_list} =  Create List    smf  upfs  ${0}  host
     Replace In Config    ${replace_list}  vpp-upf.node.5gcn.mnc95.mcc208.3gppnetwork.org
+
+    @{replace_list} =  Create List    amf  supported_encryption_algorithms  ${0}  
+    Replace In Config    ${replace_list}  NEA2
+
+    @{replace_list} =  Create List    amf  supported_integrity_algorithms  ${0}  
+    Replace In Config    ${replace_list}  NIA2
     
     @{replace_list} =  Create List  smf  upfs  ${0}  config  enable_usage_reporting
     Replace In Config    ${replace_list}  yes
@@ -133,8 +139,6 @@ Launch Northbound Test CN
     Replace In gNB Config    ${replace_list}  None  delete
     ${replace_list} =  Create List  tracking_area_code
     Replace In gNB Config    ${replace_list}  0xa000  replace
-    Start All gNB
-    Check RAN Elements Health Status
 
 Suite Teardown Default
     Stop Cn
