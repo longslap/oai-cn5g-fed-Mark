@@ -37,7 +37,7 @@ class MobSimTestLib:
         return str(ip)
 
     def __generate_mobsim_gnb_name(self):
-        return f"mobsim-208-95-{len(self.mobsim_gnb) + 1}"
+        return f"mobsim-gnb-208-95-{len(self.mobsim_gnb) + 1}"
     
     def __generate_mobsim_nr_ue_name(self):
         return f"mobsim-nr-ue-{len(self.mobsim_nr_ue) + 1}"
@@ -210,5 +210,5 @@ class MobSimTestLib:
 # # # Example usage
 # a = MobSimTestLib()
 # a.prepare_mobsim(7, 4)
-# a.update_event_rate(1)
+# a.update_event_rate(0.1)
 

@@ -1,0 +1,88 @@
+version: '3'
+services:
+  gnb:
+    image: carot0/mobsim:latest
+    container_name: REPLACE_NAME
+    stdin_open: true
+    tty: true
+    volumes:
+      - REPLACE_CONFIG:/mobsim/config/gnb.yaml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - "38412/sctp"
+      - "2152/udp"
+      - "4997/udp"
+      - "6969/udp"
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    entrypoint:  ./nr-gnb -c ./config/gnb.yaml
+    networks:
+      default:
+        ipv4_address: REPLACE_IP
+      access:
+        ipv4_address: REPLACE_IP
+      radio:
+        ipv4_address: REPLACE_IP
+        
+  ue:
+    image: carot0/mobsim:latest
+    container_name: REPLACE_NAME
+    stdin_open: true
+    tty: true
+    dns:
+      - REPLACE_DNS
+    volumes:
+      - REPLACE_CONFIG:/mobsim/config/ue.yaml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    expose:
+      - "38412/sctp"
+      - "2152/udp"
+      - "4997/udp"
+      - "5959/udp"
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    entrypoint: ./nr-ue -c ./config/ue.yaml
+    networks:
+      radio:
+        ipv4_address: REPLACE_IP  
+  eng:
+    image: carot0/mobsim:latest
+    container_name: REPLACE_NAME
+    stdin_open: true
+    tty: true
+    volumes:
+      - REPLACE_CONFIG:/mobsim/config/sim.yaml
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 38412:38412
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    command: bash -c "sleep 5; ./nr-sim -c ./config/sim.yaml"
+    networks:
+      default:
+        ipv4_address: REPLACE_IP
+      radio:
+        ipv4_address: REPLACE_IP
+networks:
+  default:
+    name: test-oai-public-net
+    external: true
+  access:
+    name: test-oai-n3-net
+    external: true
+  radio:
+    name: mobsim-radio
+    ipam:
+      config:
+        - subnet: 192.168.15.0/24
+        
+     
+
+        
+

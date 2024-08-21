@@ -307,7 +307,67 @@ def extract_ue_info_from_AMF_logs(logs, nb_of_users):
     except Exception as e:
         logger.error(f"Failed to extract UE information from logs: {e}")
         raise e
+    
+def extract_mobility_info_from_logs(eng_logs,amf_logs):
+    mobsim_info = []
+    amf_info = []
+    log_lines = eng_logs.splitlines()
+    for i in range(len(log_lines) - 2):
+        line1 = log_lines[i]
+        line2 = log_lines[i + 1]
+        line3 = log_lines[i + 2]
+        if (
+            "Handover event for UE" in line1 and
+            "Handover procedure initiated" in line2 and
+            "Current cell changed" in line3
+        ):
+            supi_pattern = r'imsi-\d+'
+            src_nci_pattern = r'src-NCI \[(\-?\d+)\]'
+            dst_nci_pattern = r'dst-NCI \[(\-?\d+)\]'
+            current_cell_pattern = r'Current cell changed \[(\d+)\]'
 
+            supi = re.search(supi_pattern, line1).group(0)
+            src_nci = int(re.search(src_nci_pattern, line1).group(1))
+            dst_nci = int(re.search(dst_nci_pattern, line1).group(1))
+            current_cell = int(re.search(current_cell_pattern, line3).group(1))
+
+            mobsim_info.append({
+                'supi': supi,
+                'src-NCI': src_nci,
+                'dst-NCI': dst_nci,
+                'current_cell': current_cell
+            })
+    pattern = re.compile(
+    r'HandoverNotifyIEs\s*::=\s*\{\s*id:\s*121\s*criticality:\s*1\s*\(ignore\).*?nRCellIdentity:\s*([0-9A-F\s]*)\s*\([^\)]*\)',re.DOTALL)
+    matches = pattern.findall(amf_logs)
+    amf_info = [match.strip() for match in matches][-1]
+    amf_current_cell = int(amf_info.replace(' ', ''),16)
+    return mobsim_info, amf_current_cell
+
+def check_AMF_location_mobility_report_callback():
+    """
+    The test support one UE only
+    """
+    try:
+        amf_logs = subprocess.check_output(['docker', 'logs', 'oai-amf'], text=True)
+        eng_logs = subprocess.check_output(['docker', 'logs', 'mobsim-eng'], text=True)
+        mobsim_info, amf_current_cell_id = extract_mobility_info_from_logs(eng_logs,amf_logs)
+        amf_current_cell_id = amf_current_cell_id >> 4
+        logging.info(f"Test will check the mobility of UE from CEll ID {hex(mobsim_info[-1]['src-NCI'])} to Cell ID {hex(mobsim_info[-1]['dst-NCI'])}")
+        if int(mobsim_info[-1]['current_cell']) != amf_current_cell_id:
+            logger.error(f"Missmatch in AMF Logs and Mobility Simulator logs for SUPI: AMF current Cell ID = {hex(amf_current_cell_id)}, Mobsim logs: Current Cell ID = {hex(mobsim_info[-1]['current_cell'])}")
+            raise Exception(f"Missmatch in AMF Logs and Mobility Simulator logs for SUPI: AMF current Cell ID = {hex(amf_current_cell_id)}, Mobsim logs: Current Cell ID = {hex(mobsim_info[-1]['current_cell'])}")
+        logger.info(f"Mobility data matches between AMF and Mobility Simulator for all UEs, AMF current Cell ID = {hex(amf_current_cell_id)}, Mobsim logs: Current Cell ID = {hex(mobsim_info[-1]['current_cell'])}")
+        handler_data = get_location_report_info(service_type="amf location report")[-1]
+        amf_current_cell_id = amf_current_cell_id << 4
+        if amf_current_cell_id!= int(handler_data['details']['nr_cell_id']):
+            logger.error(f"Missmatch in AMF Logs and Handler data, AMF current Cell ID = {hex(amf_current_cell_id)}, Handler data: Current Cell ID = {handler_data['details']['nr_cell_id']}")
+            raise Exception(f"Missmatch in AMF Logs and Handler data, AMF current Cell ID = {hex(amf_current_cell_id)}, Handler data: Current Cell ID = {handler_data['details']['nr_cell_id']}")
+        logger.info(f"Mobility data matches between AMF and Handler for all UEs, AMF current Cell ID = {hex(amf_current_cell_id)}, Handler data: Current Cell ID = {hex(int(handler_data['details']['nr_cell_id']))}") 
+    except Exception as e:
+        logger.error(f"Failed to check mobility data: {e}")
+        raise e
+    
 def get_traffic_data_from_handler(ue_supi):
     smf_traffic_collection = mongo_access("smf traffic report")
     query = {

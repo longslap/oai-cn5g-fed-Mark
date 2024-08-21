@@ -1,0 +1,19 @@
+gnbList: 
+  - name: "REPLACE_NAME"
+    gnbIP: REPLACE_IP
+    gnbPort: 6969
+    position:
+      - lat: REPLACE_LAT
+        lon: REPLACE_LON
+
+ueList:
+  - name: "imsi-REPLACE_SUPI"
+    ueIP: REPLACE_IP
+    gnbPort: 5959
+    position:
+      - lat: REPLACE_LAT
+        lon: REPLACE_LON
+        
+eventRate: 0.5
+httpPort: 8080
+udpPort: 0

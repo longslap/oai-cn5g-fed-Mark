@@ -4,6 +4,7 @@ Library    RfSimLib.py
 Library    MobSimTestLib.py
 Library    NotificationTest.py    WITH NAME    NotifTest
 Library    5gcsdk/src/main/init_handler.py    WITH NAME    Handler
+Library    MobSimTestLib.py
 
 Resource   common.robot
 
@@ -11,10 +12,6 @@ Variables    vars.py
 
 Suite Setup    Launch Northbound Test CN
 Suite Teardown    Suite Teardown Default
-
-#Test Setup    Test Setup For Northbound
-#Test Teardown    Test Teardown With RAN
-
 
 *** Test Cases ***
 Check AMF Registration Notifications
@@ -75,17 +72,15 @@ Check AMF Deregistration Notification
     Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${logs}    ${3}
 
 Check AMF Mobility Location Report
-    [tags]  North   AMF
+    [tags]  North   ZMF
     [Setup]    Test Setup With MobSim
     [Teardown]    Test Teardown With MobSim
     [Documentation]    Check AMF Mobility Location Report Callback
-    Sleep    10s
+    Wait Until Keyword Succeeds  60s  6s    Check AMF Location Mobility Report Callback
     
-
-
 *** Keywords ***
 Launch Mongo
-     Run    docker run -d -p 27017:27017 --name=mongo-northbound mongo:latest
+    Run    docker run -d -p 27017:27017 --name=mongo-northbound mongo:latest
 
 Down Mongo   
      Run    docker stop mongo-northbound
@@ -112,10 +107,12 @@ Test Teardown With RAN
     Down gNB
 
 Test Setup With MobSim
-    Prepare MobSim    ${4}    ${3}
+    Prepare MobSim    ${3}    ${1}
+    Update Event Rate    ${0.08}
     Launch Mongo
     Handler.Start Handler
     Start MobSim
+    Sleep   15s
 
 Test Teardown With MobSim
     Stop MobSim
