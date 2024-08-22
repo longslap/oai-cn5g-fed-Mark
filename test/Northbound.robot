@@ -72,7 +72,7 @@ Check AMF Deregistration Notification
     Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${logs}    ${3}
 
 Check AMF Mobility Location Report
-    [tags]  North   ZMF
+    [tags]  North   AMF
     [Setup]    Test Setup With MobSim
     [Teardown]    Test Teardown With MobSim
     [Documentation]    Check AMF Mobility Location Report Callback

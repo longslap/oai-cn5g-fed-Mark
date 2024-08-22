@@ -66,6 +66,23 @@ class RfSimLib:
     def __get_docker_compose_path(self, name):
         return os.path.join(get_out_dir(), f"docker-compose-{name}.yaml")
     
+    def __navigate_to_key(self,lines, path):
+            current_level = 0
+            target_level = len(path) - 1
+            key_start_indices = []
+            found = False
+
+            for i, line in enumerate(lines):
+                stripped_line = line.strip()
+                if current_level < len(path) and stripped_line.startswith(path[current_level]):
+                    key_start_indices.append(i)
+                    current_level += 1
+                    if current_level > target_level:
+                        found = True
+                        break
+
+            return key_start_indices
+    
     def prepare_ran(self, num_gnb, num_nr_ue):
         """
         Prepares the RAN components by generating the Docker Compose file with multiple gNBs and NR-UEs.
@@ -135,25 +152,8 @@ class RfSimLib:
         """
         with open(self.gnb_config_path, 'r') as f:
             lines = f.readlines()
-
-        def __navigate_to_key(lines, path):
-            current_level = 0
-            target_level = len(path) - 1
-            key_start_indices = []
-            found = False
-
-            for i, line in enumerate(lines):
-                stripped_line = line.strip()
-                if current_level < len(path) and stripped_line.startswith(path[current_level]):
-                    key_start_indices.append(i)
-                    current_level += 1
-                    if current_level > target_level:
-                        found = True
-                        break
-
-            return key_start_indices
         lines = [line for line in lines if not line.strip().startswith('#')]
-        key_start_indices = __navigate_to_key(lines, path)
+        key_start_indices = self.__navigate_to_key(lines, path)
         if operation == 'replace':
             for i in key_start_indices:
                 key, sep, old_value = lines[i].partition('=')
