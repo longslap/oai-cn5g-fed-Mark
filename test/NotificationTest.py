@@ -229,7 +229,7 @@ def check_AMF_dereg_callback(logs,nb_of_users):
                     if (int(report['RAN UE NGAP ID'],16) == int(handler_details['ran_ue_ngap_id']) and
                         int(report['AMF UE NGAP ID'],16) == int(handler_details['amf_ue_ngap_id']) and
                         handler_details['rm_state'] == "DEREGISTERED"):
-                        logger.info(f"UE {imsi} matches handler data {int(handler_details['ran_ue_ngap_id'])} and logs data {int(report['RAN UE NGAP ID'],16)}, {int(handler_details['amf_ue_ngap_id'])} and logs data {int(report['AMF UE NGAP ID'],16)}")
+                        logger.info(f"UE {imsi} matches handler data Callback ran_ue_ngap_id: {int(handler_details['ran_ue_ngap_id'])}, logs data: RAN UE NGAP ID:{int(report['RAN UE NGAP ID'],16)}, Callback: amf_ue_ngap_id': {int(handler_details['amf_ue_ngap_id'])}, logs data: AMF UE NGAP ID:{int(report['AMF UE NGAP ID'],16)}, Handler RM State: {handler_details['rm_state']}, Logs RM State: DEREGISTERED")
                         continue
                     else:
                         logger.error(f"{imsi} callback data does not match AMF data. Callback: ran_ue_ngap_id: {int(handler_details['ran_ue_ngap_id'])}, logs data: RAN UE NGAP ID:{int(report['RAN UE NGAP ID'],16)}, Callback: amf_ue_ngap_id': {int(handler_details['amf_ue_ngap_id'])}, logs data: AMF UE NGAP ID:{int(report['AMF UE NGAP ID'],16)}, Handler RM State: {handler_details['rm_state']}, Logs RM State: DEREGISTERED")
@@ -454,14 +454,14 @@ def Check_ue_traffic_notification(logs, iperf_results, imsi):
             smf_traffic_data = extract_info_by_seid_and_urseqn(logs, data['SEID'], data['UR-SEQN'])
             total_traffic_from_logs += int(smf_traffic_data['Volume Total'])
             if int(smf_traffic_data['NoP Total']) != int(data['NoP Total']) or int(smf_traffic_data['Volume Total']) != int(data['Volume Total']):
-                logger.error(f"Traffic data mismatch between SMF logs and handler collection for SUPI: {imsi}")
+                logger.error(f"Traffic data mismatch between SMF logs and handler collection for SUPI: {imsi}, Log NoP Total: {smf_traffic_data['NoP Total']}, Callback NoP Total: {int(data['NoP Total'] )}, Logs Volume Total: {smf_traffic_data['Volume Total']}, Callback Volume Total: {data['Volume Total']}")
                 handler_mismatch = True
         if not (min_val <= total_traffic_from_logs <= max_val):
             logger.error(f"Total traffic from SMF logs does not match iPerf results within 7% tolerance for SUPI: {imsi}")
             iperf_mismatch = True
         if handler_mismatch or iperf_mismatch:
             raise Exception(f"Traffic data mismatch for SUPI: {imsi}")
-        logger.info(f"SMF Traffic data matches both iPerf results and handler collection for SUPI: {imsi}")
+        logger.info(f"SMF Traffic data matches both iPerf results and handler collection for SUPI: {imsi} \n Log NoP Total: {smf_traffic_data['NoP Total']}, Callback NoP Total: {int(data['NoP Total'] )}, Logs Volume Total: {smf_traffic_data['Volume Total']}, Callback Volume Total: {data['Volume Total']}")
     except Exception as e:
         logger.error(f"Failed to check traffic data: {e}")
         raise e
