@@ -36,15 +36,15 @@ spec:
   output:
     to:
       kind: ImageStreamTag
-      name: "oai-cu-up:v2.1.0"
+      name: "oai-cu-up:2024.w17"
   runPolicy: Serial
   strategy:
     type: Docker
   source:
     dockerfile: |
-        FROM image-registry.openshift-image-registry.svc:5000/engage5g/oai-ran-base:v2.1.0 AS gnb-base
+        FROM image-registry.openshift-image-registry.svc:5000/engage5g/oai-ran-base:2024.w17 AS gnb-base
 
-        FROM image-registry.openshift-image-registry.svc:5000/engage5g/oai-ran-build:v2.1.0 AS gnb-build
+        FROM image-registry.openshift-image-registry.svc:5000/engage5g/oai-ran-build:2024.w17 AS gnb-build
 
         RUN cp /oai-ran/docker/scripts/gnb_entrypoint.sh /oai-ran/docker/scripts/entrypoint.sh
 

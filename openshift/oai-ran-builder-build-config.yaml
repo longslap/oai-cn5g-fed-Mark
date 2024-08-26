@@ -37,7 +37,7 @@ spec:
     source:
         git:
             uri: "https://gitlab.eurecom.fr/oai/openairinterface5g.git"
-            ref: "v2.1.0" 
+            ref: "2024.w17" 
         secrets:
           - secret:
               name: etc-pki-entitlement
@@ -56,8 +56,8 @@ spec:
             from:
                kind: ImageStreamTag          
                namespace: engage5g
-               name: oai-ran-base:v2.1.0        
+               name: oai-ran-base:2024.w17        
     output:
         to:
             kind: "ImageStreamTag"
-            name: "oai-ran-build:v2.1.0"
+            name: "oai-ran-build:2024.w17"
