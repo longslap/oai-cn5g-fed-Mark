@@ -84,9 +84,9 @@ services:
             USE_ADDITIONAL_OPTIONS: --sa --rfsim --log_config.global_log_options level,nocolor,time
                                     -r 106 --numerology 1 -C 3619200000
                                     --uicc0.imsi 208920000000001
-                                    --uicc0.key fec86ba6eb707ed08905757b1bb44b8f;
-                                    --uicc0.opc C42449363BBAD02B66D16BC975D77CC1;
-                                    --uicc0.dnn internet
+                                    --uicc0.key "fec86ba6eb707ed08905757b1bb44b8f";
+                                    --uicc0.opc "C42449363BBAD02B66D16BC975D77CC1";
+                                    --uicc0.dnn "internet"
                                     --uicc0.nssai_sst 1
                                     --uicc0.nssai_sd 1
                                     --rfsimulator.serveraddr 192.168.78.2
