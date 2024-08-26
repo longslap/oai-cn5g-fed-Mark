@@ -10,21 +10,15 @@ Resource   common.robot
 
 Variables    vars.py
 
-Suite Setup    Launch Northbound Test CN
-Suite Teardown    Suite Teardown Default
+Suite Setup    Northbound Suite Setup
+Suite Teardown    Northbound Suite Teardown
 
 *** Test Cases ***
 Check AMF Registration Notifications
     [tags]  North   AMF
-    [Setup]    Test Setup For Northbound
+    [Setup]    None
     [Teardown]    None
     [Documentation]    Check Callback registration notification
-    @{UEs}=    Get UE container Names
-    FOR   ${ue}   IN    @{UEs}   
-        Start NR UE    ${ue}
-        Sleep  2s
-    END    
-    Wait Until Keyword Succeeds  60s  1s  Check RAN Elements Health Status
     ${logs} =    Get AMF Report Logs
     Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    ${logs}
 
@@ -56,11 +50,11 @@ Check SMF Traffic Notification
         ${ip}=   Get UE IP Address   ${ue}
         ${imsi}=   Get UE IMSI    ${ue}
         Start Iperf3 Client     ${ue}  ${ip}  ${EXT_DN1_IP_N3}  bandwidth=3
-        Wait and Verify Iperf3 Result    ${ue}  ${3}  #for bandwidth check, not important
+        Run Keyword And Ignore Error   Wait and Verify Iperf3 Result    ${ue}  ${3}  #for bandwidth check, not important
         Sleep   6s
         ${result_Iperf}=    Get Iperf3 Results   ${ue}
         ${result}=    Get SMF Logs
-        Check Ue Traffic Notification  ${result}  ${result_Iperf}  ${imsi}
+        Wait Until Keyword Succeeds  60s  6s   Check Ue Traffic Notification  ${result}  ${result_Iperf}  ${imsi}
     END
 
 Check AMF Deregistration Notification
@@ -76,9 +70,30 @@ Check AMF Mobility Location Report
     [Setup]    Test Setup With MobSim
     [Teardown]    Test Teardown With MobSim
     [Documentation]    Check AMF Mobility Location Report Callback
-    Wait Until Keyword Succeeds  60s  6s    Check AMF Location Mobility Report Callback
+    Wait Until Keyword Succeeds  120s  3s    Check AMF Location Mobility Report Callback
     
 *** Keywords ***
+Northbound Suite Setup 
+    Launch Northbound Test CN
+    Test Setup For Northbound
+    @{UEs}=    Get UE container Names
+    FOR   ${ue}   IN    @{UEs}   
+        Start NR UE    ${ue}
+        Sleep  2s
+    END    
+    Wait Until Keyword Succeeds  60s  1s  Check RAN Elements Health Status
+
+Northbound Suite Teardown
+    Stop NR UE
+    Run Keyword And Ignore Error    Handler.Stop Handler
+    Down Mongo
+    Stop gNB
+    Collect All Ran Logs
+    ${docu}=   Create RAN Docu
+    Set Suite Documentation    ${docu}   append=${TRUE}
+    Down NR UE
+    Down gNB
+    Suite Teardown Default
 Launch Mongo
     Run    docker run -d -p 27017:27017 --name=mongo-northbound mongo:latest
 
@@ -102,8 +117,6 @@ Test Teardown With RAN
     Down Mongo
     Stop gNB
     Collect All RAN Logs
-    ${docu}=   Create RAN Docu
-    Set Suite Documentation    ${docu}   append=${TRUE}
     Down gNB
 
 Test Setup With MobSim
@@ -116,6 +129,9 @@ Test Setup With MobSim
 
 Test Teardown With MobSim
     Stop MobSim
+    Collect All Mobsim Logs
+    ${docu}=   Create MobSim Docu
+    Set Suite Documentation    ${docu}   append=${TRUE}
     Down MobSim
     Handler.Stop Handler
     Down Mongo

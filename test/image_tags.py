@@ -36,5 +36,6 @@ image_tags = {
     "ngap-tester": "ngap-tester:develop",
     "gnbsim": "gnbsim:latest",
     "oai-gnb": "oaisoftwarealliance/oai-gnb:develop",
-    "oai-nr-ue": "oaisoftwarealliance/oai-nr-ue:develop"
+    "oai-nr-ue": "oaisoftwarealliance/oai-nr-ue:develop",
+    "mobsim": "carot0/mobsim:latest"
 }

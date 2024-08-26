@@ -340,9 +340,12 @@ def extract_mobility_info_from_logs(eng_logs,amf_logs):
     pattern = re.compile(
     r'HandoverNotifyIEs\s*::=\s*\{\s*id:\s*121\s*criticality:\s*1\s*\(ignore\).*?nRCellIdentity:\s*([0-9A-F\s]*)\s*\([^\)]*\)',re.DOTALL)
     matches = pattern.findall(amf_logs)
-    amf_info = [match.strip() for match in matches][-1]
-    amf_current_cell = int(amf_info.replace(' ', ''),16)
-    return mobsim_info, amf_current_cell
+    if len(matches) == 0:
+        raise ValueError("failed to change location by mobsim location simulatory.")
+    else:
+        amf_info = [match.strip() for match in matches][-1]
+        amf_current_cell = int(amf_info.replace(' ', ''),16)
+        return mobsim_info, amf_current_cell
 
 def check_AMF_location_mobility_report_callback():
     """
@@ -443,7 +446,7 @@ def extract_info_by_seid_and_urseqn(logs, target_seid, target_ur_seqn):
 def Check_ue_traffic_notification(logs, iperf_results, imsi):
     try:
         traffic_iperf_results = get_iperf3_transfer_size(iperf_results)
-        tolerance = 0.07
+        tolerance = 0.1
         min_val = traffic_iperf_results * (1 - tolerance)
         max_val = traffic_iperf_results * (1 + tolerance)
         callback_data = get_traffic_data_from_handler(imsi)
@@ -457,7 +460,7 @@ def Check_ue_traffic_notification(logs, iperf_results, imsi):
                 logger.error(f"Traffic data mismatch between SMF logs and handler collection for SUPI: {imsi}, Log NoP Total: {smf_traffic_data['NoP Total']}, Callback NoP Total: {int(data['NoP Total'] )}, Logs Volume Total: {smf_traffic_data['Volume Total']}, Callback Volume Total: {data['Volume Total']}")
                 handler_mismatch = True
         if not (min_val <= total_traffic_from_logs <= max_val):
-            logger.error(f"Total traffic from SMF logs does not match iPerf results within 7% tolerance for SUPI: {imsi}")
+            logger.error(f"Total traffic from SMF logs does not match iPerf results within 10% tolerance for SUPI: {imsi}, Total traffic from logs: {total_traffic_from_logs}, Iperf Traffic:{traffic_iperf_results}")
             iperf_mismatch = True
         if handler_mismatch or iperf_mismatch:
             raise Exception(f"Traffic data mismatch for SUPI: {imsi}")

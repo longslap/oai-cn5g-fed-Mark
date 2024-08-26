@@ -226,4 +226,15 @@ class MobSimTestLib:
         stop_docker_compose(self.docker_compose_path)
     def down_mobsim(self):
         down_docker_compose(self.docker_compose_path)
+        
+    def create_mobsim_docu(self):
+        if len(self.mobsim_gnb + self.mobsim_nr_ue) == 0:
+            return ""
+        docu = " = Mobsim Tester Image = \n"
+        docu += create_image_info_header()
+        size, date = self.docker_api.get_image_info(get_image_tag("mobsim"))
+        docu += create_image_info_line("mobsim", get_image_tag("mobsim"), date, size)
+        return docu
 
+    def collect_all_mobsim_logs(self):
+        self.docker_api.store_all_logs(get_log_dir(), self.mobsim_gnb + self.mobsim_nr_ue + ["mobsim-eng"])
