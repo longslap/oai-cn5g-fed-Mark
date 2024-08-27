@@ -45,16 +45,13 @@ Check SMF Traffic Notification
     [Documentation]    Check SMF Traffic Notification Callback
     @{UEs}=    Get UE container Names
     Start Iperf3 Server     ${EXT_DN1_NAME}
-    Sleep    10s
     FOR     ${ue}   IN    @{UEs}   
         ${ip}=   Get UE IP Address   ${ue}
         ${imsi}=   Get UE IMSI    ${ue}
         Start Iperf3 Client     ${ue}  ${ip}  ${EXT_DN1_IP_N3}  bandwidth=3
         Run Keyword And Ignore Error   Wait and Verify Iperf3 Result    ${ue}  ${3}  #for bandwidth check, not important
-        Sleep   6s
         ${result_Iperf}=    Get Iperf3 Results   ${ue}
-        ${result}=    Get SMF Logs
-        Wait Until Keyword Succeeds  60s  6s   Check Ue Traffic Notification  ${result}  ${result_Iperf}  ${imsi}
+        Wait Until Keyword Succeeds  60s  6s   Check Ue Traffic Notification   ${result_Iperf}  ${imsi}
     END
 
 Check AMF Deregistration Notification
@@ -151,10 +148,6 @@ Get AMF Report Logs
 
 Get AMF Location Report Logs
     ${logs}    Run    docker logs oai-amf | sed -n '/"type":"LOCATION_REPORT"/p' 
-    RETURN    ${logs}
-
-Get SMF Logs
-    ${logs}    Run    docker logs oai-smf
     RETURN    ${logs}
 
 Get UE Info From SMF Log

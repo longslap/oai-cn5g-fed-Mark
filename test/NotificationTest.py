@@ -441,10 +441,11 @@ def extract_info_by_seid_and_urseqn(logs, target_seid, target_ur_seqn):
                                 key, value = line_clean.split(' -> ')
                                 dictionary[key.strip()] = value.strip()
                     return dictionary
-    return None 
+    raise ValueError("No log data available matching the specified SEID and UR-SEQN.") 
 
-def Check_ue_traffic_notification(logs, iperf_results, imsi):
+def Check_ue_traffic_notification(iperf_results, imsi):
     try:
+        logs = subprocess.check_output(['docker', 'logs', 'oai-smf'], text=True)
         traffic_iperf_results = get_iperf3_transfer_size(iperf_results)
         tolerance = 0.1
         min_val = traffic_iperf_results * (1 - tolerance)
@@ -464,7 +465,7 @@ def Check_ue_traffic_notification(logs, iperf_results, imsi):
             iperf_mismatch = True
         if handler_mismatch or iperf_mismatch:
             raise Exception(f"Traffic data mismatch for SUPI: {imsi}")
-        logger.info(f"SMF Traffic data matches both iPerf results and handler collection for SUPI: {imsi} \n Log NoP Total: {smf_traffic_data['NoP Total']}, Callback NoP Total: {int(data['NoP Total'] )}, Logs Volume Total: {smf_traffic_data['Volume Total']}, Callback Volume Total: {data['Volume Total']}")
+        logger.info(f"SMF Traffic data matches both iPerf results and handler collection for SUPI: {imsi} \n Log NoP Total: {smf_traffic_data['NoP Total']}, Callback NoP Total: {int(data['NoP Total'] )}, Logs Volume Total: {smf_traffic_data['Volume Total']}, Callback Volume Total: {data['Volume Total']}\n iPerf results within 10% tolerance for SUPI: {imsi}, Total traffic from logs: {total_traffic_from_logs}, Iperf Traffic:{traffic_iperf_results}")
     except Exception as e:
         logger.error(f"Failed to check traffic data: {e}")
         raise e
