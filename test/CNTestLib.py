@@ -37,8 +37,8 @@ TRACE_DUMMY_CONTAINER_NAME = "trace_dummy"
 TEST_NETWORK_NAME = "demo-oai-test"
 TEST_NETWORK_NAME_N3 = "demo-n3-test"
 TEST_NETWORK_NAME_N6 = "demo-n6-test"
-# TODO sensible trace filters
-TRACE_FILTER_SIGNALING = f"(not arp and not port 53 and not port 2152) and (not host {EXT_DN1_IP} and not host {EXT_DN2_IP} and not host {EXT_DN3_IP})"
+
+TRACE_FILTER_SIGNALING = f"sctp or port 80 or port 8080 or port 8805 or icmp or port 3306"
 TRACE_FILTER_UP = ""
 
 

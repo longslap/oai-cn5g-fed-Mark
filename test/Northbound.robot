@@ -16,32 +16,32 @@ Suite Teardown    Northbound Suite Teardown
 *** Test Cases ***
 Check AMF Registration Notifications
     [tags]  North   AMF
-    [Setup]    None
-    [Teardown]    None
+    [Setup]    Test Setup For Northbound 
+    [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check Callback registration notification
     ${logs} =    Get AMF Report Logs
     Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    ${logs}
 
 Check AMF Location Report  
     [tags]  North   AMF
-    [Setup]    None
-    [Teardown]    None  
+    [Setup]    Test Setup For Northbound 
+    [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check Callback Location Notification
     ${logs} =    Get AMF Report Logs
     Wait Until Keyword Succeeds  60s  6s    Check AMF Location Report Callback    '${logs}'    ${3}
 
 Check SMF Notifications
     [tags]  North   SMF
-    [Setup]    None
-    [Teardown]    None
+    [Setup]    Test Setup For Northbound 
+    [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check SMF Callback Notification (PDU Session Establishment)
     ${logs} =    Get UE Info From SMF Log
     Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
 
 Check SMF Traffic Notification
     [tags]   North   SMF
-    [Setup]    None
-    [Teardown]    None
+    [Setup]    Test Setup For Northbound 
+    [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check SMF Traffic Notification Callback
     @{UEs}=    Get UE container Names
     Start Iperf3 Server     ${EXT_DN1_NAME}
@@ -75,7 +75,13 @@ Check AMF Mobility Location Report
 *** Keywords ***
 Northbound Suite Setup 
     Launch Northbound Test CN
-    Test Setup For Northbound
+   
+    Start All gNB
+    Check RAN Elements Health Status
+    Launch Mongo
+    Handler.Start Handler
+    Sleep   10s
+    
     @{UEs}=    Get UE container Names
     FOR   ${ue}   IN    @{UEs}   
         Start NR UE    ${ue}
@@ -102,13 +108,13 @@ Down Mongo
      Run    docker rm mongo-northbound
 
 Test Setup For Northbound
-    Start All gNB
-    Check RAN Elements Health Status
-    Launch Mongo
-    Handler.Start Handler
-    Sleep   10s
+    Start Trace    ${TEST_NAME}
+
+Test Teardown For Northbound
+    Stop Trace    ${TEST_NAME}
 
 Test Setup for Deregistration
+    Test Setup For Northbound 
     Stop NR UE
     Down NR UE
 
@@ -118,8 +124,10 @@ Test Teardown With RAN
     Stop gNB
     Collect All RAN Logs
     Down gNB
+    Test Teardown For Northbound
 
 Test Setup With MobSim
+    Test Setup For Northbound
     Prepare MobSim    ${3}    ${1}
     Update Event Rate    ${0.08}
     Launch Mongo
@@ -135,6 +143,7 @@ Test Teardown With MobSim
     Down MobSim
     Handler.Stop Handler
     Down Mongo
+    Test Teardown For Northbound
 
 Get AMF Report Logs
     ${logs}    Run    docker logs oai-amf | sed -n '/--UEs. Information--/,/----------------------------/p' 

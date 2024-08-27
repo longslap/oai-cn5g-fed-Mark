@@ -117,6 +117,8 @@ Launch Northbound Test CN
     
     @{replace_list} =  Create List  smf  upfs  ${0}  config  enable_usage_reporting
     Replace In Config    ${replace_list}  yes
+
+    Start Trace    core_network
     Start CN
     Check Core Network Health Status
 
