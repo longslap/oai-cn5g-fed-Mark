@@ -37,5 +37,11 @@ image_tags = {
     "gnbsim": "gnbsim:latest",
     "oai-gnb": "oaisoftwarealliance/oai-gnb:develop",
     "oai-nr-ue": "oaisoftwarealliance/oai-nr-ue:develop",
-    "mobsim": "carot0/mobsim:latest"
+    "mobsim": "carot0/mobsim:latest",
+    "oai-nwdaf-nbi-analytics": "oaisoftwarealliance/oai-nwdaf-nbi-analytics:develop",
+    "oai-nwdaf-nbi-events": "oaisoftwarealliance/oai-nwdaf-nbi-events:develop",
+    "oai-nwdaf-nbi-ml": "oaisoftwarealliance/oai-nwdaf-nbi-ml:develop",
+    "oai-nwdaf-engine": "oaisoftwarealliance/oai-nwdaf-engine:develop",
+    "oai-nwdaf-engine-ads": "oaisoftwarealliance/oai-nwdaf-engine-ads:develop",
+    "oai-nwdaf-sbi": "oaisoftwarealliance/oai-nwdaf-sbi:develop"
 }
