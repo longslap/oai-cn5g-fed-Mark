@@ -338,7 +338,7 @@ def checkImageInfo(imageName, origTag) {
 
 def updateDockerCompose(filename, lRanTag) {
   for (ii = 0; ii < imageNames.size(); ii++) {
-    sh 'sed -i -e "s@oaisoftwarealliance/' + imageNames[ii] + ':v2.1.0@' + imageNames[ii] + ':' + imageTags[ii] + '@" ' + filename
+    sh 'sed -i -e "s@oaisoftwarealliance/' + imageNames[ii] + ':develop@' + imageNames[ii] + ':' + imageTags[ii] + '@" ' + filename
   }
   sh 'sed -i -e "s@oaisoftwarealliance/trf-gen-cn5g:latest@trf-gen-cn5g:latest@" ' + filename
   // Using the develop variant of gnbsim
