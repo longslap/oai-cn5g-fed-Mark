@@ -1,5 +1,154 @@
 # RELEASE NOTES: #
 
+## v2.1.0 -- August 2024 ##
+
+* 1 new Network Funtion:
+  * LMF
+* Testing
+  * Using a Robot Framework based test pipeline now
+* Tutorials:
+  - Remove ipv4 addresses from basic tutorial
+  - Use correct SD values on DB, slicing and for VPP UPF
+* Tech Debt for all Network Functions
+  - Stopping support for RHEL8/Rocky8 in favor of RHEL9/Rocky9
+  - HTTP client cpr library refactoring effort
+  - Move SBI models to common src git submodule
+* `AMF` changes:
+  * Features
+    - Adding NRPPA protocol support
+    - Support Non UE N2 Info message
+    - Support Multiple PDU sessions service request
+    - Adding gNB statistics
+    - Adding NGAP Utils
+    - Adding LTTNg tracepoints for logging
+    - Using hexadecimal values for SD in all APIs
+    - Updating UE info statistics on AMF after service request
+    - Exposing NCGI in UE Location Report notification
+    - Use HTTP Request Timeout from conf file
+  * Fixes
+    - Fix issue for JSON iterator comparison
+    - Fix multiple sessions response handling
+    - Fix NF registration/deregistration when discovering NRFs from NSSF
+    - Fix PDU session resource context request null pointer
+    - Fix issue for retrieving GUTI from 5G-S-TMSI
+    - Fix HTTP/2 server shutdown
+    - Fix shutdown threads procedure
+    - Fix UE Context Release procedure
+    - Fix buffer-overflow issue
+    - Fix AMF UE NGAP ID (uint64_t, 40 bits)
+    - Fix Nas buffer allocation length
+    - Fix issue for N2 handover
+    - Fix GUTI decode
+    - Fix NAS Decode: check buffer length before decoding
+    - Fix issue for mobility registration update procedure
+    - Fix HTTP client by using SBI task to send HTTP request
+  * Tech Debt
+    - Cleanup common utils
+    - Move NAS to common src git submodule
+    - Move NGAP to common src git submodule
+    - Move conversions from AMF to common src git submodule
+    - Separate all in one implementation
+* `AUSF` changes:
+  * Features
+    - Add connection handling mechanism
+    - Use HTTP Request Timeout parameter from Conf file
+  * Fixes
+    - Fix HTTP/2 server shutdown
+    - Fix of the shutdown for the task manager
+    - Fix issue for SD
+  * Tech Debt
+    - Remove NRF dependency from AUSF
+    - Code refactor cleanup
+    - Removing unneccessary packages from target images
+    - Cleanup AUSF client
+* `NRF` changes:
+  * Features
+    - Adding debug info
+  * Fixes
+    - Fix for Boost::signals2 issue
+    - Fix exception handling
+    - Fix HTTP/2 server shutdown
+  * Tech Debt
+    - Removing unneccessary packages from target images
+* `NSSF` changes:
+  * Fixes
+    - Fix HTTP/2 server shutdown
+* `PCF` changes:
+  * Features
+    - Add possibility to read QoS values from file
+  * Fixes
+    - Fix HTTP/2 server shutdown
+    - Use new FlowDirection fix
+  * Tech Debt
+    - Resynch PCF with common source git-submodule and use utils from there
+* `SMF` changes:
+  * Features
+    - Use HTTP Request Timeout parameter from Conf file
+    - Support advanced `UpfInfo` from config file, allows to configure different UPF flavors without NRF
+    - Resolve UPF from config file 10 times every 2 seconds, allowing flexibility in start order
+  * Fixes
+    - Fix multiple PDU session SEID handling
+    - Fix issue for PDU session establishment
+    - Fix: properly ending any thread and not generating seg fault when stopping smf process
+    - Fix N1/N2 handling between AMF and SMF when gNB exits
+    - Fix(handover): Check if N2 SM Info is set in HO Complete
+    - Fix: smf expecting CreatedPDR in n4_session_establishment_response when UPF that does not support TEID Creation
+    - Fix: NGAP S-AMBR encoding from bitrate string
+    - Fix: Allow lower-case SD values and also allow 0xSD values in config
+    - Fix HTTP/2 server shutdown
+    - Fix error message upon PFCP session establishment request
+    - Fix SMF crash on startup when peer UPF is not reachable
+  * Tech Debt
+    - Graph refactor, preparation for QoS handling
+    - Resynch SMF with common source git-submodule and use utils from there
+* `PCF` changes:
+  * Features
+    - Add possibility to read QoS values from file
+  * Fixes
+    - Fix HTTP/2 server shutdown
+    - Use new FlowDirection fix
+  * Tech Debt
+    - Resynch PCF with common source git-submodule and use utils from there
+* `UDM` changes:
+  * Features
+    - Update UDM APP structure
+    - Use HTTP Request Timeout parameter from Conf file
+  * Fixes
+    - Fix HTTP/2 server shutdown
+  * Tech Debt
+    - Code cleanup
+    - Removing unneccessary packages from target images
+    - Cleanup UDM client and add connection handling mechanism
+* `UDR` changes:
+  * Features
+    - Add NRF connection handling mechanism
+    - Use HTTP Request Timeout parameter from Conf file
+  * Fixes
+    - Fix HTTP/2 server shutdown
+    - Fix duplicated HTTP/1 route
+    - Fix: remove PID section in main
+  * Tech Debt
+    - Remove NRF dependency from UDR
+    - Code cleanup
+* `UPF` changes:
+  * Features
+    - Add connection handling between UPF and NRF
+    - Use HTTP Request Timeout parameter from Conf file
+    - QoS initial support
+    - N4 interoperability improved
+    - Performance improvement: CPU usage is further reduced
+  * Fixes
+    - Fixes: thread management especially at shutdown.
+    - Fix FDQN IPv4-only resolution
+    - Fix Using SD in string hex in UPF profile to send to NRF
+    - Fix to update TEID after a reconnection with FiveG_S_TMSI
+  * Tech Debt
+    - Remove NRF dependency from UPF
+    - Bumping up libbpf and bpftool versions:
+      - libbpf to `master` (currently above `v1.4.5`)
+      - bpftool to `v7.3.0`
+      - This should allow to build on newer systems
+
 ## v2.0.1 -- January 2024 ##
 
 * `AMF` changes:

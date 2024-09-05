@@ -20,28 +20,25 @@ spec:
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
           [{
-                 "name": "{{ .Chart.Name }}-n2",
-                 "interface": "n2"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
+                 "interface": "{{ .Values.multus.n2Interface.name }}"
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
                 {{- end }}
           }
           {{- if .Values.multus.n3Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-n3",
-                 "interface": "n3"
-                {{- if .Values.multus.n3Interface.Gateway }}
-                ,"gateway": {{ .Values.multus.n3Interface.Gateway }}
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
+                 "interface": "{{ .Values.multus.n3Interface.name }}"
+                {{- if .Values.multus.n3Interface.gateway }}
+                ,"gateway": {{ .Values.multus.n3Interface.gateway }}
                 {{- end }}
           }
           {{- end }}
           {{- if .Values.multus.ruInterface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-ru",
-                 "interface": "ru"
-                {{- if .Values.multus.ruInterface.Gateway }}
-                ,"gateway": {{ .Values.multus.ruInterface.Gateway }}
-                {{- end }}
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.ruInterface.name }}",
+                 "interface": "{{ .Values.multus.ruInterface.name }}"
           }
           {{- end }}
           ]
@@ -53,10 +50,29 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
+    {{- if .Values.global }}{{ if .Values.global.waitForAMF }}
+      initContainers:
+        - name: init
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - until ncat -zv {{ .Values.config.amfhost }} 38412 --sctp ; do echo waiting for oai-amf to start; sleep 1; done
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 1m
+            limits:
+              memory: 50Mi
+              cpu: 1m
+    {{- end }}{{ end }}
       containers:
       - name: gnb
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
         imagePullPolicy: {{ .Values.nfimage.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
           - mountPath: /opt/oai-gnb/etc
             name: configuration
@@ -75,13 +91,6 @@ spec:
             memory: {{ .Values.resources.limits.nf.memory | quote }}
             cpu: {{ .Values.resources.limits.nf.cpu | quote }}
         {{- end}}
-        securityContext:
-           privileged: true
-           # capabilities:
-           #    add:
-           #     - NET_ADMIN
-           #    drop:
-           #     - ALL
         ports:
         - containerPort: 2152
           name: n3
@@ -138,17 +147,17 @@ spec:
             cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
         securityContext:
-           privileged: true
            capabilities:
               add:
                - NET_ADMIN
+               - NET_RAW
               drop:
                - ALL
         {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep

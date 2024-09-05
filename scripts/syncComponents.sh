@@ -69,6 +69,9 @@ function usage {
     echo "    --pcf-branch ####"
     echo "    Specify the source branch for the OAI-PCF component"
     echo ""
+    echo "    --lmf-branch ####"
+    echo "    Specify the source branch for the OAI-LMF component"
+    echo ""
     echo "    --verbose"
     echo "    Will show all operations results"
     echo ""
@@ -77,9 +80,9 @@ function usage {
     echo ""
 }
 
-BRANCH_NAMES=("master" "master" "master" "master" "master" "master" "master" "master" "master" "master" "master")
-#BRANCH_NAMES=("develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop")
-COMPONENT_PATHS=("oai-nrf" "oai-amf" "oai-smf" "oai-upf" "oai-ausf" "oai-udm" "oai-udr" "oai-upf-vpp" "oai-nssf" "oai-nef" "oai-pcf")
+BRANCH_NAMES=("master" "master" "master" "master" "master" "master" "master" "master" "master" "master" "master" "master")
+#BRANCH_NAMES=("develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "develop" "master")
+COMPONENT_PATHS=("oai-nrf" "oai-amf" "oai-smf" "oai-upf" "oai-ausf" "oai-udm" "oai-udr" "oai-upf-vpp" "oai-nssf" "oai-nef" "oai-pcf" "oai-lmf")
 
 NRF_IDX=0
 AMF_IDX=1
@@ -92,8 +95,9 @@ UPF_VPP_IDX=7
 NSSF_IDX=8
 NEF_IDX=9
 PCF_IDX=10
+LMF_IDX=11
 
-doDefault=0
+doDefault=1
 verbose=0
 
 while [[ $# -gt 0 ]]
@@ -172,6 +176,12 @@ case $key in
     shift
     shift
     ;;
+    --lmf-branch)
+    BRANCH_NAMES[LMF_IDX]="$2"
+    doDefault=0
+    shift
+    shift
+    ;;
     --verbose)
     verbose=1
     shift
@@ -198,6 +208,7 @@ echo "OAI-UPF-VPP component branch : ${BRANCH_NAMES[UPF_VPP_IDX]}"
 echo "OAI-NSSF    component branch : ${BRANCH_NAMES[NSSF_IDX]}"
 echo "OAI-NEF     component branch : ${BRANCH_NAMES[NEF_IDX]}"
 echo "OAI-PCF     component branch : ${BRANCH_NAMES[PCF_IDX]}"
+echo "OAI-LMF     component branch : ${BRANCH_NAMES[LMF_IDX]}"
 echo "---------------------------------------------------------"
 
 # First do a clean-up

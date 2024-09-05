@@ -21,6 +21,8 @@ OAI 5G core network have different network functions which can be used invidiual
 
 **Tutorial replication time**: ~40mins
 
+**NOTE**: This tutorial will move in Orchestration repository starting next release. 
+
 **TABLE OF CONTENTS**
 
 [[_TOC_]]
@@ -43,22 +45,50 @@ The helm charts can be used on any production grade kubernetes cluster or even v
 
 | Software                        | Version                                 |
 |:--------------------------------|:----------------------------------------|
-| Openshift Client Version        | 4.13.X                                  |
+| Openshift Client Version        | 4.10-4.16                               |
 | Kubernetes Version              | Kubernetes Version: v1.27.4             |
 | helm                            | v3.11.2                                 |
-| Base images of Network functions| Ubuntu 20.04/22.04/UBI 8/9(RHEL 8/9)    |
+| Base images of Network functions| Ubuntu 22.04/UBI 9(RHEL 9)              |
 
-Each NF has its independent helm-chart and apart from that there are parent helm-charts for below scenarions:
+Each NF has its independent helm-chart and apart from that there are parent helm-charts for below scenarios:
 
 1. Minimalist deployment: MYSQL (Subscriber Database), AMF, SMF, UPF, NRF
-2. Basic deployment: MYSQL (Subscriber Database), UDR, UDM, AUSF, AMF, SMF, UPF, NRF
+2. Basic deployment: MYSQL (Subscriber Database), UDR, UDM, AUSF, AMF, SMF, UPF, NRF, LMF
 3. Advance deployment: MYSQL (Subscriber Database), NSSF, UDR, UDM, AUSF, AMF, SMF, UPF, NRF
 
-In this tutorial we will deploy a basic setting of OAI 5g core network and will deploy oai-gNB and oai-nr-ue in rf-simulator mode to perform some traffic testing. You can also deploy the core network in other two settings, it all depends on your use case and testbed. 
+End to End testing scenario: 
+1. Case 1: Monolithic RAN: OAI-gNB (RFSimulated), OAI-NR-UE (RFSimulated)
+2. Case 2: F1 Split: OAI-CU, OAI-DU (RFSimulated), OAI-NR-UE (RFSimulated)
+3. Case 3: E1-F1 Split: OAI-CU-CP, OAI-CU-UP, OAI-DU (RFSimulated), OAI-NR-UE (RFSimulated)
+
+[To know more about RFSimulator](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/RUNMODEM.md#rfsimulator)
+
+Before you move forward lets create a namespace to host all the resources
+
+```shell
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oai-tutorial
+  labels:
+    pod-security.kubernetes.io/warn: "privileged"
+    pod-security.kubernetes.io/audit: "privileged"
+    pod-security.kubernetes.io/enforce: "privileged"
+EOF
+```
+
+For Openshift you need to create a new project instead
+
+```shell
+oc new-project oai-tutorial
+```
+
+And later add the labels to allow creating `privileged` pods.
 
 ## 2. Fetching Network Function Images
 
-Ubuntu base images can be pulled from [docker-hub](https://hub.docker.com/u/oaisoftwarealliance) but if you want to make some changes in the code then you should build your own images. If you will use Ubuntu images then skip this part and in section `3.1` there is a detailed procedure. In case of RHEL based worker node you have to build your own images, to download packages from RHEL repository you need a developer or enterprise account. 
+Ubuntu base images can be pulled from [docker-hub](https://hub.docker.com/u/oaisoftwarealliance). In case you want to do some changes in the code then you should build your own images. If you will use Ubuntu images then skip this part and in section `3.1` there is a detailed procedure. In case of RHEL based worker node you can build your own UBI images, to download packages from RHEL repository you need a developer or enterprise account. 
 
 1. To learn how to build UBI 9.X images follow this [tutorial](./openshift/README.md)
 2. To learn how to build Ubuntu images follow this [tutorial](./BUILD_IMAGES.md)
@@ -71,14 +101,14 @@ cd oai-cn5g-fed
 ls charts/
 oai-5g-core  oai-5g-ran
 ls charts/oai-5g-core/
-mysql  oai-5g-advance  oai-5g-basic  oai-5g-mini  oai-amf  oai-ausf  oai-nrf  oai-nssf  oai-smf  oai-traffic-server  oai-udm  oai-udr  oai-upf
+mysql  oai-5g-advance  oai-5g-basic  oai-5g-mini  oai-amf  oai-ausf  oai-lmf  oai-nrf  oai-nssf  oai-smf  oai-traffic-server  oai-udm  oai-udr  oai-upf
 ls charts/oai-5g-ran/
 oai-cu  oai-cu-cp  oai-cu-up  oai-du  oai-gnb  oai-nr-ue
 ```
 
 All the OAI core network charts are present in `oai-5g-core` folder, there you can find charts of individual network functions and for the above described three different deployment settings. 
 
-1. Folder `oai-5g-mini` is for [minimilist deployment](../charts/oai-5g-core/oai-5g-mini/README.md)
+1. Folder `oai-5g-mini` is for [minimalist deployment](../charts/oai-5g-core/oai-5g-mini/README.md)
 2. Folder `oai-5g-basic` is for [basic deployment](../charts/oai-5g-core/oai-5g-basic/README.md)
 3. Folder `oai-5g-advance` is for [advance deployment](../charts/oai-5g-core/oai-5g-advance/README.md)
 
@@ -92,7 +122,14 @@ oai-5g-basic/
 ├── config.yaml
 ├── README.md
 ├── templates
-│   └── configmap.yaml
+│   ├── configmap.yaml
+│   ├── deployment.yaml
+│   ├── _helpers.tpl
+│   ├── multus.yaml (Only in AMF, SMF and UPF)
+│   ├── NOTES.txt
+│   ├── rbac.yaml
+│   ├── serviceaccount.yaml
+│   └── service.yaml
 └── values.yaml
 
 1 directory, 5 files
@@ -127,31 +164,21 @@ All the configurable parameters for a particular commit/release are mentioned in
 
 **NOTE**: If there is a need to edit a specific configuration parameter that is not configurable via the helm-chart `config.yaml` file then it has to be changed at the time of building images.
 
-Create a namespace where the helm-charts will be deployed, in our environment we deploy them in `oai-tutorial` namespace. To create a namespace use the below command on your cluster, 
-
-
-```console
-# needs a user which has the right to create namespaces
-kubectl create ns oai-tutorial
-#or 
-oc new-project oai-tutorial
-```
-
-**NOTE**: Any changes done in the parent chart (Mini, basic, advance scenario helm charts) will overwrite the sub charts. 
+**NOTE**: Any changes done in the parent chart (Mini, basic, advance, case1, case2 or case3 scenario helm charts) will overwrite the sub charts. 
 
 ### 3.1 Networking related information
 
-Network function discovers each-other using NRF and instead of using the ip-address of network functions we rely on using their FQDN, **Kubernetes service concept**. To communicate with each other whether we deploy them in reference point architecture or service based architecture. 
+Core Network functions discovers each-other using NRF and instead of using the ip-address of network functions we rely on using their FQDN, **Kubernetes service concept**. To communicate with each other whether we deploy them in reference point architecture or service based architecture. 
 
 *For example: AMF registers with NRF using NRF FQDN (`oai-nrf.oai-tutorial.svc.cluster.local`). This way we can get rid of any static ip-address configuration.*
 
 #### 3.1.1 Configure Multiple Interfaces
 
-- Here the network functions will use different virtual ethernet interfaces to bind their different logical interface. Example AMF communicates with gNB using N2 and with SMF and NRF using Namf, the Service Base Interface (SBI).
-- This type of configuration is also used when gNB is outside of the cluster or UPF is outside of the cluster. 
-- To make the above seperation we are using multus to provide multiple ethernet interfaces to network functions which have multiple communication interfaces.
-- Only AMF, SMF and UPF have the possiblity to use multus. Other network functions can also use multus but then it needs to be configured. 
-- To configure multus for AMF, SMF or UPF, in `values.yaml` of each network function edit the multus section.
+- Here the network functions will use different virtual Ethernet interfaces to bind their different logical interface. Example AMF communicates with gNB/CU/CU-CP using N2 and with SMF and NRF using Namf, the Service Base Interface (SBI).
+- This type of configuration is also used when gNB/CU/CU-CP is outside of the cluster or UPF is outside of the cluster. 
+- To make the above separation we are using multus to provide multiple Ethernet interfaces to network functions which have multiple communication interfaces.
+- Only AMF, SMF, UPF and RAN network functions have the possibility to use multus. Other network functions can also use multus but then it needs to be configured. 
+- To configure multus for AMF, SMF, UPF or RAN network functions in `values.yaml` of each network function edit the multus section.
 
 ```
 ## Example from oai-amf/values.yaml
@@ -160,18 +187,19 @@ multus:
   defaultGateway: "172.21.7.254"
   n2Interface:
     create: false
-    Ipadd: "172.21.6.94"
-    Netmask: "22"
+    ipAdd: "172.21.6.94"
+    netmask: "22"
     ## If you do not have a gateway leave the field empty
-    Gateway:
+    gateway:
     ## If you do not want to add any routes in your pod then leave this field empty
     routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}]
+    name: 'n2'
     hostInterface: "bond0" # Interface of the host machine on which this pod will be scheduled
 ```
 
 #### 3.1.2 Use Single Interface
 
-- No need to configure multus for any network function. For different communication interfaces network functions will use same ethernet interface. Example AMF will use `eth0` interface to communicate with gNB, SMF and NRF.
+- No need to configure multus for any network function. For different communication interfaces network functions will use same Ethernet interface. Example AMF will use `eth0` interface to communicate with gNB, SMF and NRF.
 - In `values.yaml` of AMF, SMF and UPF in multus section do multus.create `false` like below, 
 
 ```
@@ -183,22 +211,21 @@ multus:
 
 #### 3.1.3 Capturing Packets (Optional)
 
-Every network function has an extra TCP dump container to take the TCP dump. But by default this container is not used. If enabled it will capture dumps on `all interfaces` and will store inside the container locally or in a persistant volume if enabled. 
+Every network function has an extra TCP dump container to take the TCP dump. But by default this container is not used. If enabled it will capture dumps on `all interfaces` and will store inside the container locally or in a persistent volume if enabled. 
 
-To enable the persistant volume in the `values.yaml` of every network function make the below change, 
+To enable the persistent volume in the `values.yaml` of every network function make the below change, 
 
 ```
 ## amf
 start:
   amf: true #If false the network function container will run in sleep mode for manually testing
-  tcpdump: false
+  tcpdump: true
 
-includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
+includeTcpDumpContainer: true #If true it will add a tcpdump container inside network function pod for debugging
 
 #To store PCAP of NF in a sharedVolume so it can be easily fetched (PVC is created with NRF charts so make sure in NRF it is true)
 persistent:
-  sharedvolume: false
-
+  sharedvolume: true
 ```
 
 ### 3.2 Network function Images
@@ -221,7 +248,7 @@ imagePullSecrets:
   - name: "regcred"
 ```
 
-When pulling images from docker hub you have several choices either to use images with develop tag (based on latest develop branch somtimes might not be stable), latest (built from current master branch) and release tags. 
+When pulling images from docker hub you have several choices either to use images with develop tag (based on latest develop branch sometimes might not be stable), latest (built from current master branch) and release tags. 
 
 
 ### 3.3 Configuring Helm Chart Parameters
@@ -247,29 +274,28 @@ INSERT INTO `SessionManagementSubscriptionData` (`ueid`, `servingPlmnid`, `singl
 ('208990100001125', '20899', '{\"sst\": 1, \"sd\": \"10203\"}','{\"oai\":{\"pduSessionTypes\":{ \"defaultSessionType\": \"IPV4\"},\"sscModes\": {\"defaultSscMode\": \"SSC_MODE_1\"},\"5gQosProfile\": {\"5qi\": 6,\"arp\":{\"priorityLevel\": 1,\"preemptCap\": \"NOT_PREEMPT\",\"preemptVuln\":\"NOT_PREEMPTABLE\"},\"priorityLevel\":1},\"sessionAmbr\":{\"uplink\":\"100Mbps\", \"downlink\":\"100Mbps\"}}}');
 ```
 
-In the config file `smf.use_local_subscription_info` should be `yes` to use the user DNN subscription information from the database. Else it will be used as defined in the configuration file.
+In the config file `smf.use_local_subscription_info` should be `no` to use the user DNN subscription information from the database. Else it will be used from the configuration file.
 
 Once the charts are configured perform helm dependency update inside the chart repository
 
 ``` shell
-cd charts/oai-5g-core/oai-5g-basic
-helm dependency update
+cd charts/oai-5g-core
+helm dependency update oai-5g-basic
 ```
 
 **NOTE**: Whenever you will make any change in the network function helm-chart or mysql helm chart you need to perform a dependency update to inform parent chart about the sub-charts update. 
 
 ## 4. Deploying Helm Charts
 
-Helm charts have an order of deployment for the proper configuration of core network. 
-
 Once the configuration is finished the charts can be deployed with a user who has the rights to
 
 1. Create RBAC (Optional only if Openshift is used)
 2. Run pod (only UPF needs that) with privileged and anyuid scc (optional only required if you have scc configure in your cluster)
 3. Create multus binds (optional only if multus is used)
+4. Create namespace/project
 
 ``` shell
-helm install basic oai-5g-basic/
+helm install basic oai-5g-basic/ -n oai-tutorial
 ```
 
 <details>
@@ -277,19 +303,17 @@ helm install basic oai-5g-basic/
 
 ```console
 NAME: basic
-LAST DEPLOYED: Tue Dec 12 10:04:40 2023
-NAMESPACE: default
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 ```
 </details>
 
-
-This command can take around 3-5 mins depending on your network speed and cluster configuration (computational capacity). You can use the wait command to see if the core network functions are running or not
+This command can take around ~3 mins depending on your network speed and cluster configuration (computational capacity). You can use the wait command to see if the core network functions are running or not
 
 ```shell
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/instance=basic --timeout=3m
+kubectl wait -n oai-tutorial --for=condition=ready pod -l app.kubernetes.io/instance=basic --timeout=3m
 ```
 
 ## 4.1 How to check if the Core network is properly configured?
@@ -304,25 +328,25 @@ If the value is more than 1 for both then it will verify that `smf` and `upf` ha
 
 ## 5 Use Case 1: Testing with Monolithic RAN
 
-The images which are used in the tutorial are already present in docker-hub like the other images of OAI 5g core network functions. The charts of all the network functions are preconfigured to work with OAI-gnB and OAI-NR-UE end to end installation. 
+The images which are used in the tutorial are already present in docker-hub like the other images of OAI 5g core network functions. The charts of all the network functions are pre-configured to work with OAI-gnB and OAI-NR-UE end to end installation. 
 
 ### 5.1 Images OAI-gNB and OAI-NR-UE
 
-For ubuntu based worker nodes the images can be pulled directly from docker-hub. To build images manually follow this [link](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/docker). In case you have an Openshift cluster then follow this [link](../openshift/README.md)
+For Ubuntu based worker nodes the images can be pulled directly from docker-hub. To build images manually follow this [link](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/docker). In case you have an Openshift cluster then follow this [link](../openshift/README.md)
 
 ### 5.2 Configuring OAI-gNB RFSimulator and OAI-NR-UE
 
-**Very Important** To access internet in NR-UE the N6/SGI interface of UPF should be able access the internet. 
+**Very Important** To access internet in NR-UE the N6 interface of UPF should be able access the internet. 
 
 GNB requires the ip-address or service name of AMF. In case in AMF multus is used and N1/N2 interface is bind to multus interface, then please provide AMF ip-address. 
 
-For this tutorial we are not using multus here for similicity, generally there should be two interfaces of gNB(for N2 and N3).
+For this tutorial we are not using multus here for simplicity, generally there should be two interfaces of gNB(for N2 and N3).
 
 ```
 ## oai-gNB configuration from values.yaml
 config:
   timeZone: "Europe/Paris"
-  useAdditionalOptions: "--sa -E --rfsim --log_config.global_log_options level,nocolor,time"
+  useAdditionalOptions: "--sa --rfsim --log_config.global_log_options level,nocolor,time"
   gnbName: "oai-gnb-rfsim"
   mcc: "001"   # check the information with AMF, SMF, UPF
   mnc: "01"    # check the information with AMF, SMF, UPF
@@ -331,7 +355,7 @@ config:
   usrp: rfsim   #allowed values rfsim, b2xx, n3xx or x3xx
   amfhost: "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
   n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
-  n3IfName: "eth0"
+  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
 ``` 
 
 ### 5.3 Deploy OAI-gNB RFSimulator
@@ -339,7 +363,7 @@ config:
 To deploy the oai-gnb in rf simulator mode follow the below steps
 
 ``` shell
-cd ../../oai-5g-ran/
+cd ../oai-5g-ran/
 helm install gnb oai-gnb --namespace oai-tutorial
 ```
 <details>
@@ -347,8 +371,7 @@ helm install gnb oai-gnb --namespace oai-tutorial
 
 ```console
 NAME: gnb
-LAST DEPLOYED: Tue Dec 12 10:46:53 2023
-NAMESPACE: default
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -392,15 +415,15 @@ Defaulted container "amf" out of: amf, init (init)
 ```
 config:
   timeZone: "Europe/Paris"
-  rfSimServer: "oai-du"    # ip-address of rfsim or service name oai-gnb in case of du change it with oai-du if multus is true then provide ip-address of oai-gnb
+  rfSimServer: "oai-ran"    # ip-address of rfsim or service name oai-gnb or oai-du
   fullImsi: "001010000000100"       # make sure all the below entries are present in the subscriber database
-  fullKey: "fec86ba6eb707ed08905757b1bb44b8f" 
+  fullKey: "fec86ba6eb707ed08905757b1bb44b8f"
   opc: "C42449363BBAD02B66D16BC975D77CC1"
   dnn: "oai"
   sst: "1"                     # configure according to gnb and amf, smf and upf 
   sd: "16777215"
   usrp: "rfsim"            # allowed rfsim, b2xx, n3xx, x3xx
-  useAdditionalOptions: "--sa --rfsim -r 106 --numerology 1 -C 3619200000 --nokrnmod --log_config.global_log_options level,nocolor,time"
+  useAdditionalOptions: "--sa --rfsim -r 106 --numerology 1 -C 3619200000 --log_config.global_log_options level,nocolor,time"
 ```
 
 ### 5.5 Deploy OAI-NR-UE RFSimulator
@@ -416,8 +439,7 @@ helm install nrue oai-nr-ue/ --namespace oai-tutorial
 
 ```console
 NAME: nrue
-LAST DEPLOYED: Tue Dec 12 10:56:16 2023
-NAMESPACE: default
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -473,22 +495,28 @@ rtt min/avg/max/mdev = 22.375/24.072/27.031/1.833 ms
 ## incase above doesn't work try with 8.8.8.8 instead of dns. If that works then probably you have't configure dns properly in SMF. 
 ```
 
+**NOTE**: You can also deploy the Core and RAN network functions directly via the parent [helm-chart](../charts/e2e_scenarios/case1) 
+
+```bash
+helm dependency update charts/e2e_scenarios/case1
+helm install case1 charts/e2e_scenarios/case1 -n oai-tutorial
+```
+
 ## 6 Use Case 2: Testing with F1 Split RAN
 
 The images used for OAI-CU and OAI-DU are the same images used for OAI-gNB. 
 
 ## 6.1 Configuration of OAI-CU and OAI-DU
 
-**Very Important** To access internet in NR-UE the N6/SGI interface of UPF should be able access the internet. 
+**Very Important** To access internet in NR-UE the N6 interface of UPF should be able access the internet. 
 
 OAI-CU requires the ip-address or service name of AMF. In case in AMF multus is used and N1/N2 interface is bind to multus interface, then please provide AMF ip-address. 
 
-For this tutorial we are not using multus here for similicity, generally there should be three interfaces of CU(for F1,N2, and N3).
+For this tutorial we are not using multus here for simplicity, generally there should be three interfaces of CU(for F1,N2, and N3).
 
 ```
 ## oai-cu configuration from values.yaml
 config:
-  mountConfig: false          #If config file is mounted then please edit mount.conf in configmap.yaml properly 
   timeZone: "Europe/Paris"
   useAdditionalOptions: "--sa --log_config.global_log_options level,nocolor,time"
   # If mounting the configuration file then below parameters are not used
@@ -496,7 +524,7 @@ config:
   mcc: "001"   # check the information with AMF, SMF, UPF
   mnc: "01"    # check the information with AMF, SMF, UPF
   tac: "1"     # check the information with AMF
-  sst: "1"  #currently only 4 standard values are allowed 1,2,3,4
+  sst: "1"     
   amfhost: "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
   n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
   n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
@@ -508,7 +536,6 @@ config:
 ```
 ## oai-du configuration from values.yaml
 config:
-  mountConfig: false          #If config file is mounted then please edit mount.conf in templates/configmap.yaml properly 
   timeZone: "Europe/Paris"
   useAdditionalOptions: "--sa --rfsim --log_config.global_log_options level,nocolor,time"
   duName: "oai-du-rfsim"
@@ -533,8 +560,7 @@ helm install cu oai-cu --namespace oai-tutorial
 
 ```console
 NAME: cu
-LAST DEPLOYED: Tue Dec 12 11:49:40 2023
-NAMESPACE: default
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -563,8 +589,7 @@ helm install du oai-du --namespace oai-tutorial
 
 ```console
 NAME: du
-LAST DEPLOYED: Tue Dec 12 11:53:20 2023
-NAMESPACE: default
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -621,6 +646,12 @@ Defaulted container "amf" out of: amf, init (init)
 
 After this follow the same procedure to start oai-nr-ue and ping to see if the UE is connected. 
 
+**NOTE**: You can also deploy the Core and RAN network functions directly via the parent [helm-chart](../charts/e2e_scenarios/case2) 
+
+```bash
+helm dependency update charts/e2e_scenarios/case2
+helm install case2 charts/e2e_scenarios/case2 -n oai-tutorial
+```
 
 ## 7 Use Case 3: Testing with E1 and F1 Split RAN
 
@@ -628,14 +659,13 @@ The images used for OAI-CU-CP and OAI-DU are the same images used for OAI-gNB. O
 
 ## 6.1 Configuration of OAI-CU and OAI-DU
 
-**Very Important** To access internet in NR-UE the N6/SGI interface of UPF should be able access the internet. 
+**Very Important** To access internet in NR-UE the N6 interface of UPF should be able access the internet. 
 
 OAI-CU-CP requires the ip-address or service name of AMF. In case in AMF multus is used and N1/N2 interface is bind to multus interface, then please provide AMF ip-address. 
 
-For this tutorial we are not using multus here for similicity, generally there should be three interfaces of CU-CP(for F1,N2 and E1).
+For this tutorial we are not using multus here for simplicity, generally there should be three interfaces of CU-CP(for F1,N2 and E1).
 
 ```
-## oai-cu-cp configuration from values.yaml
 config:
   timeZone: "Europe/Paris"
   useAdditionalOptions: "--sa --log_config.global_log_options level,nocolor,time"
@@ -646,11 +676,10 @@ config:
   sst: "1"  #currently only 4 standard values are allowed 1,2,3,4
   amfhost: "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
   n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
-  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
-  f1IfName: "eth0"   #if multus.f1Interface.create is true then use multus.f1Interface.Ipadd
-  e1IfName: "eth0"   #if multus.f1Interface.create is true then use multus.f1Interface.Ipadd
-  f1cuPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
-  f1duPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different 
+  f1IfName: "eth0"   #if multus.f1Interface.create is true then use f1
+  e1IfName: "eth0"   #if multus.f1Interface.create is true then use e1
+  f1cuPort: "2153"   #2153 if using same interface for f1 and n2 else standard port 2152 should be use if f1 and n3 interface are different
+  f1duPort: "2153"   #2153 if using same interface for f1 and n2 else standard port 2152 should be use if f1 and n3 interface are different
 ``` 
 
 ```
@@ -659,15 +688,14 @@ config:
   timeZone: "Europe/Paris"
   useAdditionalOptions: "--sa"
   cuupName: "oai-cuup"
-  mcc: "001"   # check the information with AMF, SMF, UPF/SPGWU
-  mnc: "01"    # check the information with AMF, SMF, UPF/SPGWU
+  mcc: "001"   # check the information with AMF, SMF, UPF
+  mnc: "01"    # check the information with AMF, SMF, UPF
   tac: "1"     # check the information with AMF
   sst: "1"     #currently only 4 standard values are allowed 1,2,3,4
   cuCpHost: "oai-cu" # 
-  n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
-  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
-  f1IfName: "eth0"   #if multus.f1uInterface.create is true then use multus.f1uInterface.Ipadd
-  e1IfName: "eth0"   #if multus.e1Interface.create is true then use multus.e1Interface.Ipadd
+  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n3 or eth0 
+  f1IfName: "eth0"   #if multus.f1uInterface.create is true then use f1 or you can only use 1 interface n3 or eth0 
+  e1IfName: "eth0"   #if multus.e1Interface.create is true then use e1 or you can only use 1 interface n3 or eth0 
   f1cuPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
   f1duPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
 ```
@@ -675,7 +703,6 @@ config:
 ```
 ## oai-du configuration from values.yaml
 config:
-  mountConfig: false          #If config file is mounted then please edit mount.conf in templates/configmap.yaml properly 
   timeZone: "Europe/Paris"
   useAdditionalOptions: "--sa --rfsim --log_config.global_log_options level,nocolor,time"
   duName: "oai-du-rfsim"
@@ -699,16 +726,14 @@ helm install cucp oai-cu-cp --namespace oai-tutorial
 <summary>The output is similar to:</summary>
 
 ```console
-NAME: cu
-LAST DEPLOYED: Tue Dec 12 11:49:40 2023
-NAMESPACE: default
+NAME: cucp
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 NOTES:
 1. Get the application name by running these commands:
-  export GNB__CU_POD_NAME=$(kubectl get pods --namespace oai-tutorial -l "app.kubernetes.io/name=oai-cu,app.kubernetes.io/instance=cu" -o jsonpath="{.items[0].metadata.name}")
-  export GNB_CU_eth0_IP=$(kubectl get pods --namespace oai-tutorial -l "app.kubernetes.io/name=oai-cu,app.kubernetes.io/instance=cu" -o jsonpath="{.items[*].status.podIP}")
+  export GNB__CU_CP_POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=oai-cu-cp,app.kubernetes.io/instance=cucp" -o jsonpath="{.items[0].metadata.name}")
 2. Dockerhub images of OpenAirInterface requires avx2 capabilities in the cpu and they are built for x86 architecture, tested on UBUNTU OS only.
 3. If you want to configure for a particular band then copy the configuration file in templates/configmap.yaml from here https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/targets/PROJECTS/GENERIC-NR-5GC/CONF
 ```
@@ -730,14 +755,13 @@ helm install cuup oai-cu-up --namespace oai-tutorial
 
 ```console
 NAME: cuup
-LAST DEPLOYED: Tue Dec 12 12:13:43 2023
-NAMESPACE: default
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 NOTES:
 1. Get the application name by running these commands:
-  export GNB__CU_POD_NAME=$(kubectl get pods --namespace oai-tutorial -l "app.kubernetes.io/name=oai-cu-up,app.kubernetes.io/instance=cuup" -o jsonpath="{.items[0].metadata.name}")
+  export GNB__CU_POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=oai-cu-up,app.kubernetes.io/instance=cuup" -o jsonpath="{.items[0].metadata.name}")
 2. Dockerhub images of OpenAirInterface requires avx2 capabilities in the cpu and they are built for x86 architecture, tested on UBUNTU OS only.
 3. If you want to configure for a particular band then copy the configuration file in templates/configmap.yaml from here https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/targets/PROJECTS/GENERIC-NR-5GC/CONF
 4. For good performance make sure your underlying kernel is realtime and CPU sleep states are off
@@ -774,8 +798,7 @@ helm install du oai-du --namespace oai-tutorial
 
 ```console
 NAME: du
-LAST DEPLOYED: Tue Dec 12 11:53:20 2023
-NAMESPACE: default
+NAMESPACE: oai-tutorial
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -832,6 +855,13 @@ Defaulted container "amf" out of: amf, init (init)
 
 After this follow the same procedure to start oai-nr-ue and ping to see if the UE is connected. 
 
+**NOTE**: You can also deploy the Core and RAN network functions directly via the parent [helm-chart](../charts/e2e_scenarios/case3) 
+
+```bash
+helm dependency update charts/e2e_scenarios/case3
+helm install case3 charts/e2e_scenarios/case3 -n oai-tutorial
+```
+
 ### 8 Uninstall the helm charts
 
 You can remove them one by one or you can use this command
@@ -844,7 +874,7 @@ helm uninstall -n oai-tutorial $(helm list -aq -n oai-tutorial)
 
 ### 9.1 How to capture pcaps inside a network function?
 
-We have specially provided a sperate container to capture pcap for each network function you can get inside this container and use tcpdump command 
+We have specially provided a separate container to capture pcap for each network function you can get inside this container and use tcpdump command 
 
 ```console
 kubectl exec -it -c tcpdump $AMF_POD_NAME -- /bin/sh
@@ -858,52 +888,52 @@ Below resource consumption is observered using Kubernetes metrics server while N
 **Use case 1**
 
 ```console
-kubectl top pods -n oai-tutorial
-NAME                           CPU(cores)   MEMORY(bytes)   
-basic-mysql-7c87d8cfbf-c6psl   3m           336Mi           
-oai-amf-757f8dfb64-59k76       14m          5Mi             
-oai-ausf-6dcc8cc79d-vlxmb      29m          2Mi             
-oai-gnb-6d48896787-vl5sr       2253m        1348Mi          
-oai-nr-ue-85b79b968f-x85px     1242m        622Mi           
-oai-nrf-6ddd875c45-dt7hz       31m          3Mi             
-oai-smf-5bf8b96d74-cg7s4       13m          5Mi             
-oai-udm-5994fc6847-tpzgw       30m          3Mi             
-oai-udr-754d6cd48-f6n7n        29m          4Mi             
-oai-upf-6576bc8496-jnpxl       11m          97Mi
+case1-mysql-58f56f8f9b-ns5dj          15m          449Mi           
+oai-amf-7c4ccf64f9-dgrgb              33m          5Mi             
+oai-ausf-6fb7bb6b97-p9q9t             66m          3Mi             
+oai-gnb-6d67985d99-zw5dx              1846m        1077Mi          
+oai-nr-ue-697d6d8984-b5d2z            1378m        295Mi           
+oai-nrf-9dffd9fc7-5k7nm               71m          3Mi             
+oai-smf-6787fc5b9-qr82p               30m          5Mi             
+oai-traffic-server-55db59f75d-kmzmw   5m           2Mi             
+oai-udm-58c5879c5b-rz7jk              69m          3Mi             
+oai-udr-98c5f7dd7-rkldg               65m          4Mi             
+oai-upf-57c9b544ff-pst8j              25m          4Mi  
 ```
 **Use case 2**
 
 ```console
-kubectl top pods
-NAME                           CPU(cores)   MEMORY(bytes)   
-basic-mysql-7c87d8cfbf-c6psl   3m           336Mi           
-oai-amf-757f8dfb64-59k76       13m          5Mi             
-oai-ausf-6dcc8cc79d-vlxmb      28m          2Mi             
-oai-cu-76fb9cbb4f-8pg7l        2m           116Mi           
-oai-du-7d7b665f6f-sb55f        1868m        1338Mi          
-oai-nr-ue-85b79b968f-46xvq     1288m        562Mi           
-oai-nrf-6ddd875c45-dt7hz       30m          3Mi             
-oai-smf-5bf8b96d74-cg7s4       13m          6Mi             
-oai-udm-5994fc6847-tpzgw       29m          3Mi             
-oai-udr-754d6cd48-f6n7n        28m          4Mi             
-oai-upf-6576bc8496-jnpxl       11m          144Mi    
+kubectl get pods 
+case2-mysql-546985bd6d-whg7x          15m          449Mi           
+oai-amf-7775d6f48d-dzp7x              31m          5Mi             
+oai-ausf-7f7fc9b766-llvr4             63m          3Mi             
+oai-cu-67558c5bd5-9sdld               1m           11Mi            
+oai-du-67d7f5766c-wdpn8               1827m        1074Mi          
+oai-nr-ue-6dfb85f6df-mq88v            1355m        296Mi           
+oai-nrf-7d6d4b4648-qzpf8              73m          3Mi             
+oai-smf-d7bf796d6-z7r9g               28m          5Mi             
+oai-traffic-server-55db59f75d-kfgpf   7m           2Mi             
+oai-udm-86b4bdf7c7-bdcbc              66m          3Mi             
+oai-udr-589758546b-7k8rq              69m          4Mi             
+oai-upf-5594b9cc84-smjbq              27m          4Mi
 ```
 
 **Use case 3**
 
 ```console
 kubectl top pods
-NAME                           CPU(cores)   MEMORY(bytes)   
-basic-mysql-7c87d8cfbf-c6psl   3m           336Mi           
-oai-amf-757f8dfb64-59k76       13m          5Mi             
-oai-ausf-6dcc8cc79d-vlxmb      28m          2Mi             
-oai-cu-cp-86bf5df746-sf5jl     2m           116Mi           
-oai-cu-up-54c8d9b97f-tfvmz     1m           55Mi            
-oai-du-7d7b665f6f-9x7zq        1777m        1338Mi          
-oai-nr-ue-85b79b968f-w499m     1182m        532Mi           
-oai-nrf-6ddd875c45-dt7hz       29m          3Mi             
-oai-smf-5bf8b96d74-cg7s4       12m          6Mi             
-oai-udm-5994fc6847-tpzgw       29m          3Mi             
-oai-udr-754d6cd48-f6n7n        28m          4Mi             
-oai-upf-6576bc8496-jnpxl       11m          130Mi 
+NAME                                  CPU(cores)   MEMORY(bytes)   
+case3-mysql-66db7fdcc6-q5rml          17m          450Mi           
+oai-amf-574569c967-6dqnl              33m          5Mi             
+oai-ausf-69b6444bff-qqvdr             70m          3Mi             
+oai-cu-cp-8598c595-q42kh              1m           120Mi           
+oai-cu-up-7988bb7f7c-pfnb4            1m           3Mi             
+oai-du-56576c49d8-zdj5n               1827m        1074Mi          
+oai-nr-ue-5fcb5cf474-x289m            1375m        300Mi           
+oai-nrf-97b95548c-7tfkd               77m          3Mi             
+oai-smf-d59bcb6c9-zkc89               26m          5Mi             
+oai-traffic-server-55db59f75d-zjnnq   5m           2Mi             
+oai-udm-ddf6dbc46-zhtn2               72m          3Mi             
+oai-udr-67cf97b677-nk8gg              66m          4Mi             
+oai-upf-5557c66469-79bqr              26m          4Mi     
 ```

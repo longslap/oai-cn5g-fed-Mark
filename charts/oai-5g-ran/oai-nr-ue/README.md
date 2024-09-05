@@ -1,11 +1,13 @@
 # Helm Chart for OAI New Radio User Equipment (OAI-NR-UE)
 
-This helm-chart is only tested for [RF Simulated oai-nr-ue](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/radio/rfsimulator/README.md). You can read about the design of [oai-nr-ue](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/nr-ue-design.md). You can use these charts with:
-- USRP B2XX
-- USRP N3XX
-- USRP X3XX
+This helm-chart is tested with 
+- [RF Simulated oai-gnb](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/radio/rfsimulator/README.md). 
+- They are designed to be used with:
+  - USRP B2XX
+  - USRP N3XX
+  - USRP X3XX
 
-**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10, 4.12, 4.13 RFSIM requires minimum 2CPU and 2Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin in case gNB is not in the same cluster. 
+**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10-4.16. RFSIM requires minimum 2CPU and 2Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin in case gNB is not in the same cluster. 
  
 ## Introduction
 
@@ -13,7 +15,7 @@ To know more about the feature set of OpenAirInterface you can check it [here](h
 
 The [codebase](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop) for NR-UE is same as gNB, CU, DU, CU-CP/CU-UP. Everyweek on [docker-hub](https://hub.docker.com/r/oaisoftwarealliance/oai-gnb) our [Jenkins Platform](https://jenkins-oai.eurecom.fr/view/RAN/) publishes docker-images for `oaisoftwarealliance/oai-nr-ue` 
 
-Each image has develop tag and a dedicated week tag for example `2023.w18`. We only publish Ubuntu 18.04/20.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
+Each image has develop tag and a dedicated week tag for example `2024.w32`. We only publish Ubuntu 22.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
 
 The helm chart of OAI-NR-UE creates multiples Kubernetes resources,
 
@@ -22,7 +24,7 @@ The helm chart of OAI-NR-UE creates multiples Kubernetes resources,
 3. Deployment
 4. Configmap
 5. Service account
-6. Network-attachment-defination (Optional only when multus is used)
+6. Network-attachment-definition (Optional only when multus is used)
 
 The directory structure
 
@@ -48,7 +50,7 @@ The directory structure
 
 |Parameter                       |Allowed Values                 |Remark                               |
 |--------------------------------|-------------------------------|-------------------------------------|
-|kubernetesType                  |Vanilla/Openshift              |Vanilla Kubernetes or Openshift      |
+|kubernetesDistribution                  |Vanilla/Openshift              |Vanilla Kubernetes or Openshift      |
 |nfimage.repository              |Image Name                     |                                     |
 |nfimage.version                 |Image tag                      |                                     |
 |nfimage.pullPolicy              |IfNotPresent or Never or Always|                                     |
@@ -60,8 +62,8 @@ The directory structure
 |podSecurityContext.runAsGroup   |Integer (0,65534)              |                                     |
 |multus.n2Interface.create       |true/false                     |                                     |
 |multus.n2Interface.Ipadd        |Ip-Address                     |                                     |
-|multus.n2Interface.Netmask      |Netmask                        |                                     |
-|multus.n2Interface.Gateway      |Ip-Address                     |                                     |
+|multus.n2Interface.netmask      |netmask                        |                                     |
+|multus.n2Interface.gateway      |Ip-Address                     |                                     |
 |multus.n2Interface.routes       |Json                           |Routes if you want to add in your pod|
 |multus.n2Interface.hostInterface|host interface                 |Host interface on which pod will run |
 |multus.defaultGateway           |Ip-Address                     |Default route inside pod             |

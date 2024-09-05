@@ -23,7 +23,11 @@ data:
 
           // Tracking area code, 0x0000 and 0xfffe are reserved values
           tracking_area_code  = {{ .Values.config.tac}};
+          {{- if .Values.config.sd }}
+          plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}}; sd = {{ .Values.config.sd}} }) });
+          {{- else}}
           plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}} }) });
+          {{- end}}
 
           nr_cellid = 12345678L;
 
@@ -48,7 +52,6 @@ data:
 
           ////////// AMF parameters:
           amf_ip_address      = ( { ipv4       = "@AMF_IP_ADDRESS@";
-                                    ipv6       = "192:168:30::17";
                                     active     = "yes";
                                     preference = "ipv4";
                                   }

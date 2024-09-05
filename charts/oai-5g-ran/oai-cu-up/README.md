@@ -2,7 +2,7 @@
 
 Before using this helm-chart we recommend you read about OAI codebase and its working from the documents listed on [OAI gitlab](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/doc). Here you can find a dedicated document on [F1 design](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/F1-design.md) and [E1 design](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/E1-design.md) 
 
-**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10 and 4.12. It requires minimum 1CPU and 1Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin for multiple interfaces. 
+**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10-4.15. It requires minimum 1CPU and 1Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin for multiple interfaces. 
 
 ## Introduction
 
@@ -13,7 +13,7 @@ The [codebase](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop) 
 1. `oaisoftwarealliance/oai-gnb` for monolithic gNB, DU, CU, CU-CP 
 2. `oaisoftwarealliance/oai-nr-cuup` for CU-UP. 
 
-Each image has develop tag and a dedicated week tag for example `2023.w18`. We only publish Ubuntu 18.04/20.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
+Each image has develop tag and a dedicated week tag for example `2024.w32`. We only publish Ubuntu 22.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
 
 The helm chart of OAI-CU-UP creates multiples Kubernetes resources,
 
@@ -22,7 +22,7 @@ The helm chart of OAI-CU-UP creates multiples Kubernetes resources,
 3. Deployment
 4. Configmap
 5. Service account
-6. Network-attachment-defination (Optional only when multus is used)
+6. Network-attachment-definition (Optional only when multus is used)
 
 The directory structure
 
@@ -45,10 +45,9 @@ The directory structure
 
 [Values.yaml](./values.yaml) contains all the configurable parameters. Below table defines the configurable parameters. The ip-addresses of N3, E1 and F1U have to be pre-configured in the configuration. Most of the primary CNIs do not allow static ip-address allocation. To overcome this we are using multus-cni with static ip-address allocation. At minimum you have to create one multus interface which you can use for N3, E1 and F1U. If you want you can create dedicated interfaces for N3, E1 and F1U. 
 
-
 |Parameter                        |Allowed Values                 |Remark                           |
 |---------------------------------|-------------------------------|---------------------------------|
-|kubernetesType                   |Vanilla/Openshift              |Vanilla Kubernetes or Openshift  |
+|kubernetesDistribution                   |Vanilla/Openshift              |Vanilla Kubernetes or Openshift  |
 |nfimage.repository               |Image Name                     |                                 |
 |nfimage.version                  |Image tag                      |                                 |
 |nfimage.pullPolicy               |IfNotPresent or Never or Always|                                 |
@@ -58,27 +57,27 @@ The directory structure
 |serviceAccount.name              |String                         |                                 |
 |podSecurityContext.runAsUser     |Integer (0,65534)              |                                 |
 |podSecurityContext.runAsGroup    |Integer (0,65534)              |                                 |
-|multus.defaultGateway            |Ip-Address                     |default route in the pod         |
-|multus.n3Interface.create        |true/false                     |                                 |
-|multus.n3Interface.IPadd         |Ip-Address                     |                                 |
-|multus.n3Interface.Netmask       |Netmask                        |                                 |
-|multus.n3Interface.Gateway       |Ip-Address                     |                                 |
-|multus.n3Interface.routes        |Json                           |Routes you want to add in the pod|
-|multus.n3Interface.hostInterface |host interface                 |Host machine interface name      |
-|multus.e1Interface.create        |true/false                     |                                 |
-|multus.e1Interface.IPadd         |Ip-Address)                    |                                 |
-|multus.e1Interface.Netmask       |Netmask                        |                                 |
-|multus.e1Interface.Gateway       |Ip-Address                     |                                 |
-|multus.e1Interface.hostInterface |host interface                 |                                 |
-|multus.e1Interface.routes        |Json                           |Routes you want to add in the pod|
-|multus.f1uInterface.create       |true/false                     |                                 |
-|multus.f1uInterface.IPadd        |Ip-Address                     |                                 |
-|multus.f1uInterface.Netmask      |Netmask                        |                                 |
-|multus.f1uInterface.Gateway      |Ip-Address                     |                                 |
-|multus.f1uInterface.routes       |Json                           |Routes you want to add in the pod|
-|multus.f1uInterface.hostInterface|host interface                 |Host machine interface name      |
+|multus.e1Interface.ipAdd            |IPV4                           |NA                                       |
+|multus.e1Interface.netmask          |netmask                        |NA                                       |
+|multus.e1Interface.gateway(optional)|netmask                        |NA                                       |
+|multus.e1Interface.name (optional)  |Interface name inside container|NA                                       |
+|multus.e1Interface.routes (optional)|Routes                         |NA                                       |
+|multus.n3Interface.create           |true/false                     |default false                            |
+|multus.n3Interface.ipAdd            |IPV4                           |NA                                       |
+|multus.n3Interface.netmask          |netmask                        |NA                                       |
+|multus.n3Interface.gateway(optional)|netmask                        |NA                                       |
+|multus.n3Interface.name (optional)  |Interface name inside container|NA                                       |
+|multus.n3Interface.routes (optional)|Routes                         |NA                                       |
+|multus.f1uInterface.create           |true/false                     |default false                           |
+|multus.f1uInterface.ipAdd            |IPV4                           |NA                                       |
+|multus.f1uInterface.netmask          |netmask                        |NA                                       |
+|multus.f1uInterface.gateway(optional)|netmask                        |NA                                       |
+|multus.f1uInterface.name (optional)  |Interface name inside container|NA                                       |
+|multus.f1uInterface.routes (optional)|Routes                         |NA                                       |
+|multus.defaultGateway               |IPV4                           |Default route inside container (optional)|
+|multus.hostInterface                |HostInterface Name             |NA                                       |
 
-The config parameters mentioned in `config` block of `values.yaml` are limited on purpose to maintain simplicity. They do not allow changing a lot of parameters of oai-gnb-cu-cp. If you want to use your own configuration file for oai-cu-up. It is recommended to copy it in `templates/configmap.yaml` and set `config.mountConfig` as `true`. The command line arguments for oai-cu-up is provided in `config.useAdditionalOptions`. 
+The config parameters mentioned in `config` block of `values.yaml` are limited on purpose to maintain simplicity. They do not allow changing a lot of parameters of oai-cu-up. If you want to use your own configuration file for oai-cu-up. It is recommended to copy it in `templates/configmap.yaml`. The command line arguments for oai-cu-up is provided in `config.useAdditionalOptions`. 
 
 You can find [here](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/targets/PROJECTS/GENERIC-NR-5GC/CONF) different sample configuration files for different bandwidths and frequencies. The binary of oai-gnb is called as `nr-softmodem`. To know more about its functioning and command line parameters you can visit this [page](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/RUNMODEM.md)
 
@@ -95,7 +94,7 @@ If you want to use only one interface then you have to configure some parameters
 
 ```
           local_s_if_name = "e1";
-          local_s_address = "{{ .Values.multus.e1Interface.IPadd }}";
+          local_s_address = "{{ .Values.multus.e1Interface.ipAdd }}";
           remote_s_address = "{{ .Values.config.f1duIpAddress }}";
           local_s_portc   = 501;
           local_s_portd   = 2153;
@@ -106,10 +105,8 @@ If you want to use only one interface then you have to configure some parameters
 ```
           NETWORK_INTERFACES :
           {
-              GNB_INTERFACE_NAME_FOR_NG_AMF            = "e1";
-              GNB_IPV4_ADDRESS_FOR_NG_AMF              = "{{ .Values.multus.e1Interface.IPadd }}";
-              GNB_INTERFACE_NAME_FOR_NGU               = "e1";
-              GNB_IPV4_ADDRESS_FOR_NGU                 = "{{ .Values.multus.e1Interface.IPadd }}";
+              GNB_IPV4_ADDRESS_FOR_NG_AMF              = "{{ .Values.multus.e1Interface.ipAdd }}";
+              GNB_IPV4_ADDRESS_FOR_NGU                 = "{{ .Values.multus.e1Interface.ipAdd }}";
               GNB_PORT_FOR_S1U                         = 2152; # Spec 2152
           };
 ```

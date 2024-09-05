@@ -9,6 +9,7 @@ register_nf:
   general: yes
 
 http_version: 2
+curl_timeout: 6000 #milliseconds can be changed if the network have issues
 
 ## general single_nssai configuration
 ## Defines YAML anchors, which are reused in the config file

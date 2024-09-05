@@ -8,12 +8,13 @@
     <a href="https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/releases"><img alt="GitLab Release (custom instance)" src="https://img.shields.io/gitlab/v/release/oai/cn5g/oai-cn5g-fed?gitlab_url=https%3A%2F%2Fgitlab.eurecom.fr&include_prereleases&sort=semver"></a>
     <a href="https://releases.ubuntu.com/20.04/"><img src="https://img.shields.io/badge/OS-Ubuntu20-Green" alt="Supported OS"></a>
     <a href="https://releases.ubuntu.com/22.04/"><img src="https://img.shields.io/badge/OS-Ubuntu22-Green" alt="Supported OS"></a>
-    <a href="https://www.redhat.com/en/enterprise-linux-8"><img src="https://img.shields.io/badge/OS-RHEL8-Green" alt="Supported OS"></a>
+    <a href="https://www.redhat.com/en/enterprise-linux-9"><img src="https://img.shields.io/badge/OS-RHEL9-Green" alt="Supported OS"></a>
 </p>
 
 <p align="center">
     <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-AMF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-AMF%2F&label=build%20AMF"></a>
     <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-AUSF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-AUSF%2F&label=build%20AUSF"></a>
+    <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-LMF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-LMF%2F&label=build%20LMF"></a>
     <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-NEF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-NEF%2F&label=build%20NEF"></a>
     <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-NRF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-NRF%2F&label=build%20NRF"></a>
     <a href="https://jenkins-oai.eurecom.fr/job/OAI-CN5G-NSSF/"><img src="https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins-oai.eurecom.fr%2Fjob%2FOAI-CN5G-NSSF%2F&label=build%20NSSF"></a>
@@ -29,6 +30,7 @@
 <p align="center">
   <a href="https://hub.docker.com/r/oaisoftwarealliance/oai-amf"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/oaisoftwarealliance/oai-amf?label=amf%20docker%20pulls"></a>
   <a href="https://hub.docker.com/r/oaisoftwarealliance/oai-ausf"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/oaisoftwarealliance/oai-ausf?label=ausf%20docker%20pulls"></a>
+  <a href="https://hub.docker.com/r/oaisoftwarealliance/oai-lmf"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/oaisoftwarealliance/oai-lmf?label=lmf%20docker%20pulls"></a>
   <a href="https://hub.docker.com/r/oaisoftwarealliance/oai-nef"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/oaisoftwarealliance/oai-nef?label=nef%20docker%20pulls"></a>
   <a href="https://hub.docker.com/r/oaisoftwarealliance/oai-nrf"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/oaisoftwarealliance/oai-nrf?label=nrf%20docker%20pulls"></a>
   <a href="https://hub.docker.com/r/oaisoftwarealliance/oai-nssf"><img alt="Docker Pulls" src="https://img.shields.io/docker/pulls/oaisoftwarealliance/oai-nssf?label=nssf%20docker%20pulls"></a>
@@ -49,7 +51,7 @@ At the moment, it contains the following network elements:
 
 * Access and Mobility Management Function (**[AMF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-amf)**)
 * Authentication Server Management Function (**[AUSF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-ausf)**)
-* Location Management Function (**LMF**)
+* Location Management Function (**[LMF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-lmf)**)
 * Network Exposure Function (**[NEF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nef)**)
 * Network Repository Function (**[NRF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nrf)**)
 * Network Slicing Selection Function (**[NSSF](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nssf)**)

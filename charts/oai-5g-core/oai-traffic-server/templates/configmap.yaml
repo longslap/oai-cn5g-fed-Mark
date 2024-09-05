@@ -6,7 +6,11 @@ metadata:
 data:
   script.sh: |
     #!/bin/bash
-    ip route add {{ .Values.config.ueroute }} via {{ .Values.config.upfIpadd }} dev net1
+    {{- if .Values.multus.create }}
+    ip route add {{ .Values.config.ueroute }} via {{ .Values.config.upfHost }} dev net1
+    {{- else }}
+    ip route add {{ .Values.config.ueroute }} via $(getent ahostsv4 {{ .Values.config.upfHost }} | awk 'NR==1{print $1}') dev eth0
+    {{- end }}
     num_servers={{ .Values.config.noOfIperf3Server }}
     base_port=5200
     # Run iperf multiple times

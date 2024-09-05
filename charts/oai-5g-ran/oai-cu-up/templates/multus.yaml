@@ -14,9 +14,9 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.e1Interface.IPadd "/" .Values.multus.e1Interface.Netmask | nospace | quote }}
-                        {{- if .Values.multus.e1Interface.Gateway }}
-                        ,"gateway": {{- cat .Values.multus.e1Interface.Gateway | nospace | quote }}
+                        "address": {{- cat .Values.multus.e1Interface.ipAdd "/" .Values.multus.e1Interface.netmask | nospace | quote }}
+                        {{- if .Values.multus.e1Interface.gateway }}
+                        ,"gateway": {{- cat .Values.multus.e1Interface.gateway | nospace | quote }}
                         {{- end }}
                 }
         ]
@@ -42,9 +42,9 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.n3Interface.IPadd "/" .Values.multus.n3Interface.Netmask | nospace | quote }}
-                        {{- if .Values.multus.n3Interface.Gateway }}
-                        ,"gateway": {{- cat .Values.multus.n3Interface.Gateway | nospace | quote }}
+                        "address": {{- cat .Values.multus.n3Interface.ipAdd "/" .Values.multus.n3Interface.netmask | nospace | quote }}
+                        {{- if .Values.multus.n3Interface.gateway }}
+                        ,"gateway": {{- cat .Values.multus.n3Interface.gateway | nospace | quote }}
                         {{- end }}
                 }
         ]
@@ -70,9 +70,9 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.f1uInterface.IPadd "/" .Values.multus.f1uInterface.Netmask | nospace | quote }}
-                        {{- if .Values.multus.f1uInterface.Gateway }}
-                        ,"gateway": {{- cat .Values.multus.f1uInterface.Gateway | nospace | quote }}
+                        "address": {{- cat .Values.multus.f1uInterface.ipAdd "/" .Values.multus.f1uInterface.netmask | nospace | quote }}
+                        {{- if .Values.multus.f1uInterface.gateway }}
+                        ,"gateway": {{- cat .Values.multus.f1uInterface.gateway | nospace | quote }}
                         {{- end }}
                 }
         ]

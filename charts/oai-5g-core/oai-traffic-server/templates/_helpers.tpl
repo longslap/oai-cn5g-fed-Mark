@@ -56,8 +56,8 @@ Create the name of the service account to use
 */}}
 {{- define "oai-traffic-server.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
-    {{ default (include "oai-traffic-server.fullname" .) .Values.serviceAccount.name }}
+    {{ default (include "oai-traffic-server.fullname" .) .Chart.Name }}
 {{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
+    {{ default "default" .Chart.Name }}
 {{- end -}}
 {{- end -}}

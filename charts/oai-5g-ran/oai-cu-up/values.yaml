@@ -1,10 +1,10 @@
-kubernetesType: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
+kubernetesDistribution: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
 
 ## In case of using these charts on Openshift then please use UBI images
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:   # image name either locally present or in a public/private repository
   repository: docker.io/oaisoftwarealliance/oai-nr-cuup           ## dockerhub oaisoftwarealliance/oai-gnb  
-  version: 2023.w49 # image tag or develop
+  version: 2024.w32 # image tag or develop
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
@@ -21,40 +21,40 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: "oai-cu-up-sa"
 
-## CU-UP can work with 1 virtual ip-address here we are using three different virtual interfaces. 
-## In case you are using 1 ip-address for all 3 logical interfaces then please change it template/configmap.yaml
-## Change these ip-addresses according to your environment
+# oai-cu-up can be configured with multiple interface which may correspond to 3GPP logical interfaces. There can be one to one or one to many. 
+# In case of one to one mapping e1,f1u,n3 all can have separate virtual interfaces. 
+# In one to many mapping e1,f1u and n3 all can be mapped to one virtual interface. 
+# Interface mapping is strictly based on your networking environment 
+## Change these ip-addresses according to your environment 
+
 multus:
-  #if defaultGateway is empty then it will be removed
+  # to remove the default gateway change it with ""
   defaultGateway: ""
-  e1Interface:
+  e1Interface: # use this interface if using one interface for all 3GPP interfaces
     create: false
-    IPadd: "192.168.18.13"
-    Netmask: "24"
-    # #name inside the pod is hardcoded right now
-    # name: "e1"
+    ipAdd: "192.168.18.13"
+    netmask: "24"
+    name: "e1"
     # if gatway is empty then it will be removed
-    #Gateway: ""
+    #gateway: ""
     #routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
     hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
   n3Interface:
     create: false
-    IPadd: "172.21.8.97"
-    Netmask: "22"
-    # #name inside the pod is hardcoded right now
-    # name: "n3"
+    ipAdd: "172.21.8.97"
+    netmask: "22"
+    name: "n3"
     # if gatway is empty then it will be removed
-    #Gateway: ""
+    #gateway: ""
     #routes: []
     hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
   f1uInterface:
     create: false
-    IPadd: "172.21.16.93"
-    Netmask: "22"
-    # #name inside the pod is hardcoded right now
-    # name: "f1u"
+    ipAdd: "172.21.16.93"
+    netmask: "22"
+    name: "f1u"
     # if gatway is empty then it will be removed
-    #Gateway: ""
+    #gateway: ""
     #routes: []
     hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
 
@@ -69,10 +69,9 @@ config:
   tac: "1"     # check the information with AMF
   sst: "1"     #currently only 4 standard values are allowed 1,2,3,4
   cuCpHost: "oai-cu" # 
-  n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
-  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 
-  f1IfName: "eth0"   #if multus.f1uInterface.create is true then use f1
-  e1IfName: "eth0"   #if multus.e1Interface.create is true then use e1
+  n3IfName: "eth0"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n3 or eth0 
+  f1IfName: "eth0"   #if multus.f1uInterface.create is true then use f1 or you can only use 1 interface n3 or eth0 
+  e1IfName: "eth0"   #if multus.e1Interface.create is true then use e1 or you can only use 1 interface n3 or eth0 
   f1cuPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
   f1duPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
 
@@ -81,18 +80,20 @@ podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
+securityContext:
+  privileged: false
+
 start:
-  gnbcuup: true #If false the network function container will run in sleep mode for manually testing
+  oaicuup: true #If false the network function container will run in sleep mode for manually testing
   tcpdump: false
 
 includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
 
-## For openshift you can use rhel8/support-tools:8.7-13
 tcpdumpimage:
-   repository: docker.io/corfr/tcpdump
-   version: latest
-   #pullPolicy: IfNotPresent or Never or Always
-   pullPolicy: IfNotPresent
+  repository: docker.io/oaisoftwarealliance/oai-tcpdump-init
+  version: alpine-3.20
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
 
 ## NF is the network function and tcpdump is the tcpdump container. 
 ## To know more about request and limit it is better to understand that how Kubernetes QoS works. 

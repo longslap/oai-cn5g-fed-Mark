@@ -19,30 +19,32 @@ spec:
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
           [{
-                 "name": "{{ .Chart.Name }}-n3",
-                 "interface": "n3"
+          {{- if .Values.multus.n3Interface.create }}
+                "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
+                "interface": "{{ .Values.multus.n3Interface.name }}"
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
                 {{- end }}
-                {{- if .Values.multus.n3Interface.Gateway }}
-                ,"gateway": "{{ .Values.multus.n3Interface.Gateway }}"
+                {{- if .Values.multus.n3Interface.gateway }}
+                ,"gateway": "{{ .Values.multus.n3Interface.gateway }}"
                 {{- end }}
+          {{- end }}
           }
           {{- if .Values.multus.n4Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-n4",
-                 "interface": "n4"
-                {{- if .Values.multus.n4Interface.Gateway }}
-                ,"gateway": "{{ .Values.multus.n4Interface.Gateway }}"
+                "name": "{{ .Chart.Name }}-{{ .Values.multus.n4Interface.name }}",
+                "interface": "{{ .Values.multus.n4Interface.name }}"
+                {{- if .Values.multus.n4Interface.gateway }}
+                ,"gateway": "{{ .Values.multus.n4Interface.gateway }}"
                 {{- end }}
           }
           {{- end }}
           {{- if .Values.multus.n6Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-n6",
-                 "interface": "n6"
-                {{- if .Values.multus.n6Interface.Gateway }}
-                ,"gateway": "{{ .Values.multus.n6Interface.Gateway }}"
+                "name": "{{ .Chart.Name }}-{{ .Values.multus.n6Interface.name }}",
+                "interface": "{{ .Values.multus.n6Interface.name }}"
+                {{- if .Values.multus.n6Interface.gateway }}
+                ,"gateway": "{{ .Values.multus.n6Interface.gateway }}"
                 {{- end }}
           }
           {{- end }}
@@ -58,12 +60,19 @@ spec:
     {{- if .Values.global }}{{ if .Values.global.waitForNRF }}
       initContainers:
         - name: init
-          image: docker.io/alpine/curl:3.14
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
           imagePullPolicy: IfNotPresent
           command: 
             - /bin/sh
             - -c
             - until curl --connect-timeout {{ .Values.global.timeout }} --head -X GET http://oai-nrf/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.global.http2Param }}; do echo waiting for oai-nrf; sleep 1; done
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 1m
+            limits:
+              memory: 50Mi
+              cpu: 1m
     {{- end }}{{ end }}
       containers:
     {{- if .Values.includeTcpDumpContainer }}
@@ -85,7 +94,7 @@ spec:
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
@@ -148,7 +157,7 @@ spec:
       volumes:
       - configMap:
       {{- if .Values.global }}
-          name: {{ .Values.global.nfConfigurationConfigMap }}
+          name: {{ .Values.global.coreNetworkConfigMap }}
       {{- else }}
           name: {{ .Chart.Name }}-configmap
       {{- end }}
@@ -163,7 +172,7 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Chart.Name }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- if .Values.nodeSelector}}
       nodeSelector: 

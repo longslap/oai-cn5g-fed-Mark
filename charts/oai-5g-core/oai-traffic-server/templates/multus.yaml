@@ -14,7 +14,7 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.IPadd "/" .Values.multus.Netmask | nospace | quote }}
+                        "address": {{- cat .Values.multus.ipAdd "/" .Values.multus.netmask | nospace | quote }}
                 }
         ]
       }

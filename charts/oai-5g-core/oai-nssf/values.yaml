@@ -1,13 +1,13 @@
-kubernetesType: Vanilla  # Vanilla (Community Kubernetes) or Openshift (For RedHat Openshift)
+kubernetesDistribution: Vanilla  # Vanilla (Community Kubernetes) or Openshift (For RedHat Openshift)
 
 nfimage:
   repository: docker.io/oaisoftwarealliance/oai-nssf # image name either locally present or in a public/private repository
-  version: v2.0.1 #image tag, develop tag for experimental features 
+  version: develop #image tag, develop tag for experimental features 
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
-imagePullSecrets: 
-  - name: "regcred"
+# imagePullSecrets: 
+#   - name: "regcred"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -35,10 +35,10 @@ start:
 includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
 
 tcpdumpimage:
-   repository: docker.io/corfr/tcpdump
-   version: latest
-   #pullPolicy: IfNotPresent or Never or Always
-   pullPolicy: IfNotPresent
+  repository: docker.io/oaisoftwarealliance/oai-tcpdump-init
+  version: alpine-3.20
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
 
 #To store PCAP of NF in a sharedVolume so it can be easily fetched (PVC is created with NRF charts so make sure in NRF it is true)
 persistent:

@@ -2,14 +2,14 @@
 
 # Log level for all the NFs
 log_level:
-  general: info
+  general: debug
 
 # If you enable registration, the other NFs will use the NRF discovery mechanism
 register_nf:
   general: yes
 
 http_version: 2
-
+curl_timeout: 6000 #milliseconds can be changed if the network have issues
 ## general single_nssai configuration
 ## Defines YAML anchors, which are reused in the config file
 snssais:
@@ -65,6 +65,12 @@ nfs:
       interface_name: eth0
   udr:
     host: oai-udr
+    sbi:
+      port: 80
+      api_version: v1
+      interface_name: eth0
+  lmf:
+    host: oai-lmf
     sbi:
       port: 80
       api_version: v1
@@ -158,15 +164,30 @@ smf:
     - single_nssai: *embb_slice1
       dnn: "oai"
       qos_profile:
-        5qi: 5
+        5qi: 6
         session_ambr_ul: "200Mbps"
         session_ambr_dl: "400Mbps"
     - single_nssai: *embb_slice2
       dnn: "ims"
       qos_profile:
-        5qi: 2
+        5qi: 5
         session_ambr_ul: "100Mbps"
         session_ambr_dl: "200Mbps"
+
+############### LMF Configuration 
+lmf:
+  http_threads_count: 8
+  gnb_id_bits_count: 28
+  num_gnb: 1
+  trp_info_wait_ms: 10000
+  positioning_wait_ms: 10000
+  measurement_wait_ms: 10000
+  support_features:
+    request_trp_info: no
+    determine_num_gnb: yes
+    use_http2: yes
+    use_fqdn_dns: no
+    register_nrf: yes
 
 upf:
   support_features:
@@ -190,4 +211,3 @@ dnns:
   - dnn: "ims"
     pdu_session_type: "IPV4V6"
     ipv4_subnet: "14.1.1.0/24"
-    

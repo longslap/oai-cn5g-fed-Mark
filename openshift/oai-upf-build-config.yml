@@ -23,7 +23,7 @@
 apiVersion: image.openshift.io/v1
 kind: ImageStream
 metadata:
-   name: oai-ran-build
+   name: oai-upf
 spec:
   lookupPolicy:
     local: true
@@ -31,12 +31,12 @@ spec:
 apiVersion: build.openshift.io/v1
 kind: BuildConfig
 metadata:
-  name: oai-ran-build
+  name: "oai-upf"
 spec:
     runPolicy: "Serial"
     source:
         git:
-            uri: "https://gitlab.eurecom.fr/oai/openairinterface5g.git"
+            uri: "https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-upf.git"
             ref: "develop"
         secrets:
           - secret:
@@ -50,14 +50,9 @@ spec:
               name: rhsm-ca
             destinationDir: rhsm-ca
     strategy:
-        type: Docker
         dockerStrategy:
-            dockerfilePath: "docker/Dockerfile.build.rhel8.2"
-            from:
-               kind: ImageStreamTag          
-               namespace: oai-tutorial
-               name: oai-ran-base:develop        
+            dockerfilePath: "docker/Dockerfile.upf.rhel9"
     output:
         to:
             kind: "ImageStreamTag"
-            name: "oai-ran-build:develop"
+            name: "oai-upf:develop"

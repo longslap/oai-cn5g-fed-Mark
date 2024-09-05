@@ -20,22 +20,31 @@ spec:
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
           [{
-                 "name": "{{ .Chart.Name }}-e1",
-                 "interface": "e1"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.e1Interface.name }}",
+                 "interface": "{{ .Values.multus.e1Interface.name }}"
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
+                {{- end }}
+                {{- if .Values.multus.e1Interface.gateway }}
+                ,"gateway": "{{ .Values.multus.e1Interface.gateway }}"
                 {{- end }}
           }
           {{- if .Values.multus.n2Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-n2",
-                 "interface": "n2"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
+                 "interface": "{{ .Values.multus.n2Interface.name }}"
+                {{- if .Values.multus.n2Interface.gateway }}
+                ,"gateway": "{{ .Values.multus.n2Interface.gateway }}"
+                {{- end }}
           }
           {{- end }}
           {{- if .Values.multus.f1cInterface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-f1c",
-                 "interface": "f1"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.f1cInterface.name }}",
+                 "interface": "{{ .Values.multus.f1cInterface.name }}"
+                {{- if .Values.multus.f1cInterface.gateway }}
+                ,"gateway": "{{ .Values.multus.f1cInterface.gateway }}"
+                {{- end }}
           }
           {{- end }}
           ]
@@ -47,9 +56,28 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
+    {{- if .Values.global }}{{ if .Values.global.waitForAMF }}
+      initContainers:
+        - name: init
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - until ncat -zv {{ .Values.config.amfhost }} 38412 --sctp ; do echo waiting for oai-amf to start; sleep 1; done
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 1m
+            limits:
+              memory: 50Mi
+              cpu: 1m
+    {{- end }}{{ end }}
       containers:
-      - name: gnbcucp
+      - name: oaicucp
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
           - mountPath: /opt/oai-gnb/etc
             name: configuration
@@ -74,7 +102,7 @@ spec:
         - containerPort: {{ .Values.config.f1cuPort}}
           name: f1c
           protocol: UDP
-        {{- if .Values.start.gnbcucp}}
+        {{- if .Values.start.oaicucp}}
         command: [ "/bin/bash", "-c" ]
         args:
          -  AMF_IP_ADDRESS=$(getent hosts $AMF_HOST | awk '{print $1}');
@@ -106,8 +134,6 @@ spec:
             value: {{ .Values.config.n2IfName }}
           - name: E1_IF_NAME
             value: {{ .Values.config.e1IfName }}
-          - name: N3_IF_NAME
-            value: {{ .Values.config.n3IfName }}
           - name: F1_IF_NAME
             value: {{ .Values.config.f1IfName }}
       {{- if .Values.includeTcpDumpContainer }}
@@ -124,17 +150,17 @@ spec:
             cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
         securityContext:
-           privileged: true
            capabilities:
               add:
                - NET_ADMIN
+               - NET_RAW
               drop:
                - ALL
         {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep

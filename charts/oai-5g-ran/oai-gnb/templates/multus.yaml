@@ -14,7 +14,7 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.n2Interface.IPadd "/" .Values.multus.n2Interface.Netmask | nospace | quote }}
+                        "address": {{- cat .Values.multus.n2Interface.ipAdd "/" .Values.multus.n2Interface.netmask | nospace | quote }}
                 }
         ]
         {{- if .Values.multus.n2Interface.routes }}
@@ -39,7 +39,7 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.n3Interface.IPadd "/" .Values.multus.n3Interface.Netmask | nospace | quote }}
+                        "address": {{- cat .Values.multus.n3Interface.ipAdd "/" .Values.multus.n3Interface.netmask | nospace | quote }}
                 }
         ]
         {{- if .Values.multus.n3Interface.routes }}
@@ -67,7 +67,7 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.ruInterface.IPadd "/" .Values.multus.ruInterface.Netmask | nospace | quote }}
+                        "address": {{- cat .Values.multus.ruInterface.ipAdd "/" .Values.multus.ruInterface.netmask | nospace | quote }}
                 }
         ]
       }

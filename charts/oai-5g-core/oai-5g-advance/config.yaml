@@ -9,6 +9,7 @@ register_nf:
   general: yes
 
 http_version: 2
+curl_timeout: 6000 #milliseconds can be changed if the network have issues
 
 ## general single_nssai configuration
 ## Defines YAML anchors, which are reused in the config file
@@ -40,6 +41,12 @@ nfs:
     n4:
       interface_name: eth0
       port: 8805
+  lmf:
+    host: oai-lmf
+    sbi:
+      port: 80
+      api_version: v1
+      interface_name: eth0
   upf:
     host: oai-upf
     sbi:
@@ -172,6 +179,21 @@ smf:
         5qi: 2
         session_ambr_ul: "100Mbps"
         session_ambr_dl: "200Mbps"
+
+############### LMF Configuration 
+lmf:
+  http_threads_count: 8
+  gnb_id_bits_count: 28
+  num_gnb: 1
+  trp_info_wait_ms: 10000
+  positioning_wait_ms: 10000
+  measurement_wait_ms: 10000
+  support_features:
+    request_trp_info: no
+    determine_num_gnb: yes
+    use_http2: yes
+    use_fqdn_dns: no
+    register_nrf: yes
 
 upf:
   support_features:

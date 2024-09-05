@@ -16,16 +16,6 @@ spec:
       labels:
         {{- include "oai-nr-ue.selectorLabels" . | nindent 8 }}
         app: oai-nr-ue
-      annotations:
-    {{- if .Values.multus.create }}
-        k8s.v1.cni.cncf.io/networks: >-
-          [{
-                 "name": "{{ .Chart.Name }}-net1"
-                {{- if .Values.multus.defaultGateway }}
-                 ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
-                {{- end }}
-          }]
-    {{- end }}
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -33,13 +23,26 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
+    {{- if .Values.global }}{{ if .Values.global.waitForRadio }}
+      initContainers:
+        - name: init
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - until ping -c 1  {{ .Values.config.rfSimServer }}; do echo waiting for oai-du to start; sleep 1; done
+    {{- end }}{{ end }}
       containers:
       - name: nr-ue
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
           - mountPath: /opt/oai-nr-ue/etc
             name: configuration
-            # subPath: gnb.conf
+          - name: dev-net-tun
+            mountPath: /dev/net/tun
           # USRP B210/B200 Mini
         {{- if eq .Values.config.usrp "b2xx"}}
           - mountPath: /dev/bus/usb/
@@ -54,8 +57,6 @@ spec:
             memory: {{ .Values.resources.limits.nf.memory | quote }}
             cpu: {{ .Values.resources.limits.nf.cpu | quote }}
         {{- end}}
-        securityContext:
-           privileged: true
         {{- if .Values.start.nrue}}
         command: [ "/bin/bash", "-c" ]
         args:
@@ -99,17 +100,17 @@ spec:
             cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
         securityContext:
-           privileged: true
            capabilities:
               add:
                - NET_ADMIN
+               - NET_RAW
               drop:
                - ALL
         {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
@@ -120,6 +121,9 @@ spec:
       - configMap:
           name: {{ .Chart.Name }}-configmap
         name: configuration
+      - name: dev-net-tun
+        hostPath:
+          path: /dev/net/tun
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }}

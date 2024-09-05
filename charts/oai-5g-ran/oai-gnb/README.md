@@ -2,18 +2,18 @@
 
 This helm-chart is tested with 
 - [RF Simulated oai-gnb](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/radio/rfsimulator/README.md). 
-- USRP B2XX
-- USRP N3XX
+- They are designed to be used with:
+  - USRP B2XX
+  - USRP N3XX
+  - USRP X3XX
 
 You can define dedicated interfaces for fronthaul, N2 and N3. In `template/deployment.yaml` there is a section to use it with USB based USRPs. The option to use RFSIM, USRPs or Radio Units is decided via configuration file. The container image always remains the same. 
 
-**NOTE**: We are in the process of testing the helm-chart with O-RAN 7.2 interface. We have already implemented 7.2 interface in OAI codebase.
-
 Before using this helm-chart we recommend you read about OAI codebase and its working from the documents listed on [OAI gitlab](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/doc)
 
-**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10, 4.12 and 4.13. RFSIM-GNB requires minimum 2CPU and 2Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin for multiple interfaces if they are used.
+**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10-4.16. RFSIM-GNB requires minimum 2CPU and 2Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin for multiple interfaces if they are used.
 
-All the extra interfaces/multus interfaces created inside the pod are using `macvlan` mode. If your environment does not allow using `macvlan` then you need to change the multus definations. 
+All the extra interfaces/multus interfaces created inside the pod are using `macvlan` mode. If your environment does not allow using `macvlan` then you need to change the multus definitions. 
 
 ## Introduction
 
@@ -24,7 +24,7 @@ The [codebase](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop) 
 1. `oaisoftwarealliance/oai-gnb` for monolithic gNB, DU, CU, CU-CP 
 2. `oaisoftwarealliance/oai-nr-cuup` for CU-UP. 
 
-Each image has develop tag and a dedicated week tag for example `2023.w18`. We only publish Ubuntu 20.04/22.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
+Each image has develop tag and a dedicated week tag for example `2024.w32`. We only publish Ubuntu 22.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
 
 The helm chart of OAI-GNB creates multiples Kubernetes resources,
 
@@ -33,7 +33,7 @@ The helm chart of OAI-GNB creates multiples Kubernetes resources,
 3. Deployment
 4. Configmap
 5. Service account
-6. Network-attachment-defination (Optional only when multus is used)
+6. Network-attachment-definition (Optional only when multus is used)
 
 The directory structure
 
@@ -60,7 +60,7 @@ The directory structure
 
 |Parameter                       |Allowed Values                 |Remark                                          |
 |--------------------------------|-------------------------------|------------------------------------------------|
-|kubernetesType                  |Vanilla/Openshift              |Vanilla Kubernetes or Openshift                 |
+|kubernetesDistribution                  |Vanilla/Openshift              |Vanilla Kubernetes or Openshift                 |
 |nfimage.repository              |Image Name                     |                                                |
 |nfimage.version                 |Image tag                      |                                                |
 |nfimage.pullPolicy              |IfNotPresent or Never or Always|                                                |
@@ -70,25 +70,25 @@ The directory structure
 |serviceAccount.name             |String                         |                                                |
 |podSecurityContext.runAsUser    |Integer (0,65534)              |                                                |
 |podSecurityContext.runAsGroup   |Integer (0,65534)              |                                                |
-|multus.defaultGateway           |Ip-Address                     |default route in the pod                        |
-|multus.n2Interface.create       |true/false                     |                                                |
-|multus.n2Interface.IPadd        |Ip-Address                     |                                                |
-|multus.n2Interface.Netmask      |Netmask                        |                                                |
-|multus.n2Interface.Gateway      |Ip-Address                     |                                                |
-|multus.n2Interface.hostInterface|host interface                 |Host interface of the machine where pod will run|
-|multus.n2Interface.routes       |Json                           |Routes you want to add in the pod               |
-|multus.n3Interface.create       |true/false                     |                                                |
-|multus.n3Interface.IPadd        |Ip-Address)                    |                                                |
-|multus.n3Interface.Netmask      |Netmask                        |                                                |
-|multus.n3Interface.Gateway      |Ip-Address                     |                                                |
-|multus.n3Interface.hostInterface|host interface                 |Host interface of the machine where pod will run|
-|multus.n3Interface.routes       |Json                           |Routes you want to add in the pod               |
-|multus.ruInterface.create       |true/false                     |                                                |
-|multus.ruInterface.IPadd        |Ip-Address                     |                                                |
-|multus.ruInterface.Netmask      |Netmask                        |                                                |
-|multus.ruInterface.Gateway      |Ip-Address                     |                                                |
-|multus.ruInterface.hostInterface|host interface                 |Host interface of the machine where pod will run|
-|multus.ruInterface.mtu          |Integer                        |Range [0, Parent interface MTU]                 |
+|multus.n2Interface.ipAdd            |IPV4                           |NA                                       |
+|multus.n2Interface.netmask          |netmask                        |NA                                       |
+|multus.n2Interface.gateway(optional)|netmask                        |NA                                       |
+|multus.n2Interface.name (optional)  |Interface name inside container|NA                                       |
+|multus.n2Interface.routes (optional)|Routes                         |NA                                       |
+|multus.n3Interface.create           |true/false                     |default false                            |
+|multus.n3Interface.ipAdd            |IPV4                           |NA                                       |
+|multus.n3Interface.netmask          |netmask                        |NA                                       |
+|multus.n3Interface.gateway(optional)|netmask                        |NA                                       |
+|multus.n3Interface.name (optional)  |Interface name inside container|NA                                       |
+|multus.n3Interface.routes (optional)|Routes                         |NA                                       |
+|multus.ruInterface.create           |true/false                     |default false                           |
+|multus.ruInterface.ipAdd            |IPV4                           |NA                                       |
+|multus.ruInterface.netmask          |netmask                        |NA                                       |
+|multus.ruInterface.gateway(optional)|netmask                        |NA                                       |
+|multus.ruInterface.name (optional)  |Interface name inside container|NA                                       |
+|multus.ruInterface.routes (optional)|Routes                         |NA                                       |
+|multus.defaultGateway               |IPV4                           |Default route inside container (optional)|
+|multus.hostInterface                |HostInterface Name             |
 
 The config parameters mentioned in `config` block of `values.yaml` are limited on purpose to maintain simplicity. They do not allow changing a lot of parameters of oai-gnb. If you want to use your own configuration file for oai-gnb. It is recommended to copy it in `templates/configmap.yaml`. The command line for gnb is provided in `config.useAdditionalOptions`.
 

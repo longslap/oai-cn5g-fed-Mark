@@ -56,8 +56,8 @@ Create the name of the service account to use
 */}}
 {{- define "oai-nssf.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
-    {{ default (include "oai-nssf.fullname" .) .Values.serviceAccount.name }}
+    {{ default (include "oai-nssf.fullname" .) .Chart.Name }}
 {{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
+    {{ default "default" .Chart.Name }}
 {{- end -}}
 {{- end -}}
