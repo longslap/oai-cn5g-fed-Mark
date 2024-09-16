@@ -347,12 +347,12 @@ Host: oai-pcf:8080
 
 **Retrieve All SUPI Decisions**
 
-- **Endpoint:** `GET /npcf-provisioning/v1/supiPolicyDecision`
+- **Endpoint:** `GET /npcf-provisioning/v1/supiPolicyDecisions`
 - **Description:** Fetches all SUPI policy decisions.
 - **Example Request:**
 
 ```http
-GET /npcf-provisioning/v1/supiPolicyDecision
+GET /npcf-provisioning/v1/supiPolicyDecisions
 Host: oai-pcf:8080
 ```
 
@@ -383,6 +383,8 @@ Host: oai-pcf:8080
 DELETE /npcf-provisioning/v1/supiPolicyDecision/imsi-208950000000031
 Host: oai-pcf:8080
 ```
+
+**DNN and Slice Decisions work in the same manner. Check out the OpenAPI specification for more details.**
 
 # 5. Example Provisions
 
