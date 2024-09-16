@@ -235,15 +235,15 @@ class RfSimLib:
     def get_ue_IP_address(self, container):
         log = self.docker_api.get_log(container)
         for line in log.split("\n"):
-            if "ip address" in line.lower():
+            if " IPv4 " in line:
                 parts = line.split(",")
                 for part in parts:
-                    if "ip address" in part.lower():
+                    if " IPv4 " in part:
                         ip_part = part.strip().split(" ")
                         ip_address = ip_part[-1].strip()
                         logging.info("PDU session establishment successful")
                         return ip_address
-        raise Exception(f"PDU session establishment ongoing for {container}")
+        raise Exception(f"PDU session establishment ongoing for {container}, UE logs format changed ")
     
     def get_ue_IMSI(self, container):
         log = self.docker_api.get_log(container)

@@ -362,7 +362,7 @@ def check_AMF_location_mobility_report_callback():
             raise Exception(f"Missmatch in AMF Logs and Mobility Simulator logs for SUPI: AMF current Cell ID = {hex(amf_current_cell_id)}, Mobsim logs: Current Cell ID = {hex(mobsim_info[-1]['current_cell'])}")
         logger.info(f"Mobility data matches between AMF and Mobility Simulator for all UEs, AMF current Cell ID = {hex(amf_current_cell_id)}, Mobsim logs: Current Cell ID = {hex(mobsim_info[-1]['current_cell'])}")
         handler_data = get_location_report_info(service_type="amf location report")[-1]
-        amf_current_cell_id = amf_current_cell_id << 4
+        # amf_current_cell_id = amf_current_cell_id << 4
         if amf_current_cell_id!= int(handler_data['details']['nr_cell_id']):
             logger.error(f"Missmatch in AMF Logs and Handler data, AMF current Cell ID = {hex(amf_current_cell_id)}, Handler data: Current Cell ID = {handler_data['details']['nr_cell_id']}")
             raise Exception(f"Missmatch in AMF Logs and Handler data, AMF current Cell ID = {hex(amf_current_cell_id)}, Handler data: Current Cell ID = {handler_data['details']['nr_cell_id']}")
