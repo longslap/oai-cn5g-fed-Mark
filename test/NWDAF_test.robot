@@ -16,14 +16,16 @@ Check NWDAF Status
     [Setup]    None
     [Teardown]    None
     [Documentation]    Check NWDAF Health Status
-    Sleep  10s
+    Sleep  1000s
 
 *** Keywords ***
 NWDAF Suite Setup
     Prepare NWDAF   http_version=2
     Start Basic VPP NRF CN
+    Wait Until Keyword Succeeds  60s  6s  Check NWDAF Health Status
     Start NWDAF
     Wait Until Keyword Succeeds  60s  6s  Check NWDAF Health Status
+    Sleep   10s
     Start gNBSim for NWDAF
     # Handler.Start Handler
 
