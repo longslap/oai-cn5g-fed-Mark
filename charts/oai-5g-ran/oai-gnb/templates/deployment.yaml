@@ -28,8 +28,8 @@ spec:
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
                 {{- end }}
-                {{- if .Values.multus.n2Interface.Gateway }}
-                 ,"gateway": ["{{ .Values.multus.n2Interface.Gateway }}"]
+                {{- if .Values.multus.n2Interface.gateway }}
+                 ,"gateway": ["{{ .Values.multus.n2Interface.gateway }}"]
                 {{- end }}
           }
           {{- if .Values.multus.n3Interface.create }}

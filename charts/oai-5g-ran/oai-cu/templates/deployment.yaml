@@ -32,6 +32,17 @@ spec:
                 ,"gateway": "{{ .Values.multus.f1Interface.gateway }}"
                 {{- end }}
           }
+          {{- if .Values.multus.n2Interface.create }}
+          ,{
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
+                 "interface": "{{ .Values.multus.n2Interface.name }}"
+                {{- if .Values.multus.n2Interface.mac }}
+                 ,"mac":  "{{ .Values.multus.n2Interface.mac }}"
+                {{- if .Values.multus.n2Interface.gateway }}
+                ,"gateway": "{{ .Values.multus.n2Interface.gateway }}"
+                {{- end }}
+          }
+          {{- end }}
           {{- if .Values.multus.n3Interface.create }}
           ,{
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
@@ -40,17 +51,6 @@ spec:
                  ,"mac":  "{{ .Values.multus.n3Interface.mac }}"
                 {{- if .Values.multus.n3Interface.gateway }}
                 ,"gateway": "{{ .Values.multus.n3Interface.gateway }}"
-                {{- end }}
-          }
-          {{- end }}
-          {{- if .Values.multus.n2Interface.create }}
-          ,{
-                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
-                 "interface": "{{ .Values.multus.n3Interface.name }}"
-                {{- if .Values.multus.n2Interface.mac }}
-                 ,"mac":  "{{ .Values.multus.n2Interface.mac }}"
-                {{- if .Values.multus.n2Interface.gateway }}
-                ,"gateway": "{{ .Values.multus.n2Interface.gateway }}"
                 {{- end }}
           }
           {{- end }}
@@ -109,7 +109,7 @@ spec:
         - containerPort:  {{ .Values.config.f1cuPort }}
           name: f1
           protocol: UDP
-        {{- if .Values.start.oaiCu}}
+        {{- if .Values.start.oaicu}}
         command: [ "/bin/bash", "-c" ]
         args:
          -  AMF_IP_ADDRESS=$(getent hosts $AMF_HOST | awk '{print $1}');

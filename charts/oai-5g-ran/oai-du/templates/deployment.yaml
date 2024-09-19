@@ -39,8 +39,8 @@ spec:
                 {{- if .Values.multus.ru1Interface.mac }}
                  ,"mac":  "{{ .Values.multus.ru1Interface.mac }}"
                 {{- end }}
-                {{- if .Values.multus.ru1Interface.Gateway }}
-                 ,"gateway": ["{{ .Values.multus.ru1Interface.Gateway }}"]
+                {{- if .Values.multus.ru1Interface.gateway }}
+                 ,"gateway": ["{{ .Values.multus.ru1Interface.gateway }}"]
                 {{- end }}
           }
           {{- end }}
@@ -51,8 +51,8 @@ spec:
                 {{- if .Values.multus.ru2Interface.mac }}
                  ,"mac":  "{{ .Values.multus.ru2Interface.mac }}"
                 {{- end }}
-                {{- if .Values.multus.ru2Interface.Gateway }}
-                 ,"gateway": ["{{ .Values.multus.ru2Interface.Gateway }}"]
+                {{- if .Values.multus.ru2Interface.gateway }}
+                 ,"gateway": ["{{ .Values.multus.ru2Interface.gateway }}"]
                 {{- end }}
           }
           {{- end }}
