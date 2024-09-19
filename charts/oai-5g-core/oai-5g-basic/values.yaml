@@ -44,7 +44,7 @@ oai-lmf:
     version: v2.1.0                          ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
-  includeTcpDumpContainer: false #only for taking pcaps inside network function pod
+  includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   persistent:
     sharedvolume: false
   start:
@@ -226,7 +226,6 @@ oai-traffic-server:
     version: latest
     #pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
-  includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   multus:
     create: @MULTUS_TS@
     ipAdd: "@IP_TS@"
