@@ -442,7 +442,7 @@ Let recover one last time the logs:
 For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-mini-nonrf.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-mini-nonrf.yaml stop -t 30
 ```
 -->
 
@@ -450,6 +450,7 @@ docker-compose-host $: docker-compose -f docker-compose-mini-nonrf.yaml stop -t 
 docker-compose-host $: docker logs oai-amf > /tmp/oai/mini-gnbsim/amf.log 2>&1
 docker-compose-host $: docker logs oai-smf > /tmp/oai/mini-gnbsim/smf.log 2>&1
 docker-compose-host $: docker logs oai-upf > /tmp/oai/mini-gnbsim/upf.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn > /tmp/oai/mini-gnbsim/ext-dn.log 2>&1
 docker-compose-host $: docker logs gnbsim > /tmp/oai/mini-gnbsim/gnbsim.log 2>&1
 docker-compose-host $: docker logs gnbsim2 > /tmp/oai/mini-gnbsim/gnbsim2.log 2>&1
 docker-compose-host $: docker logs gnbsim3 > /tmp/oai/mini-gnbsim/gnbsim3.log 2>&1

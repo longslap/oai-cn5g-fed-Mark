@@ -37,7 +37,7 @@ spec:
     source:
         git:
             uri: "https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-smf.git"
-            ref: "v1.5.1"
+            ref: "develop"
         secrets:
           - secret:
               name: etc-pki-entitlement
@@ -51,8 +51,8 @@ spec:
             destinationDir: rhsm-ca
     strategy:
         dockerStrategy:
-            dockerfilePath: "docker/Dockerfile.smf.rhel8"
+            dockerfilePath: "docker/Dockerfile.smf.rhel9"
     output:
         to:
             kind: "ImageStreamTag"
-            name: "oai-smf:v1.5.1"
+            name: "oai-smf:develop"

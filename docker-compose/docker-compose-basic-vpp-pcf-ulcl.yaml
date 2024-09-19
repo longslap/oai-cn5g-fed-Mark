@@ -22,7 +22,7 @@ services:
                 ipv4_address: 192.168.70.131
     oai-udr:
         container_name: "oai-udr"
-        image: oaisoftwarealliance/oai-udr:v2.0.1
+        image: oaisoftwarealliance/oai-udr:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -38,7 +38,7 @@ services:
                 ipv4_address: 192.168.70.136
     oai-udm:
         container_name: "oai-udm"
-        image: oaisoftwarealliance/oai-udm:v2.0.1
+        image: oaisoftwarealliance/oai-udm:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -47,13 +47,13 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udr
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.137
     oai-ausf:
         container_name: "oai-ausf"
-        image: oaisoftwarealliance/oai-ausf:v2.0.1
+        image: oaisoftwarealliance/oai-ausf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -62,13 +62,13 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udm
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.138
     oai-nrf:
         container_name: "oai-nrf"
-        image: oaisoftwarealliance/oai-nrf:v2.0.1
+        image: oaisoftwarealliance/oai-nrf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -81,7 +81,7 @@ services:
                 ipv4_address: 192.168.70.130
     oai-amf:
         container_name: "oai-amf"
-        image: oaisoftwarealliance/oai-amf:v2.0.1
+        image: oaisoftwarealliance/oai-amf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -92,18 +92,13 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - mysql
-            - vpp-upf-ulcl
-            - vpp-upf-aupf1
-            - vpp-upf-aupf2
-            - oai-ext-dn-internet
-            - oai-ext-dn-edge
-            - oai-ausf
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.132
     oai-smf:
         container_name: "oai-smf"
-        image: oaisoftwarealliance/oai-smf:v2.0.1
+        image: oaisoftwarealliance/oai-smf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -117,14 +112,13 @@ services:
             - "aupf1.node.5gcn.mnc95.mcc208.3gppnetwork.org:192.168.70.202"
             - "aupf2.node.5gcn.mnc95.mcc208.3gppnetwork.org:192.168.70.203"
         depends_on:
-            - oai-amf
-            - oai-pcf
+            - oai-nrf
         networks:
             public_net:
                 ipv4_address: 192.168.70.133
     oai-pcf:
         container_name: "oai-pcf"
-        image: oaisoftwarealliance/oai-pcf:v2.0.1
+        image: oaisoftwarealliance/oai-pcf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -140,7 +134,7 @@ services:
                 ipv4_address: 192.168.70.139
     vpp-upf-ulcl:
         container_name: "vpp-upf-ulcl"
-        image: oaisoftwarealliance/oai-upf-vpp:v2.0.1
+        image: oaisoftwarealliance/oai-upf-vpp:develop
         privileged: true
         environment:
             - IF_1_IP=192.168.70.201
@@ -165,7 +159,7 @@ services:
             - VPP_CORE_WORKER=1
 #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
-            - SNSSAI_SD=123
+            - SNSSAI_SD=00007B
             - SNSSAI_SST=222
             - DNN=default
             - REGISTER_NRF=yes
@@ -190,7 +184,7 @@ services:
             public_net_core21:
                 ipv4_address: 192.168.74.151
     vpp-upf-aupf1:
-        image: oaisoftwarealliance/oai-upf-vpp:v2.0.1
+        image: oaisoftwarealliance/oai-upf-vpp:develop
         privileged: true
         container_name: "vpp-upf-aupf1"
         environment:
@@ -213,7 +207,7 @@ services:
             - VPP_CORE_WORKER=3
             #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
-            - SNSSAI_SD=123
+            - SNSSAI_SD=00007B
             - SNSSAI_SST=222
             - DNN=default
             - REGISTER_NRF=yes
@@ -236,7 +230,7 @@ services:
             public_net_core12:
                 ipv4_address: 192.168.75.152
     vpp-upf-aupf2:
-        image: oaisoftwarealliance/oai-upf-vpp:v2.0.1
+        image: oaisoftwarealliance/oai-upf-vpp:develop
         privileged: true
         container_name: "vpp-upf-aupf2"
         environment:
@@ -259,7 +253,7 @@ services:
             - VPP_CORE_WORKER=5
             #           - VPP_PLUGIN_PATH=/usr/lib64/vpp_plugins/                # RHEL7
             - VPP_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/vpp_plugins/ # Ubntu18.04
-            - SNSSAI_SD=123
+            - SNSSAI_SD=00007B
             - SNSSAI_SST=222
             - DNN=default
             - REGISTER_NRF=yes

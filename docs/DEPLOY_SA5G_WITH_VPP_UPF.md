@@ -427,7 +427,7 @@ docker-compose-host $: docker exec gnbsim-vpp wget --tries=2 --timeout=30 --bind
 For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim-vpp.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-basic-vpp-nrf.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-basic-vpp-nrf.yaml stop -t 30
 ```
 -->
 
@@ -439,6 +439,7 @@ docker-compose-host $: docker logs vpp-upf > /tmp/oai/vpp-upf-gnbsim/vpp-upf.log
 docker-compose-host $: docker logs oai-udr > /tmp/oai/vpp-upf-gnbsim/udr.log 2>&1
 docker-compose-host $: docker logs oai-udm > /tmp/oai/vpp-upf-gnbsim/udm.log 2>&1
 docker-compose-host $: docker logs oai-ausf > /tmp/oai/vpp-upf-gnbsim/ausf.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn > /tmp/oai/vpp-upf-gnbsim/ext-dn.log 2>&1
 docker-compose-host $: docker logs gnbsim-vpp > /tmp/oai/vpp-upf-gnbsim/gnbsim-vpp.log 2>&1
 ```
 

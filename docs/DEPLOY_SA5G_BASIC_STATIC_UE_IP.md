@@ -234,7 +234,7 @@ rtt min/avg/max/mdev = 0.297/0.673/0.849/0.223 ms
 For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-basic-nrf.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf.yaml stop -t 30
 ```
 -->
 
@@ -254,6 +254,7 @@ docker-compose-host $: docker logs oai-upf > /tmp/oai/static-ue-ip/upf.log 2>&1
 docker-compose-host $: docker logs oai-udr > /tmp/oai/static-ue-ip/udr.log 2>&1
 docker-compose-host $: docker logs oai-udm > /tmp/oai/static-ue-ip/udm.log 2>&1
 docker-compose-host $: docker logs oai-ausf > /tmp/oai/static-ue-ip/ausf.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn > /tmp/oai/static-ue-ip/ext-dn.log 2>&1
 docker-compose-host $: docker logs gnbsim > /tmp/oai/static-ue-ip/gnbsim.log 2>&1
 ```
 

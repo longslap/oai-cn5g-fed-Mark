@@ -9,7 +9,8 @@ Basic deployment contains
 5. OAI-AUSF
 6. OAI-UDM
 7. OAI-UPF
-8. MYSQL (Subscriber database)
+8. OAI-LMF
+9. MYSQL (Subscriber database)
 
 **Disclaimer**: Starting version 2.0.0 of OAI 5G Core network functions their configuration will be in `config.yaml` and all infrastructure related information including image definition will be in `values.yaml`.
 

@@ -1,6 +1,7 @@
 # Helm Chart for OAI Network Registry Function (NRF)
 
-The helm-chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10, 4.12 and 4.13 There are no special resource requirements for NRF. 
+The helm-chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10-4.16. There are no special resource requirements for this NF. 
+
 
 ## Disclaimer
 
@@ -10,7 +11,7 @@ Starting version 2.0.0 of OAI 5G Core network functions their configuration will
 
 OAI-NRF follows 3GPP release 16, more information about the feature set can be found on [NRFs WiKi page](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nrf/-/wikis/home). The source code be downloaded from [GitLab](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-nrf)
 
-OAI [Jenkins Platform](https://jenkins-oai.eurecom.fr/job/OAI-CN5G-NRF/) publishes every `develop` and `master` branch image of OAI-NRF on [docker-hub](https://hub.docker.com/r/oaisoftwarealliance/oai-nrf) with tag `develop` and `latest` respectively. Apart from that you can find tags for every release `VX.X.X`. We only publish Ubuntu 18.04/20.04/22.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that. 
+OAI [Jenkins Platform](https://jenkins-oai.eurecom.fr/job/OAI-CN5G-NRF/) publishes every `develop` and `master` branch image of OAI-NRF on [docker-hub](https://hub.docker.com/r/oaisoftwarealliance/oai-nrf) with tag `develop` and `latest` respectively. Apart from that you can find tags for every release `VX.X.X`. We only publish Ubuntu 22.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that. 
 
 The helm chart of OAI-NRF creates multiples Kubernetes resources,
 
@@ -47,7 +48,7 @@ The directory structure
 
 |Parameter                    |Allowed Values                 |Remark                                   |
 |-----------------------------|-------------------------------|-----------------------------------------|
-|kubernetesType               |Vanilla/Openshift              |Vanilla Kubernetes or Openshift          |
+|kubernetesDistribution               |Vanilla/Openshift              |Vanilla Kubernetes or Openshift          |
 |nfimage.repository           |Image Name                     |                                         |
 |nfimage.version              |Image tag                      |                                         |
 |nfimage.pullPolicy           |IfNotPresent or Never or Always|                                         |
@@ -64,7 +65,7 @@ Only needed if you are doing advanced debugging
 
 |Parameter                        |Allowed Values                 |Remark                                        |
 |---------------------------------|-------------------------------|----------------------------------------------|
-|start.ausf                       |true/false                     |If true nrf container will go in sleep mode  |
+|start.nrf                       |true/false                     |If true nrf container will go in sleep mode  |
 |start.tcpdump                    |true/false                     |If true tcpdump container will go in sleepmode|
 |includeTcpDumpContainer          |true/false                     |If false no tcpdump container will be there   |
 |tcpdumpimage.repository          |Image Name                     |                                              |

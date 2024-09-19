@@ -14,7 +14,7 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.n4Interface.Ipadd "/" .Values.multus.n4Interface.Netmask | nospace | quote }}
+                        "address": {{- cat .Values.multus.n4Interface.ipAdd "/" .Values.multus.n4Interface.netmask | nospace | quote }}
                 }
         ]
         {{- if .Values.multus.n4Interface.routes }}

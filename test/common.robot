@@ -1,0 +1,179 @@
+# Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The OpenAirInterface Software Alliance licenses this file to You under
+# the OAI Public License, Version 1.1  (the "License"); you may not use this file
+# except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.openairinterface.org/?page_id=698
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------------
+# For more information about the OpenAirInterface (OAI) Software Alliance:
+#   contact@openairinterface.org
+# ---------------------------------------------------------------------
+
+*** Settings ***
+Library    Process
+Library    CNTestLib.py
+Library    GNBSimTestLib.py
+Library    NGAPTesterLib.py
+
+Variables    vars.py
+
+# This file is intended to define common robot framework keywords that are used in many tests and suites
+
+*** Variables ***
+
+
+*** Keywords ***
+
+Launch NRF CN with PCF
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn  oai-upf  oai-pcf
+    Prepare Scenario    ${list}   nrf-cn-pcf
+    @{replace_list} =  Create List  smf  support_features  use_local_pcc_rules
+    Replace In Config    ${replace_list}  no
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+Launch NRF CN with PCF HTTP1
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn  oai-upf  oai-pcf
+    Prepare Scenario    ${list}   nrf-cn-pcf
+    @{replace_list} =  Create List  smf  support_features  use_local_pcc_rules
+    Replace In Config    ${replace_list}  no
+    @{replace_list} =  Create List  smf  support_features  use_local_subscription_info
+    Replace In Config    ${replace_list}  no
+    @{replace_list} =  Create List   http_version
+    Replace In Config    ${replace_list}  1
+
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+Launch NRF CN For QoS
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn  oai-ext-dn-2  oai-ext-dn-3  oai-upf  oai-pcf
+    Prepare Scenario    ${list}   nrf-cn-qos
+    @{replace_list} =  Create List  smf  support_features  use_local_pcc_rules
+    Replace In Config    ${replace_list}  no
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+Launch NRF CN
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn  oai-upf
+    Prepare Scenario    ${list}   nrf-cn
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+Launch Non NRF CN
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-udr  oai-ausf  mysql  oai-ext-dn  oai-upf
+    Prepare Scenario    ${list}   nonnrf-cn
+    Deactive NF Registration In CN Config
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+Launch EBPF CN
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn-ebpf  oai-upf-ebpf
+
+    Prepare Scenario    ${list}   nrf-cn-ebpf
+    @{replace_list} =  Create List  nfs  upf  
+    Replace In Config    ${replace_list}  ${ebf_upf_config}
+    @{replace_list} =  Create List  upf  support_features  enable_bpf_datapath
+    Replace In Config    ${replace_list}  yes
+    @{replace_list} =  Create List  upf  remote_n6_gw
+    Replace In Config    ${replace_list}  oai-ext-dn-ebpf
+
+    # TODO because of NRF issue #4, we need this dependency
+    Add Dependency   oai-upf-ebpf   oai-smf
+
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+Suite Teardown Default
+    Stop Cn
+    Collect All Logs
+    Stop Trace   core_network
+    Down Cn
+    ${docu}=  Create Cn Documentation
+    Set Suite Documentation    ${docu}   append=${TRUE}
+    ${gnbsim_docu} =   Create Gnbsim Docu
+    Set Suite Documentation    ${gnbsim_docu}   append=${TRUE}
+    ${ngap_docu} =    Create Ngap Tester Docu
+    Set Suite Documentation    ${ngap_docu}   append=${TRUE}
+
+Check Core Network Health Status
+    Wait Until Keyword Succeeds  60s  1s    Check CN Health Status
+
+Wait and Verify Iperf3 Result
+    [Arguments]    ${container}  ${mbits}=50
+    Wait Until Keyword Succeeds    60s  1s   Iperf3 Is Finished    ${container}
+    TRY
+        Iperf3 Results Should Be    ${container}  ${mbits}
+    EXCEPT    AS   ${error_message}
+        Log   IPerf3 Results is wrong, ignored for now: ${error_message}   level=ERROR
+    END
+
+Wait and Verify Iperf3 Result Strict
+    [Arguments]    ${container}  ${mbits}=50
+    Wait Until Keyword Succeeds    60s  1s   Iperf3 Is Finished    ${container}
+    Iperf3 Results Should Be    ${container}  ${mbits}
+
+
+Check gnbsim IP
+    [Arguments]    ${gnbsim_name}
+    Wait Until Keyword Succeeds    30s  1s  Check Gnbsim Ongoing   ${gnbsim_name}
+    ${ip} =    Get Gnbsim Ip    ${gnbsim_name}    # to get the output we parse again
+    [Return]    ${ip}
+
+Run NGAP Tester Test
+    [Arguments]    ${TC_NAME}    ${MT_PROFILE}=default     ${single_interface}=${TRUE}
+    Prepare Ngap Tester    ${TC_NAME}   ${MT_PROFILE}   ${single_interface}
+    IF  not ${single_interface}
+        @{replace_list} =    Create List  configuration  gnbs  gnb1  n3IpAddr
+        Replace In Ngap Tester Config    ${replace_list}  192.168.80.171
+        @{replace_list} =    Create List  configuration  trafficReflector  ipAddr
+        Replace In Ngap Tester Config    ${replace_list}  192.168.81.179
+    END
+
+    Start Ngap Tester
+    Wait Until Keyword Succeeds   30s   1s    Check Ngap Tester Done
+    Check NGAP Tester Result
+
+Test Setup NGAP Tester
+    Check Cn Health Status
+    # set single interface currently to true to receive better traces, if we have eBPF support, we should fix this
+    Start Trace   ${TEST_NAME}   signaling_only=${FALSE}   single_interface=${True}
+
+Test Teardown NGAP Tester
+     Stop Ngap Tester
+     ${doc} =    Get Ngap Tester Description
+     Set Test Documentation    ${doc}
+     Collect All Ngap Tester Logs
+     Down Ngap Tester
+     Stop Trace   ${TEST_NAME}
+
+Deactive NF Registration in CN Config
+    @{replace_list} =  Create List  register_nf  general
+    Replace In Config    ${replace_list}  no
+    @{replace_list} =  Create List  amf  support_features_options  enable_smf_selection
+    Replace In Config    ${replace_list}  no
+
+Test Setup With Gnbsim
+    ${gnbsim_name} =   Prepare Gnbsim
+    Set Test Variable   ${GNBSIM_IN_USE}   ${gnbsim_name}
+    Start Trace    ${TEST_NAME}
+
+Test Teardown With Gnbsim
+    Stop Gnbsim   ${GNBSIM_IN_USE}
+    Collect All Gnbsim Logs
+    Down Gnbsim    ${GNBSIM_IN_USE}
+    Stop Trace    ${TEST_NAME}

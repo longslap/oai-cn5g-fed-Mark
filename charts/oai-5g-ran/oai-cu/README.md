@@ -2,7 +2,7 @@
 
 Before using these helm-charts we recommend you read about OAI codebase and its working from the documents listed on [OAI gitlab](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop/doc). Here you can find a dedicated document on [F1 design](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/doc/F1-design.md). 
 
-**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10, 4.12 and 4.13. It requires minimum 1CPU and 1Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin if you want to configure multiple interfaces for the CU pod. 
+**Note**: This chart is tested on [Minikube](https://minikube.sigs.k8s.io/docs/) and [Red Hat Openshift](https://www.redhat.com/fr/technologies/cloud-computing/openshift) 4.10-4.16. It requires minimum 1CPU and 1Gi RAM and [multus-cni](https://github.com/k8snetworkplumbingwg/multus-cni) plugin if you want to configure multiple interfaces for the CU pod. 
 
 
 ## Introduction
@@ -14,7 +14,7 @@ The [codebase](https://gitlab.eurecom.fr/oai/openairinterface5g/-/tree/develop) 
 1. `oaisoftwarealliance/oai-gnb` for monolithic gNB, DU, CU, CU-CP 
 2. `oaisoftwarealliance/oai-nr-cuup` for CU-UP. 
 
-Each image has develop tag and a dedicated week tag for example `2023.w18`. We only publish Ubuntu 20.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
+Each image has develop tag and a dedicated week tag for example `2024.w32`. We only publish Ubuntu 22.04 images. We do not publish RedHat/UBI images. These images you have to build from the source code on your RedHat systems or Openshift Platform. You can follow this [tutorial](../../../openshift/README.md) for that.
 
 The helm chart of OAI-CU creates multiples Kubernetes resources,
 
@@ -23,7 +23,7 @@ The helm chart of OAI-CU creates multiples Kubernetes resources,
 3. Deployment
 4. Configmap
 5. Service account
-6. Network-attachment-defination (Optional only when multus is used)
+6. Network-attachment-definition (Optional only when multus is used)
 
 The directory structure
 
@@ -47,39 +47,41 @@ The directory structure
 [Values.yaml](./values.yaml) contains all the configurable parameters. Below table defines the configurable parameters. You can use the same interface for N2,N3 and F1. If you want you can create dedicated interface for N2, N3 and F1. 
 
 
-|Parameter                       |Allowed Values                 |Remark                                |
-|--------------------------------|-------------------------------|--------------------------------------|
-|kubernetesType                  |Vanilla/Openshift              |Vanilla Kubernetes or Openshift       |
-|nfimage.repository              |Image Name                     |                                      |
-|nfimage.version                 |Image tag                      |                                      |
-|nfimage.pullPolicy              |IfNotPresent or Never or Always|                                      |
-|imagePullSecrets.name           |String                         |Good to use for docker hub            |
-|serviceAccount.create           |true/false                     |                                      |
-|serviceAccount.annotations      |String                         |                                      |
-|serviceAccount.name             |String                         |                                      |
-|podSecurityContext.runAsUser    |Integer (0,65534)              |                                      |
-|podSecurityContext.runAsGroup   |Integer (0,65534)              |                                      |
-|multus.defaultGateway           |Ip-Address                     |default route in the pod              |
-|multus.n2Interface.create       |true/false                     |                                      |
-|multus.n2Interface.IPadd        |Ip-Address                     |                                      |
-|multus.n2Interface.Netmask      |Netmask                        |                                      |
-|multus.n2Interface.Gateway      |Ip-Address                     |                                      |
-|multus.n2Interface.routes       |Json                           |Routes you want to add in the pod     |
-|multus.n2Interface.hostInterface|host interface                 |Host machine interface name           |
-|multus.n3Interface.create       |true/false                     |                                      |
-|multus.n3Interface.IPadd        |Ip-Address                     |                                      |
-|multus.n3Interface.Netmask      |Netmask                        |                                      |
-|multus.n3Interface.Gateway      |Ip-Address                     |                                      |
-|multus.n3Interface.routes       |Json                           |Routes you want to add in the pod     |
-|multus.n3Interface.hostInterface|host interface                 |Host machine interface name           |
-|multus.f1Interface.create       |true/false                     |                                      |
-|multus.f1Interface.IPadd        |Ip-Address                     |                                      |
-|multus.f1Interface.Netmask      |Netmask                        |                                      |
-|multus.f1Interface.Gateway      |Ip-Address                     |                                      |
-|multus.f1Interface.hostInterface|host interface                 |Host machine interface name           |
+|Parameter                           |Allowed Values                 |Remark                                   |
+|------------------------------------|-------------------------------|-----------------------------------------|
+|kubernetesDistribution              |Vanilla/Openshift              |Vanilla Kubernetes or Openshift          |
+|nfimage.repository                  |Image Name                     |                                         |
+|nfimage.version                     |Image tag                      |                                         |
+|nfimage.pullPolicy                  |IfNotPresent or Never or Always|                                         |
+|imagePullSecrets.name               |String                         |Good to use for docker hub               |
+|serviceAccount.create               |true/false                     |                                         |
+|serviceAccount.annotations          |String                         |                                         |
+|serviceAccount.name                 |String                         |                                         |
+|podSecurityContext.runAsUser        |Integer (0,65534)              |                                         |
+|podSecurityContext.runAsGroup       |Integer (0,65534)              |                                         |
+|multus.n3Interface.create           |true/false                     |default false                            |
+|multus.n3Interface.ipAdd            |IPV4                           |NA                                       |
+|multus.n3Interface.netmask          |netmask                        |NA                                       |
+|multus.n3Interface.gateway(optional)|netmask                        |NA                                       |
+|multus.n3Interface.name (optional)  |Interface name inside container|NA                                       |
+|multus.n3Interface.routes (optional)|Routes                         |NA                                       |
+|multus.n2Interface.create           |true/false                     |default false                            |
+|multus.n2Interface.ipAdd            |IPV4                           |NA                                       |
+|multus.n2Interface.netmask          |netmask                        |NA                                       |
+|multus.n2Interface.gateway(optional)|netmask                        |NA                                       |
+|multus.n2Interface.name (optional)  |Interface name inside container|NA                                       |
+|multus.n2Interface.routes (optional)|Routes                         |NA                                       |
+|multus.f1Interface.create           |true/false                     |default false                            |
+|multus.f1Interface.ipAdd            |IPV4                           |NA                                       |
+|multus.f1Interface.netmask          |netmask                        |NA                                       |
+|multus.f1Interface.gateway(optional)|netmask                        |NA                                       |
+|multus.f1Interface.name (optional)  |Interface name inside container|NA                                       |
+|multus.f1Interface.routes (optional)|Routes                         |NA                                       |
+|multus.defaultGateway               |IPV4                           |Default route inside container (optional)|
+|multus.hostInterface                |HostInterface Name             |NA                                       |
 
 
-The config parameters mentioned in `config` block of `values.yaml` are limited on purpose to maintain simplicity. They do not allow changing a lot of parameters of oai-gnb-cu. If you want to use your own configuration file for oai-gnb-cu. It is recommended to copy it in `templates/configmap.yaml` and set `config.mountConfig` as `true`. The command line for gnb is provided in `config.useAdditionalOptions`. 
+The config parameters mentioned in `config` block of `values.yaml` are limited on purpose to maintain simplicity. They do not allow changing a lot of parameters of oai-cu. If you want to use your own configuration file for oai-cu. It is recommended to copy it in `templates/configmap.yaml`. The command line for gnb is provided in `config.useAdditionalOptions`. 
 
 The charts are configured to be used with primary CNI of Kubernetes. When you will mount the configuration file you have to define static ip-addresses for N2, N3 and F1. Most of the primary CNIs do not allow static ip-address allocation. To overcome this we are using multus-cni with static ip-address allocation. 
 
@@ -121,14 +123,13 @@ Only needed if you are doing advanced debugging
   - [OAI 5G Core Basic](../../oai-5g-basic/README.md)
   - [OAI 5G Core Mini](../../oai-5g-mini/README.md)
 1. Configure the `parent` interface for `f1` based on your Kubernetes cluster worker nodes. 
-
-2. If you want to mount your configuration file then you set can `config.mountConfig`. The configuration file should be added in `templates/configmap.yaml`. Once the CU is configured. 
+2. The configuration file should be added in `templates/configmap.yaml`. Once the CU is configured. 
 
 ```bash
 helm install oai-gnb-cu .
 ```
 
-2. Configure and install the DU, in case you want to mount the configuration file you set can `config.mountConfig`. The configuration file should be added in `templates/configmap.yaml`. Once the DU is configured. 
+2. Configure and install the DU, the configuration file should be added in `templates/configmap.yaml`. Once the DU is configured. 
 
 ```bash
 helm install oai-gnb-du ../oai-gnb-du

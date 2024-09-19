@@ -1,16 +1,16 @@
-kubernetesType: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
+kubernetesDistribution: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
 
 ## In case of using these charts on Openshift then please use UBI images
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:
   repository: docker.io/oaisoftwarealliance/oai-ausf   ## oaisoftwarealliance/oai-ausf # image name either locally present or in a public/private repository
-  version: v2.0.1       #image tag, develop tag for experimental features 
+  version: develop       #image tag, develop tag for experimental features 
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
 ## good to use when pulling images from docker-hub mention 
-imagePullSecrets: 
-  - name: "regcred"
+# imagePullSecrets: 
+#   - name: "regcred"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -37,10 +37,9 @@ start:
 
 includeTcpDumpContainer: false #If true it will add a tcpdump container inside network function pod for debugging
 
-## For openshift you can use rhel8/support-tools:8.7-13
 tcpdumpimage:
-  repository: docker.io/corfr/tcpdump
-  version: latest   
+  repository: docker.io/oaisoftwarealliance/oai-tcpdump-init
+  version: alpine-3.20
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 

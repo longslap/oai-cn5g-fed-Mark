@@ -34,3 +34,6 @@
 [submodule "component/oai-upf"]
 	path = component/oai-upf
 	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-upf.git
+[submodule "component/oai-lmf"]
+	path = component/oai-lmf
+	url = https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-lmf.git

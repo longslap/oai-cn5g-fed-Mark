@@ -20,10 +20,10 @@ spec:
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
           [{
-                 "name": "{{ .Chart.Name }}-n2",
-                 "interface": "n2"
-                {{- if .Values.multus.n2Interface.Mac }}
-                 ,"mac":  "{{ .Values.multus.n2Interface.Mac }}"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
+                 "interface": "{{ .Values.multus.n2Interface.name }}"
+                {{- if .Values.multus.n2Interface.mac }}
+                 ,"mac":  "{{ .Values.multus.n2Interface.mac }}"
                 {{- end }}
                 {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
@@ -34,37 +34,37 @@ spec:
           }
           {{- if .Values.multus.n3Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-n3",
-                 "interface": "n3"
-                {{- if .Values.multus.n3Interface.Mac }}
-                 ,"mac":  "{{ .Values.multus.n3Interface.Mac }}"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
+                 "interface": "{{ .Values.multus.n3Interface.name }}"
+                {{- if .Values.multus.n3Interface.mac }}
+                 ,"mac":  "{{ .Values.multus.n3Interface.mac }}"
                 {{- end }}
-                {{- if .Values.multus.n3Interface.Gateway }}
-                 ,"gateway": ["{{ .Values.multus.n3Interface.Gateway }}"]
+                {{- if .Values.multus.n3Interface.gateway }}
+                ,"gateway": {{ .Values.multus.n3Interface.gateway }}
                 {{- end }}
           }
           {{- end }}
           {{- if .Values.multus.ru1Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-ru1",
-                 "interface": "ru1"
-                {{- if .Values.multus.ru1Interface.Mac }}
-                 ,"mac":  "{{ .Values.multus.ru1Interface.Mac }}"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.ru1Interface.name }}",
+                 "interface": "{{ .Values.multus.ru1Interface.name }}"
+                {{- if .Values.multus.ru1Interface.mac }}
+                 ,"mac":  "{{ .Values.multus.ru1Interface.mac }}"
                 {{- end }}
-                {{- if .Values.multus.ru1Interface.Gateway }}
-                 ,"gateway": ["{{ .Values.multus.ru1Interface.Gateway }}"]
+                {{- if .Values.multus.ru1Interface.gateway }}
+                 ,"gateway": ["{{ .Values.multus.ru1Interface.gateway }}"]
                 {{- end }}
           }
           {{- end }}
           {{- if .Values.multus.ru2Interface.create }}
           ,{
-                 "name": "{{ .Chart.Name }}-ru2",
-                 "interface": "ru2"
-                {{- if .Values.multus.ru2Interface.Mac }}
-                 ,"mac":  "{{ .Values.multus.ru2Interface.Mac }}"
+                 "name": "{{ .Chart.Name }}-{{ .Values.multus.ru2Interface.name }}",
+                 "interface": "{{ .Values.multus.ru2Interface.name }}"
+                {{- if .Values.multus.ru2Interface.mac }}
+                 ,"mac":  "{{ .Values.multus.ru2Interface.mac }}"
                 {{- end }}
-                {{- if .Values.multus.ru2Interface.Gateway }}
-                 ,"gateway": ["{{ .Values.multus.ru2Interface.Gateway }}"]
+                {{- if .Values.multus.ru2Interface.gateway }}
+                 ,"gateway": ["{{ .Values.multus.ru2Interface.gateway }}"]
                 {{- end }}
           }
           {{- end }}
@@ -77,10 +77,29 @@ spec:
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
     {{- end }}
+    {{- if .Values.global }}{{ if .Values.global.waitForAMF }}
+      initContainers:
+        - name: init
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+            - until ncat -zv {{ .Values.config.amfhost }} 38412 --sctp ; do echo waiting for oai-amf to start; sleep 1; done
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 1m
+            limits:
+              memory: 50Mi
+              cpu: 1m
+    {{- end }}{{ end }}
       containers:
       - name: gnb
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
         imagePullPolicy: {{ .Values.nfimage.pullPolicy }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
         {{- if eq .Values.config.usrp "aw2s" }}
           - mountPath: /opt/oai-gnb-aw2s/etc/gnb.conf
@@ -103,13 +122,6 @@ spec:
             memory: {{ .Values.resources.limits.nf.memory | quote }}
             cpu: {{ .Values.resources.limits.nf.cpu | quote }}
         {{- end}}
-        securityContext:
-           privileged: true
-           # capabilities:
-           #    add:
-           #     - NET_ADMIN
-           #    drop:
-           #     - ALL
         ports:
         - containerPort: 2152
           name: n3
@@ -162,21 +174,17 @@ spec:
             cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
         securityContext:
-           privileged: true
            capabilities:
               add:
                - NET_ADMIN
+               - NET_RAW
               drop:
                - ALL
         {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
           - -c
-        {{- if eq .Values.config.usrp "b2xx" }}
-          - /usr/sbin/tcpdump -ni any -w /pcap/oai-gnb-n2_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
-        {{- else}}
-          - /usr/sbin/tcpdump -ni n2 src {{ .Values.config.amfIpAddress }} or dst {{ .Values.config.amfIpAddress }} -w /pcap/oai-gnb-n2_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
-        {{- end}}
+          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep

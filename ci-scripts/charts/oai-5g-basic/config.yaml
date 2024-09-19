@@ -168,14 +168,14 @@ smf:
         sst: 1
       dnn: "oai"
       qos_profile:
-        5qi: 2
+        5qi: 6
         session_ambr_ul: "1000Mbps"
         session_ambr_dl: "1000Mbps"
     - single_nssai:
         sst: 1
       dnn: "ims"
       qos_profile:
-        5qi: 1
+        5qi: 5
         session_ambr_ul: "1000Mbps"
         session_ambr_dl: "1000Mbps"
 

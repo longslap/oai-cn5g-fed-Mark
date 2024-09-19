@@ -318,7 +318,7 @@ rtt min/avg/max/mdev = 5.936/8.226/9.739/1.452 ms
 For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-slicing-ransim.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-slicing-basic-nrf.yaml stop -t 60
 ```
 -->
 
@@ -336,6 +336,7 @@ docker-compose-host $: docker logs oai-smf-slice3 > /tmp/oai/slicing-with-nssf/s
 docker-compose-host $: docker logs oai-upf-slice1 > /tmp/oai/slicing-with-nssf/upf-slice1.log 2>&1
 docker-compose-host $: docker logs oai-upf-slice2 > /tmp/oai/slicing-with-nssf/upf-slice2.log 2>&1
 docker-compose-host $: docker logs vpp-upf-slice3 > /tmp/oai/slicing-with-nssf/vpp-upf-slice3.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn > /tmp/oai/slicing-with-nssf/ext-dn.log 2>&1
 docker-compose-host $: docker logs gnbsim > /tmp/oai/slicing-with-nssf/gnbsim.log 2>&1
 docker-compose-host $: docker logs rfsim5g-oai-gnb > /tmp/oai/slicing-with-nssf/rfsim5g-oai-gnb.log 2>&1
 docker-compose-host $: docker logs rfsim5g-oai-nr-ue1 > /tmp/oai/slicing-with-nssf/rfsim5g-oai-nr-ue1.log 2>&1

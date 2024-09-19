@@ -55,7 +55,7 @@ docker-compose-host $: docker exec oai-ext-dn ping 12.1.1.4 -c4
 For CI purposes please ignore this line
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-gnbsim.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-basic-nrf-mongodb.yaml stop -t 2
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf-mongodb.yaml stop -t 30
 ```
 -->
 
@@ -67,6 +67,7 @@ docker-compose-host $: docker logs oai-upf > /tmp/oai/mongodb-test/upf.log 2>&1
 docker-compose-host $: docker logs oai-udr > /tmp/oai/mongodb-test/udr.log 2>&1
 docker-compose-host $: docker logs oai-udm > /tmp/oai/mongodb-test/udm.log 2>&1
 docker-compose-host $: docker logs oai-ausf > /tmp/oai/mongodb-test/ausf.log 2>&1
+docker-compose-host $: docker logs oai-ext-dn > /tmp/oai/mongodb-test/ext-dn.log 2>&1
 docker-compose-host $: docker logs gnbsim > /tmp/oai/mongodb-test/gnbsim.log 2>&1
 docker-compose-host $: docker logs mongodb > /tmp/oai/mongodb-test/mongodb.log 2>&1
 ```

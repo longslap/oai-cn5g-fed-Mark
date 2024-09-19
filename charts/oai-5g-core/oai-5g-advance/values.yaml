@@ -1,8 +1,10 @@
 global:
-  nfConfigurationConfigMap: oai-5g-advance
+  kubernetesDistribution: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
+  coreNetworkConfigMap: oai-5g-advance
   clusterIpServiceIpAllocation: true #this will allocate ip-address to cluster Ip service
   IP_NRF: @IP_NRF@
   waitForNRF: true
+  waitForUDR: true
   http2Param: "--http2-prior-knowledge"  # if waitForNRF is true and http2 is used for all NF then this param is needed
   timeout: 1
 mysql:
@@ -15,10 +17,9 @@ mysql:
     enabled: false
 oai-nrf:
   enabled: @ENABLED_NRF@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-nrf          ## The image will be pulled from dockerhub
-    version: v2.0.1                          ## The branch to be used to pull from dockerhub
+    version: v2.1.0                          ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -29,10 +30,9 @@ oai-nrf:
   nodeSelector: {}
 oai-nssf:
   enabled: @ENABLED_NSSF@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-nssf          ## The image will be pulled from dockerhub
-    version: v2.0.1                                   ## The branch to be used to pull from dockerhub
+    version: v2.1.0                                   ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   imagePullSecrets:
@@ -45,10 +45,22 @@ oai-nssf:
   nodeSelector: {}
 oai-udr:
   enabled: @ENABLED_UDR@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udr           ## The image will be pulled from dockerhub
-    version: v2.0.1                                    ## The branch to be used to pull from dockerhub
+    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
+    # pullPolicy: IfNotPresent or Never or Always
+    pullPolicy: IfNotPresent
+  includeTcpDumpContainer: false #only for taking pcaps inside network function pod
+  imagePullSecrets:
+    - name: "regcred"
+  config:
+    logLevel: "debug"   #allowed info/error/debug
+  nodeSelector: {}
+oai-lmf:
+  enabled: true
+  nfimage:  # image name either locally present or in a public/private repository
+    repository: docker.io/oaisoftwarealliance/oai-lmf          ## The image will be pulled from dockerhub
+    version: v2.1.0                          ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -59,10 +71,9 @@ oai-udr:
   nodeSelector: {}
 oai-udm:
   enabled: @ENABLED_UDM@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udm           ## The image will be pulled from dockerhub
-    version: v2.0.1                                    ## The branch to be used to pull from dockerhub
+    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -73,10 +84,9 @@ oai-udm:
   nodeSelector: {}
 oai-ausf:
   enabled: @ENABLED_AUSF@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-ausf           ## The image will be pulled from dockerhub
-    version: v2.0.1                                    ## The branch to be used to pull from dockerhub
+    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   start:
@@ -93,10 +103,9 @@ oai-ausf:
   nodeSelector: {}
 oai-amf:
   enabled: @ENABLED_AMF@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-amf           ## The image will be pulled from dockerhub
-    version: v2.0.1                                    ## The branch to be used to pull from dockerhub
+    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   start:
@@ -113,14 +122,13 @@ oai-amf:
     defaultGateway: "@CN_DEFAULT_GW@"
     n2Interface:
       create: @MULTUS_AMF_N2@
-      Ipadd: "@IP_AMF_N2@"
-      Netmask: "@NETMASK_AMF_N2@"
+      ipAdd: "@IP_AMF_N2@"
+      netmask: "@NETMASK_AMF_N2@"
       ## If you do not need a specific mac address leave the field empty
-      Mac: "@MAC_AMF_N2@"
-      # #name inside the pod is hardcoded right now
-      # name: "n2"
+      mac: "@MAC_AMF_N2@"
+      name: "n2"
       ## If you do not have a gateway leave the field empty
-      Gateway: "@GW_AMF_N2@"
+      gateway: "@GW_AMF_N2@"
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: @ROUTES_AMF_N2@
       hostInterface: "@IF_NAME_AMF_N2@" # Interface of the host machine on which this pod will be scheduled
@@ -128,10 +136,9 @@ oai-amf:
   nodeName: @NODE_AMF@
 oai-upf:
   enabled: @ENABLED_UPF@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-upf    ## The image will be pulled from dockerhub
-    version: v2.0.1                                    ## The branch to be used to pull from dockerhub
+    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   start:
@@ -151,73 +158,77 @@ oai-upf:
     defaultGateway: "@CN_DEFAULT_GW@"
     n3Interface:
       create: @MULTUS_UPF_N3@
-      Ipadd: "@IP_UPF_N3@"
-      Netmask: "@NETMASK_UPF_N3@"
+      ipAdd: "@IP_UPF_N3@"
+      netmask: "@NETMASK_UPF_N3@"
       ## If you do not need a specific mac address leave the field empty
-      Mac: "@MAC_UPF_N3@"
-      # #name inside the pod is hardcoded right now
-      # name: "n3"
+      mac: "@MAC_UPF_N3@"
+      name: "n3"
       ## If you do not have a gateway leave the field empty
-      Gateway: "@GW_UPF_N3@"
+      gateway: "@GW_UPF_N3@"
       ## If you don't want to add a default route in your pod then replace this field with ""
       routes: @ROUTES_UPF_N3@
       hostInterface: "@IF_NAME_UPF_N3@"
     ## For n4 it is better to re-use eth0 interface inside the pod (primary CNI of Kubernetes)
     n4Interface:
       create: @MULTUS_UPF_N4@
-      Ipadd: "@IP_UPF_N4@"
-      Netmask: "@NETMASK_UPF_N4@"
+      ipAdd: "@IP_UPF_N4@"
+      netmask: "@NETMASK_UPF_N4@"
       ## If you do not need a specific mac address leave the field empty
-      Mac: "@MAC_UPF_N4@"
-      # #name inside the pod is hardcoded right now
-      # name: "n4"
+      mac: "@MAC_UPF_N4@"
+      name: "n4"
       ## If you do not have a gateway leave the field empty
-      Gateway: "@GW_UPF_N4@"
+      gateway: "@GW_UPF_N4@"
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: @ROUTES_UPF_N4@
       hostInterface: "@IF_NAME_UPF_N4@"
     n6Interface:
       create: @MULTUS_UPF_N6@
-      Ipadd: "@IP_UPF_N6@"
-      # #name inside the pod is hardcoded right now
-      # name: "n6"
-      Netmask: "@NETMASK_UPF_N6@"
+      ipAdd: "@IP_UPF_N6@"
+      name: "n6"
+      netmask: "@NETMASK_UPF_N6@"
       ## If you do not need a specific mac address leave the field empty
-      Mac: "@MAC_UPF_N6@"
+      mac: "@MAC_UPF_N6@"
       ## If you do not have a gateway leave the field empty
-      Gateway: "@GW_UPF_N6@"
+      gateway: "@GW_UPF_N6@"
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: @ROUTES_UPF_N6@
       hostInterface: "@IF_NAME_UPF_N6@"
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
   nodeSelector: {}
   nodeName: @NODE_UPF@
-# oai-traffic-server:
-#  enabled: false
-#  weight: 6
-#  kubernetesType: Vanilla
-#  trafficServer:
-#    repository: docker.io/oaisoftwarealliance/trf-gen-cn5g
-#    version: latest
-#    #pullPolicy: IfNotPresent or Never or Always
-#    pullPolicy: IfNotPresent
-#  #Without multus traffic server won't be able to forward packets to upf if can't use server then add an extra container in upf with iperf3 or install iperf3 package in tcpdump container
-#  multus:
-#    create: true
-#    IPadd: "172.21.6.99"
-#    Netmask: "22"
-#    defaultGateway: "172.21.7.254"
-#    hostInterface: "bond0" # Interface of the host machine on which this pod will be scheduled
-#  config:
-#    ueroute: 12.1.1.0/24
-#    upfIpadd: 172.21.6.95
-#    noOfIperf3Server: 10
+oai-traffic-server:
+  enabled: @ENABLED_TS@ #true
+  trafficServer:
+    repository: docker.io/oaisoftwarealliance/trf-gen-cn5g
+    version: latest
+    #pullPolicy: IfNotPresent or Never or Always
+    pullPolicy: IfNotPresent
+  multus:
+    create: @MULTUS_TS@
+    ipAdd: "@IP_TS@"
+    netmask: "@NETMASK_TS@"
+    defaultGateway: "@GW_TS@"
+    hostInterface: "@IF_NAME_TS@"  # Interface of the host machine on which this pod will be scheduled
+  config:
+    ueroute: 12.1.1.0/24
+    upfHost: oai-upf
+    routeInterface: eth0
+    noOfIperf3Server: 2
+  resources:
+    define: false
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  nodeSelector: {}
+  nodeName: @NODE_TS@
 oai-smf:
   enabled: @ENABLED_SMF@ #true
-  kubernetesType: Vanilla #Openshift/Vanilla Vanilla for Upstream Kubernetes
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-smf           ## The image will be pulled from dockerhub
-    version: v2.0.1                         ## The branch to be used to pull from dockerhub
+    version: v2.1.0                         ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   start:
@@ -228,12 +239,12 @@ oai-smf:
     defaultGateway: "@CN_DEFAULT_GW@"
     n4Interface:
       create: @MULTUS_SMF_N4@
-      Ipadd: "@IP_SMF_N4@"
-      Netmask: "@NETMASK_SMF_N4@"
+      ipAdd: "@IP_SMF_N4@"
+      netmask: "@NETMASK_SMF_N4@"
       ## If you do not need a specific mac address leave the field empty
-      Mac: "@MAC_SMF_N4@"
+      mac: "@MAC_SMF_N4@"
       ## If you do not have a gateway leave the field empty
-      Gateway: "@GW_SMF_N4@"
+      gateway: "@GW_SMF_N4@"
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: @ROUTES_SMF_N4@
       hostInterface: "@IF_NAME_SMF_N4@"

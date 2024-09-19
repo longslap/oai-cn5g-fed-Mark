@@ -126,20 +126,18 @@ def deploy(file_name, extra_interface=False):
         # Then we can start the capture on the "demo-oai" interface.
         # When we undeploy, the process will terminate automatically.
         # Explanation of the capture filter:
-        #  - On all containers but oai-ext-dn
-        #   * `not arp`                 --> NO ARP packets
-        #   * `not port 53`             --> NO DNS requests from any container
-        #   * `not port 2152`           --> When running w/ OAI RF simulator, remove all GTP packets
-        #  - On oai-ext-dn container
-        #   * `icmp`                    --> Only ping packets
-        cmd = f'nohup sudo tshark -i demo-oai -f "(not host 192.168.70.135 and not arp and not port 53 and not port 2152) or (host 192.168.70.135 and icmp)" -w {args.capture} > /dev/null 2>&1 &'
+        #   * `sctp`                    --> RAN NGAP packets
+        #   * port 80                   --> Usual HTTP/1 port
+        #   * port 8080                 --> Usual HTTP/2 port
+        #   * port 8805                 --> PFCP traffic
+        #   * `icmp`                    --> ping traffic
+        #   * port 3306                 --> mysql traffic
+        cmd = f'nohup sudo tshark -i demo-oai -f "sctp or port 80 or port 8080 or port 8805 or icmp or port 3306" -w {args.capture} > /dev/null 2>&1 &'
         if extra_interface:
             if file_name == BASIC_VPP_W_NRF:
                 cmd = re.sub('-i demo-oai', '-i demo-oai -i cn5g-core', cmd)
-                cmd = re.sub('70', '73', cmd)
             if file_name == BASIC_EBPF_W_NRF:
                 cmd = re.sub('-i demo-oai', '-i demo-oai -i demo-n3 -i demo-n6', cmd)
-                cmd = re.sub('70', '72', cmd)
         res = run_cmd(cmd, False)
         if res is None:
             sys.exit(f'\033[0;31m Incorrect/Unsupported executing command {cmd}')
@@ -185,7 +183,7 @@ def undeploy(file_name):
         None
     """
     logging.debug('\033[0;34m UnDeploying OAI 5G core components\033[0m....')
-    cmd = f'docker-compose -f {file_name} down -t 0'
+    cmd = f'docker-compose -f {file_name} down -t 30'
     res = run_cmd(cmd, False)
     if res is None:
         sys.exit(f'\033[0;31m Incorrect/Unsupported executing command {cmd}')
@@ -194,25 +192,87 @@ def undeploy(file_name):
     run_cmd(cmd, True)
     logging.debug('\033[0;32m OAI 5G core components are UnDeployed\033[0m....')
 
-def generate_nrf_curl_cmd(compose_file):
-    # if not found, there is an exception here, but it is fine because then we have to update our scenarios
-    conf_file = COMPOSE_CONF_MAP[compose_file]
-    with open(conf_file) as f:
-        y = yaml.safe_load(f)
-        http_version = y.get('http_version', 1)
-        nrf_port = 80
+class CoreNetwork():
+    def __init__(self):
+        self.NRF_IP_ADDRESS='192.168.70.130'
+        self.AMF_IP_ADDRESS='192.168.70.132'
+        self.SMF_IP_ADDRESS='192.168.70.133'
+        self.UPF_IP_ADDRESS='192.168.70.134'
+        self.AUSF_IP_ADDRESS='192.168.70.138'
+        self.UDM_IP_ADDRESS='192.168.70.137'
+        self.UDR_IP_ADDRESS='192.168.70.136'
 
-        if y.get('nfs') and y['nfs'].get('nrf'):
-            nrf_cfg = y['nfs']['nrf']
-            if nrf_cfg.get('sbi') and nrf_cfg['sbi'].get('port'):
-                nrf_port = nrf_cfg['sbi']['port']
+    def generate_nrf_curl_cmd(self, compose_file):
+        # if not found, there is an exception here, but it is fine because then we have to update our scenarios
+        conf_file = COMPOSE_CONF_MAP[compose_file]
+        with open(conf_file) as f:
+            y = yaml.safe_load(f)
+            http_version = y.get('http_version', 1)
+            nrf_port = 80
 
-        cmd = 'curl -s -X GET '
-        if http_version == 2:
-            cmd = cmd + '--http2-prior-knowledge '
-        cmd = cmd + f'http://192.168.70.130:{nrf_port}/nnrf-nfm/v1/nf-instances?nf-type='
-        return cmd
+            if y.get('nfs') and y['nfs'].get('nrf'):
+                nrf_cfg = y['nfs']['nrf']
+                if nrf_cfg.get('sbi') and nrf_cfg['sbi'].get('port'):
+                    nrf_port = nrf_cfg['sbi']['port']
 
+            cmd = 'curl -s -X GET '
+            if http_version == 2:
+                cmd = cmd + '--http2-prior-knowledge '
+            cmd = cmd + f'http://{self.NRF_IP_ADDRESS}:{nrf_port}/nnrf-nfm/v1/nf-instances?nf-type='
+            return cmd
+
+    def check_ip_addresses(self, compose_file):
+        with open(compose_file) as f:
+            y = yaml.safe_load(f)
+            if y.get('services') and y['services'].get('oai-nrf'):
+                nrf_cfg = y['services']['oai-nrf']
+                if nrf_cfg.get('networks') and nrf_cfg['networks'].get('public_net') and nrf_cfg['networks']['public_net'].get('ipv4_address'):
+                    self.NRF_IP_ADDRESS = nrf_cfg['networks']['public_net'].get('ipv4_address', self.NRF_IP_ADDRESS)
+                else:
+                    cmd = 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" oai-nrf'
+                    self.NRF_IP_ADDRESS = run_cmd(cmd, silent=True)
+            if y.get('services') and y['services'].get('oai-amf'):
+                amf_cfg = y['services']['oai-amf']
+                if amf_cfg.get('networks') and amf_cfg['networks'].get('public_net') and amf_cfg['networks']['public_net'].get('ipv4_address'):
+                    self.AMF_IP_ADDRESS = amf_cfg['networks']['public_net'].get('ipv4_address', self.AMF_IP_ADDRESS)
+                else:
+                    cmd = 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" oai-amf'
+                    self.AMF_IP_ADDRESS = run_cmd(cmd, silent=True)
+            if y.get('services') and y['services'].get('oai-smf'):
+                smf_cfg = y['services']['oai-smf']
+                if smf_cfg.get('networks') and smf_cfg['networks'].get('public_net') and smf_cfg['networks']['public_net'].get('ipv4_address'):
+                    self.SMF_IP_ADDRESS = smf_cfg['networks']['public_net'].get('ipv4_address', self.SMF_IP_ADDRESS)
+                else:
+                    cmd = 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" oai-smf'
+                    self.SMF_IP_ADDRESS = run_cmd(cmd, silent=True)
+            if y.get('services') and y['services'].get('oai-upf'):
+                upf_cfg = y['services']['oai-upf']
+                if upf_cfg.get('networks') and upf_cfg['networks'].get('public_net') and upf_cfg['networks']['public_net'].get('ipv4_address'):
+                    self.UPF_IP_ADDRESS = upf_cfg['networks']['public_net'].get('ipv4_address', self.UPF_IP_ADDRESS)
+                else:
+                    cmd = 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" oai-upf'
+                    self.UPF_IP_ADDRESS = run_cmd(cmd, silent=True)
+            if y.get('services') and y['services'].get('oai-ausf'):
+                ausf_cfg = y['services']['oai-ausf']
+                if ausf_cfg.get('networks') and ausf_cfg['networks'].get('public_net') and ausf_cfg['networks']['public_net'].get('ipv4_address'):
+                    self.AUSF_IP_ADDRESS = ausf_cfg['networks']['public_net'].get('ipv4_address', self.AUSF_IP_ADDRESS)
+                else:
+                    cmd = 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" oai-ausf'
+                    self.AUSF_IP_ADDRESS = run_cmd(cmd, silent=True)
+            if y.get('services') and y['services'].get('oai-udm'):
+                udm_cfg = y['services']['oai-udm']
+                if udm_cfg.get('networks') and udm_cfg['networks'].get('public_net') and udm_cfg['networks']['public_net'].get('ipv4_address'):
+                    self.UDM_IP_ADDRESS = udm_cfg['networks']['public_net'].get('ipv4_address', self.UDM_IP_ADDRESS)
+                else:
+                    cmd = 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" oai-udm'
+                    self.UDM_IP_ADDRESS = run_cmd(cmd, silent=True)
+            if y.get('services') and y['services'].get('oai-udr'):
+                udr_cfg = y['services']['oai-udr']
+                if udr_cfg.get('networks') and udr_cfg['networks'].get('public_net') and udr_cfg['networks']['public_net'].get('ipv4_address'):
+                    self.UDR_IP_ADDRESS = udr_cfg['networks']['public_net'].get('ipv4_address', self.UDR_IP_ADDRESS)
+                else:
+                    cmd = 'docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" oai-udr'
+                    self.UDR_IP_ADDRESS = run_cmd(cmd, silent=True)
 
 def check_config(file_name):
     """Checks the container configurations
@@ -221,18 +281,20 @@ def check_config(file_name):
         None
     """
 
-    curl_cmd = generate_nrf_curl_cmd(file_name)
-    deployStatus = True
-
     logging.debug('\033[0;34m Checking if the containers are configured\033[0m....')
+    deployStatus = True
+    cn = CoreNetwork()
+    cn.check_ip_addresses(file_name)
+    curl_cmd = cn.generate_nrf_curl_cmd(file_name)
+
     # With NRF configuration check
     if args.scenario == '1':
         logging.debug('\033[0;34m Checking if AMF, SMF and UPF registered with nrf core network\033[0m....')
-        cmd = f'{curl_cmd}"AMF" | grep -o "192.168.70.132"'
+        cmd = f'{curl_cmd}"AMF" | grep -o "{cn.AMF_IP_ADDRESS}"'
         amf_registration_nrf = run_cmd(cmd, False)
         if amf_registration_nrf is not None:
             print(amf_registration_nrf)
-        cmd = f'{curl_cmd}"SMF" | grep -o "192.168.70.133"'
+        cmd = f'{curl_cmd}"SMF" | grep -o "{cn.SMF_IP_ADDRESS}"'
         smf_registration_nrf = run_cmd(cmd, False)
         if smf_registration_nrf is not None:
             print(smf_registration_nrf)
@@ -241,21 +303,21 @@ def check_config(file_name):
         elif file_name == BASIC_EBPF_W_NRF:
             cmd = f'{curl_cmd}"UPF" | grep -o "192.168.70.129"'
         else:
-            cmd = f'{curl_cmd}"UPF" | grep -o "192.168.70.134"'
+            cmd = f'{curl_cmd}"UPF" | grep -o "{cn.UPF_IP_ADDRESS}"'
         upf_registration_nrf = run_cmd(cmd, False)
         if upf_registration_nrf is not None:
             print(upf_registration_nrf)
         if file_name == BASIC_VPP_W_NRF or file_name == BASIC_W_NRF or file_name == BASIC_EBPF_W_NRF:
             logging.debug('\033[0;34m Checking if AUSF, UDM and UDR registered with nrf core network\033[0m....')
-            cmd = f'{curl_cmd}"AUSF" | grep -o "192.168.70.138"'
+            cmd = f'{curl_cmd}"AUSF" | grep -o "{cn.AUSF_IP_ADDRESS}"'
             ausf_registration_nrf = run_cmd(cmd, False)
             if ausf_registration_nrf is not None:
                 print(ausf_registration_nrf)
-            cmd = f'{curl_cmd}"UDM" | grep -o "192.168.70.137"'
+            cmd = f'{curl_cmd}"UDM" | grep -o "{cn.UDM_IP_ADDRESS}"'
             udm_registration_nrf = run_cmd(cmd, False)
             if udm_registration_nrf is not None:
                 print(udm_registration_nrf)
-            cmd = f'{curl_cmd}"UDR" | grep -o "192.168.70.136"'
+            cmd = f'{curl_cmd}"UDR" | grep -o "{cn.UDR_IP_ADDRESS}"'
             udr_registration_nrf = run_cmd(cmd, False)
             if udr_registration_nrf is not None:
                 print(udr_registration_nrf)
@@ -293,7 +355,7 @@ def check_config(file_name):
         elif file_name == BASIC_W_NRF:
             logging.debug('\033[0;34m Checking if SMF is able to connect with UPF\033[0m....')
             cmd1 = 'docker logs oai-smf 2>&1 | grep "Received N4 ASSOCIATION SETUP RESPONSE from an UPF"'
-            cmd2 = 'docker logs oai-smf 2>&1 | grep "Resolve IP Addr 192.168.70.134, FQDN oai-upf"'
+            cmd2 = f'docker logs oai-smf 2>&1 | grep "Resolve IP Addr {cn.UPF_IP_ADDRESS}, FQDN oai-upf"'
             upf_logs1 = run_cmd(cmd1)
             upf_logs2 = run_cmd(cmd2)
             if upf_logs1 is None or upf_logs2 is None:
@@ -357,7 +419,7 @@ def run_cmd(cmd, silent=True):
     try:
         res = subprocess.run(cmd,
                         shell=True, check=True,
-                        stdout=subprocess.PIPE, 
+                        stdout=subprocess.PIPE,
                         universal_newlines=True)
         result = res.stdout.strip()
     except:

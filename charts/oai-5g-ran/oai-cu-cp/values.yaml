@@ -1,4 +1,4 @@
-kubernetesType: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
+kubernetesDistribution: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
 
 ## In case of using these charts on Openshift then please use UBI images
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
@@ -21,47 +21,46 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: @NAME_CUCP_SA@ # "oai-cu-cp-sa"
 
-## CU-CP can work with 1 virtual ip-address here we are using three different virtual interfaces. 
-## In case you are using 1 ip-address for all 3 logical interfaces then please change it template/configmap.yaml
-## Change these ip-addresses according to your environment
+# oai-cu-cp can be configured with multiple interface which may correspond to 3GPP logical interfaces. There can be one to one or one to many. 
+# In case of one to one mapping e1,f1c,n2 all can have separate virtual interfaces. 
+# In one to many mapping e1,f1c and n2 all can be mapped to one virtual interface. 
+# Interface mapping is strictly based on your networking environment 
+## Change these ip-addresses according to your environment 
 
 multus:
   # to remove the default gateway change it with ""
   defaultGateway: ""
   e1Interface:
     create: @MULTUS_CUCP_E1@ # false
-    IPadd: "@IP_CUCP_E1@" # "192.168.18.12"
-    Netmask: "@NETMASK_CUCP_E1@" # "24"
+    ipAdd: "@IP_CUCP_E1@" # "192.168.18.12"
+    netmask: "@NETMASK_CUCP_E1@" # "24"
     # if mac is empty then it will be removed
-    Mac: "@MAC_CUCP_E1@"
-    # #name inside the pod is hardcoded right now
-    # name: "e1"
+    mac: "@MAC_CUCP_E1@"
+    name: "e1"
     # if gateway is empty then it will be removed
-    Gateway: "@GW_CUCP_E1@" 
+    gateway: "@GW_CUCP_E1@" 
     routes: @ROUTES_CUCP_E1@ # [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
     hostInterface:  "@IF_NAME_CUCP_E1@" # "bond0" # Interface of the host machine on which this pod will be scheduled
   n2Interface:
     create: @MULTUS_CUCP_N2@
-    # #name inside the pod is hardcoded right now
-    # name: "n2"
-    IPadd: "@IP_CUCP_N2@"
-    Netmask: "@NETMASK_CUCP_N2@"
+    ipAdd: "@IP_CUCP_N2@"
+    name: "n2"
+    netmask: "@NETMASK_CUCP_N2@"
     # if Mac is empty then it will be removed
-    Mac: "@MAC_CUCP_N2@"
+    mac: "@MAC_CUCP_N2@"
     # if gateway is empty then it will be removed
-    Gateway: "@GW_CUCP_N2@"
+    gateway: "@GW_CUCP_N2@"
     routes: @ROUTES_CUCP_N2@ # [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
     hostInterface: "@IF_NAME_CUCP_N2@" # Interface of the host machine on which this pod will be scheduled
   f1cInterface:
     create: @MULTUS_CUCP_F1@ # false
-    IPadd: "@IP_CUCP_F1@" # "172.21.16.92"
-    Netmask: "@NETMASK_CUCP_F1@" # "22"
+    ipAdd: "@IP_CUCP_F1@" # "172.21.16.92"
+    netmask: "@NETMASK_CUCP_F1@" # "22"
     # if mac is empty then it will be removed
-    Mac: "@MAC_CUCP_F1@"
-    # #name inside the pod is hardcoded right now
-    # name: "f1"
+    mac: "@MAC_CUCP_F1@"
+    name: "f1"
     # if gateway is commented then it will be removed
-    Gateway: "@GW_CUCP_F1@" # "172.21.19.254"
+    gateway: "@GW_CUCP_F1@" # "172.21.19.254"
     routes: @ROUTES_CUCP_F1@
     hostInterface: "@IF_NAME_CUCP_F1@"  # Interface of the host machine on which this pod will be scheduled
 
@@ -74,33 +73,34 @@ config:
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
   tac: "@TAC@" # check the information with AMF
-  #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap
+  #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap _TO_CHECK !!!!_
   amfhost: "@HOST_AMF@" #  "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
   n2IfName: "@N2IFNAME_CUCP@" # if multus.n2Interface.create is true then use n2
-  n3IfName: "@N3IFNAME_CUCP@"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
   f1IfName: "@F1IFNAME@" # "eth0"   #if multus.f1Interface.create is true then use f1
   e1IfName: "@E1IFNAME@" # "eth0"   #if multus.e1Interface.create is true then use e1
   f1cuPort: "@F1CUPORT@"# "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
   f1duPort: "@F1DUPORT@"# "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
-  
  
 # Debugging section
 podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
+securityContext:
+  privileged: false
+  
 start:
-  gnbcucp: true
+  oaicucp: true
   tcpdump: @START_TCPDUMP@
 
 includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #If true it will add a tcpdump container inside network function pod for debugging
 
-## For openshift you can use rhel8/support-tools:8.7-13
 tcpdumpimage:
-   repository: docker.io/corfr/tcpdump
-   version: latest
-   #pullPolicy: IfNotPresent or Never or Always
-   pullPolicy: IfNotPresent
+  repository: docker.io/oaisoftwarealliance/oai-tcpdump-init
+  version: alpine-3.20
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
+
 
 persistent:
   sharedvolume: @SHAREDVOLUME@

@@ -91,6 +91,8 @@ if __name__ == '__main__':
         for line in rfile:
             if (re.search('NETWORK_UE_IP=12.1.1.0/24', line) is not None):
                 lines += re.sub('12.1.1.0/24', f'12.1.0.0/{cicdrSuffix}', line)
+            elif (re.search('UE_NETWORK=12.1.1.0/24', line) is not None):
+                lines += re.sub('12.1.1.0/24', f'12.1.0.0/{cicdrSuffix}', line)
             elif (re.search('ip route add 12.1.1.0/24', line) is not None):
                 lines += re.sub('12.1.1.0/24', f'12.1.0.0/{cicdrSuffix}', line)
             elif (re.search('grep 12.1.1', line) is not None):

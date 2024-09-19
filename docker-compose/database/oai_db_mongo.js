@@ -212,7 +212,7 @@ db.AccessAndMobilitySubscriptionData.insertMany([
         nssai: {
             defaultSingleNssais: [{
                 'sst': 1,
-                'sd': '1'
+                'sd': '000001'
             }]
         }
     },
@@ -222,7 +222,7 @@ db.AccessAndMobilitySubscriptionData.insertMany([
         nssai: {
             defaultSingleNssais: [{
                 'sst': 1,
-                'sd': '1'
+                'sd': '000001'
             }]
         }
     },
@@ -232,7 +232,7 @@ db.AccessAndMobilitySubscriptionData.insertMany([
         nssai: {
             defaultSingleNssais: [{
                 'sst': 1,
-                'sd': '1'
+                'sd': '000001'
             }]
         }
     },
@@ -242,7 +242,7 @@ db.AccessAndMobilitySubscriptionData.insertMany([
         nssai: {
             defaultSingleNssais: [{
                 'sst': 1,
-                'sd': '1'
+                'sd': '000001'
             }]
         }
     },
@@ -252,7 +252,7 @@ db.AccessAndMobilitySubscriptionData.insertMany([
         nssai: {
             defaultSingleNssais: [{
                 'sst': 1,
-                'sd': '1'
+                'sd': '000001'
             }]
         }
     },
@@ -1983,7 +1983,7 @@ db.SessionManagementSubscriptionData.insertMany([
         servingPlmnid: "20895",
         singleNssai: {
             sst: 222,
-            sd: "123"
+            sd: "00007B"
         },
         dnnConfigurations: {
             default: {
@@ -2019,7 +2019,7 @@ db.SessionManagementSubscriptionData.insertMany([
         servingPlmnid: "20895",
         singleNssai: {
             sst: 222,
-            sd: "123"
+            sd: "00007B"
         },
         dnnConfigurations: {
             default: {

@@ -4,12 +4,13 @@ kind: ConfigMap
 metadata:
   name: {{ .Chart.Name }}-configmap
 data:
-  nr-ue.conf: |
+  nr-ue.conf:
       uicc0 = {
       imsi = "{{ .Values.config.fullImsi }}";
       key = "{{ .Values.config.fullKey }}";
       opc= "{{ .Values.config.opc }}";
       dnn= "{{ .Values.config.dnn }}";
-      nssai_sst={{ .Values.config.sst }};
-      nssai_sd={{ .Values.config.sd }};
+      nssai_sst="{{ .Values.config.sst }}"; # _TO CHECK if double quote_
+      nssai_sd="{{ .Values.config.sd }}"; # _TO CHECK if double quote_
       }
+

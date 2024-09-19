@@ -56,8 +56,8 @@ Create the name of the service account to use
 */}}
 {{- define "oai-udm.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
-    {{ default (include "oai-udm.fullname" .) .Values.serviceAccount.name }}
+    {{ default (include "oai-udm.fullname" .) .Chart.Name }}
 {{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
+    {{ default "default" .Chart.Name }}
 {{- end -}}
 {{- end -}}

@@ -2,8 +2,7 @@
 ## ref: https://hub.docker.com/r/library/mysql/tags/
 ##
 image: "docker.io/mysql"
-imageTag: "8.0" # this version works well for Fedora and Rocky Linux
-#imageTag: "5.7" # this version works well for ubuntu only
+imageTag: "9.0.1"
 
 replicas: 1
 

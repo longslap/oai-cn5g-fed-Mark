@@ -94,7 +94,7 @@ resources:
 readinessProbe: true
 livenessProbe: false
 
-terminationGracePeriodSeconds: 5
+terminationGracePeriodSeconds: 60
 
 nodeSelector: {}
 

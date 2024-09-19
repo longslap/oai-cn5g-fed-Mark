@@ -23,12 +23,19 @@ spec:
     {{- if .Values.global }}{{ if .Values.global.waitForNRF }}
       initContainers:
         - name: init
-          image: docker.io/alpine/curl:3.14
+          image: docker.io/oaisoftwarealliance/oai-tcpdump-init:alpine-3.20
           imagePullPolicy: IfNotPresent
           command: 
             - /bin/sh
             - -c
             - until curl --connect-timeout {{ .Values.global.timeout }} --head -X GET http://oai-nrf/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.global.http2Param }}; do echo waiting for oai-nrf; sleep 1; done
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 1m
+            limits:
+              memory: 50Mi
+              cpu: 1m
     {{- end }}{{ end }}
       containers:
     {{- if .Values.includeTcpDumpContainer }}
@@ -55,7 +62,7 @@ spec:
         command:
           - /bin/sh
           - -c
-          - /usr/sbin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
@@ -120,7 +127,7 @@ spec:
       volumes:
       - configMap:
       {{- if .Values.global }}
-          name: {{ .Values.global.nfConfigurationConfigMap }}
+          name: {{ .Values.global.coreNetworkConfigMap }}
       {{- else }}
           name: {{ .Chart.Name }}-configmap
       {{- end }}
@@ -135,7 +142,7 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      serviceAccountName: {{ .Chart.Name }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- if .Values.nodeSelector}}
       nodeSelector:

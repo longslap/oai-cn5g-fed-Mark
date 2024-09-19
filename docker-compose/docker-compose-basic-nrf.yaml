@@ -19,10 +19,11 @@ services:
             retries: 30
         networks:
             public_net:
-                ipv4_address: 192.168.70.131
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.131
     oai-udr:
         container_name: "oai-udr"
-        image: oaisoftwarealliance/oai-udr:v2.0.1
+        image: oaisoftwarealliance/oai-udr:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -35,10 +36,11 @@ services:
             - oai-nrf
         networks:
             public_net:
-                ipv4_address: 192.168.70.136
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.136
     oai-udm:
         container_name: "oai-udm"
-        image: oaisoftwarealliance/oai-udm:v2.0.1
+        image: oaisoftwarealliance/oai-udm:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -47,13 +49,14 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udr
+            - oai-nrf
         networks:
             public_net:
-                ipv4_address: 192.168.70.137
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.137
     oai-ausf:
         container_name: "oai-ausf"
-        image: oaisoftwarealliance/oai-ausf:v2.0.1
+        image: oaisoftwarealliance/oai-ausf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -62,13 +65,14 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - oai-udm
+            - oai-nrf
         networks:
             public_net:
-                ipv4_address: 192.168.70.138
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.138
     oai-nrf:
         container_name: "oai-nrf"
-        image: oaisoftwarealliance/oai-nrf:v2.0.1
+        image: oaisoftwarealliance/oai-nrf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -78,10 +82,11 @@ services:
             - TZ=Europe/Paris
         networks:
             public_net:
-                ipv4_address: 192.168.70.130
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.130
     oai-amf:
         container_name: "oai-amf"
-        image: oaisoftwarealliance/oai-amf:v2.0.1
+        image: oaisoftwarealliance/oai-amf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -91,15 +96,14 @@ services:
         environment:
             - TZ=Europe/Paris
         depends_on:
-            - mysql
             - oai-nrf
-            - oai-ausf
         networks:
             public_net:
-                ipv4_address: 192.168.70.132
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.132
     oai-smf:
         container_name: "oai-smf"
-        image: oaisoftwarealliance/oai-smf:v2.0.1
+        image: oaisoftwarealliance/oai-smf:develop
         expose:
             - 80/tcp
             - 8080/tcp
@@ -110,13 +114,13 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - oai-nrf
-            - oai-amf
         networks:
             public_net:
-                ipv4_address: 192.168.70.133
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.133
     oai-upf:
         container_name: "oai-upf"
-        image: oaisoftwarealliance/oai-upf:v2.0.1
+        image: oaisoftwarealliance/oai-upf:develop
         expose:
             - 2152/udp
             - 8805/udp
@@ -126,7 +130,6 @@ services:
             - TZ=Europe/Paris
         depends_on:
             - oai-nrf
-            - oai-smf
         cap_add:
             - NET_ADMIN
             - SYS_ADMIN
@@ -135,15 +138,17 @@ services:
         privileged: true
         networks:
             public_net:
-                ipv4_address: 192.168.70.134
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.134
     oai-ext-dn:
         privileged: true
         init: true
         container_name: oai-ext-dn
         image: oaisoftwarealliance/trf-gen-cn5g:latest
-        entrypoint: /bin/bash -c \
-              "ip route add 12.1.1.0/24 via 192.168.70.134 dev eth0; ip route; sleep infinity"
-        command: ["/bin/bash", "-c", "trap : SIGTERM SIGINT; sleep infinity & wait"]
+        environment:
+            - UPF_FQDN=oai-upf
+            - UE_NETWORK=12.1.1.0/24
+            - USE_FQDN=yes
         healthcheck:
             test: /bin/bash -c "ip r | grep 12.1.1"
             interval: 10s
@@ -151,7 +156,9 @@ services:
             retries: 5
         networks:
             public_net:
-                ipv4_address: 192.168.70.135
+# For CI purposes, we are keeping the line commented
+#                ipv4_address: 192.168.70.135
+
 networks:
     public_net:
         driver: bridge

@@ -99,7 +99,7 @@ def main() -> None:
                     ausfCpuY.append(float(result.group('cpu_usage')))
                     ausfMemY.append(float(result.group('memory_usage')))
             if line.count('oai-udm') > 0:
-                esult = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
                 if result is not None:
                     udmTimeX.append(x * LOOP_INTERVAL)
                     udmCpuY.append(float(result.group('cpu_usage')))

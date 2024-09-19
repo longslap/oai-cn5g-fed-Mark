@@ -47,31 +47,31 @@ We recommend to synchronize with the master branches on all git sub-modules.
 
 We also recommend that you synchronize this "tutorial" repository with a provided tag. By doing so, the `docker-compose` files will be aligned with feature sets of each cNF.
 
-**At the time of writing (2023/12/19), the release tag was `v2.0.1`.**
+**At the time of writing (2024/08/30), the release tag was `v2.1.0`.**
 
 
-| CNF Name    | Branch Name | Tag      | Ubuntu 22.04 | RHEL8 (UBI8)    |
+| CNF Name    | Branch Name | Tag      | Ubuntu 22.04 | RHEL9 (UBI9)    |
 | ----------- | ----------- | -------- | ------------ | ----------------|
-| FED REPO    | N/A         | `v2.0.1` |              |                 |
-| AMF         | `master`    | `v2.0.1` | X            | X               |
-| SMF         | `master`    | `v2.0.1` | X            | X               |
-| NRF         | `master`    | `v2.0.1` | X            | X               |
-| UPF         | `master`    | `v2.0.1` | X            | X               |
-| UDR         | `master`    | `v2.0.1` | X            | X               |
-| UDM         | `master`    | `v2.0.1` | X            | X               |
-| AUSF        | `master`    | `v2.0.1` | X            | X               |
-| UPF-VPP     | `master`    | `v2.0.1` | X            | X               |
-| NSSF        | `master`    | `v2.0.1` | X            | X               |
-| NEF         | `master`    | `v2.0.1` | X            | X               |
-| PCF         | `master`    | `v2.0.1` | X            | X               |
+| FED REPO    | N/A         | `v2.1.0` |              |                 |
+| AMF         | `master`    | `v2.1.0` | X            | X               |
+| SMF         | `master`    | `v2.1.0` | X            | X               |
+| NRF         | `master`    | `v2.1.0` | X            | X               |
+| UPF         | `master`    | `v2.1.0` | X            | X               |
+| UDR         | `master`    | `v2.1.0` | X            | X               |
+| UDM         | `master`    | `v2.1.0` | X            | X               |
+| AUSF        | `master`    | `v2.1.0` | X            | X               |
+| UPF-VPP     | `master`    | `v2.1.0` | X            | X               |
+| NSSF        | `master`    | `v2.1.0` | X            | X               |
+| PCF         | `master`    | `v2.1.0` | X            | X               |
+| LMF         | `master`    | `v2.1.0` | X            | X               |
 
 
 ```bash
-# Clone directly on the v2.0.1 release tag
-$ git clone --branch v2.0.1 https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
+# Clone directly on the v2.1.0 release tag
+$ git clone --branch v2.1.0 https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git
 $ cd oai-cn5g-fed
-# If you forgot to clone directly to the v2.0.1 release tag
-$ git checkout -f v2.0.1
+# If you forgot to clone directly to the v2.1.0 release tag
+$ git checkout -f v2.1.0
 
 # Synchronize all git submodules
 $ ./scripts/syncComponents.sh
@@ -87,6 +87,7 @@ OAI-UPF-VPP component branch : master
 OAI-NSSF    component branch : master
 OAI-NEF     component branch : master
 OAI-PCF     component branch : master
+OAI-LMF     component branch : master
 ---------------------------------------------------------
 git submodule deinit --all --force
 git submodule init
@@ -121,7 +122,7 @@ $ ./scripts/syncComponents.sh --nrf-branch develop --amf-branch develop \
                               --ausf-branch develop --udm-branch develop \
                               --udr-branch develop --upf-vpp-branch develop \
                               --nssf-branch develop --nef-branch develop \
-                              --pcf-branch develop
+                              --pcf-branch develop --lmf-branch develop
 ---------------------------------------------------------
 OAI-NRF     component branch : develop
 OAI-AMF     component branch : develop
@@ -134,6 +135,7 @@ OAI-UPF-VPP component branch : develop
 OAI-NSSF    component branch : develop
 OAI-NEF     component branch : develop
 OAI-PCF     component branch : develop
+OAI-LMF     component branch : develop
 ---------------------------------------------------------
 git submodule deinit --all --force
 git submodule init

@@ -20,39 +20,32 @@
 # */
 #---------------------------------------------------------------------
 #
-apiVersion: image.openshift.io/v1
-kind: ImageStream
-metadata:
-   name: oai-spgwu-tiny
-spec:
-  lookupPolicy:
-    local: true
----
-apiVersion: build.openshift.io/v1
-kind: BuildConfig
-metadata:
-  name: "oai-spgwu-tiny"
-spec:
-    runPolicy: "Serial"
-    source:
-        git:
-            uri: "https://github.com/OPENAIRINTERFACE/openair-spgwu-tiny.git"
-            ref: "v1.5.1"
-        secrets:
-          - secret:
-              name: etc-pki-entitlement
-            destinationDir: etc-pki-entitlement
-        configMaps:
-          - configMap:
-              name: rhsm-conf
-            destinationDir: rhsm-conf
-          - configMap:
-              name: rhsm-ca
-            destinationDir: rhsm-ca
-    strategy:
-        dockerStrategy:
-            dockerfilePath: "docker/Dockerfile.rhel8"
-    output:
-        to:
-            kind: "ImageStreamTag"
-            name: "oai-spgwu-tiny:v1.5.1"
+# Dockerfile for the Open-Air-Interface Tcpdump/Init Container
+#   Valid for Alpine-3.20
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# TARGET IMAGE
+#---------------------------------------------------------------------
+ARG BASE_IMAGE=docker.io/alpine:3.20
+FROM $BASE_IMAGE AS tcpdump-init
+ENV TZ=Europe/Paris
+LABEL org.openairinterface.image.authors="contact@openairinterface.org"
+# We install some debug tools for the moment in addition of mandatory libraries
+RUN apk update && \
+      apk add --no-cache\
+      curl \
+      wget \
+      psmisc \
+      net-tools \
+      ethtool \
+      tzdata \
+      iperf \
+      nmap-ncat \
+      iproute2 \
+      iputils-ping \
+      iptables \
+      traceroute \
+      tcpdump \
+      iperf3 \
