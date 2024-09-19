@@ -25,7 +25,7 @@ spec:
                 {{- if .Values.multus.f1Interface.mac }}
                  ,"mac":  "{{ .Values.multus.f1Interface.mac }}"
                 {{- end }}
-                  {{- if .Values.multus.defaultGateway }}
+                {{- if .Values.multus.defaultGateway }}
                  ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
                   {{- end }}
                 {{- if .Values.multus.f1Interface.gateway }}
@@ -38,6 +38,7 @@ spec:
                  "interface": "{{ .Values.multus.n2Interface.name }}"
                 {{- if .Values.multus.n2Interface.mac }}
                  ,"mac":  "{{ .Values.multus.n2Interface.mac }}"
+                {{- end }}
                 {{- if .Values.multus.n2Interface.gateway }}
                 ,"gateway": "{{ .Values.multus.n2Interface.gateway }}"
                 {{- end }}
@@ -49,6 +50,7 @@ spec:
                  "interface": "{{ .Values.multus.n3Interface.name }}"
                 {{- if .Values.multus.n3Interface.mac }}
                  ,"mac":  "{{ .Values.multus.n3Interface.mac }}"
+                {{- end }}
                 {{- if .Values.multus.n3Interface.gateway }}
                 ,"gateway": "{{ .Values.multus.n3Interface.gateway }}"
                 {{- end }}

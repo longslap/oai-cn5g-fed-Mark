@@ -38,6 +38,7 @@ spec:
                  "interface": "{{ .Values.multus.n3Interface.name }}"
                 {{- if .Values.multus.n3Interface.mac }}
                  ,"mac":  "{{ .Values.multus.n3Interface.mac }}"
+                {{- end }}
                 {{- if .Values.multus.n3Interface.gateway }}
                 ,"gateway": "{{ .Values.multus.n3Interface.gateway }}"
                 {{- end }}
@@ -49,6 +50,7 @@ spec:
                  "interface": "{{ .Values.multus.f1uInterface.name }}"
                 {{- if .Values.multus.f1uInterface.mac }}
                  ,"mac":  "{{ .Values.multus.f1uInterface.mac }}"
+                {{- end }}
                 {{- if .Values.multus.f1uInterface.gateway }}
                 ,"gateway": "{{ .Values.multus.f1uInterface.gateway }}"
                 {{- end }}
