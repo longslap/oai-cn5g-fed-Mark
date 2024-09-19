@@ -58,7 +58,7 @@ multus:
     netmask: "@NETMASK_CUCP_F1@" # "22"
     # if mac is empty then it will be removed
     mac: "@MAC_CUCP_F1@"
-    name: "f1"
+    name: "f1c"
     # if gateway is commented then it will be removed
     gateway: "@GW_CUCP_F1@" # "172.21.19.254"
     routes: @ROUTES_CUCP_F1@
