@@ -22,8 +22,13 @@ spec:
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
               [{
-                   "name": "{{ .Chart.Name }}-net1",
-                   "default-route": ["{{ .Values.multus.defaultGateway }}"]
+                   "name": "{{ .Chart.Name }}-net1"
+                   {{- if .Values.multus.mac }}
+                    ,"mac":  "{{ .Values.multus.mac }}"
+                   {{- end }}
+                   {{- if .Values.multus.defaultGateway }}
+                   ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
+                   {{- end }}
               }]
       {{- end }}
     spec:

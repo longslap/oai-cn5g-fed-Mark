@@ -207,7 +207,11 @@ oai-traffic-server:
     create: @MULTUS_TS@
     ipAdd: "@IP_TS@"
     netmask: "@NETMASK_TS@"
+    ## If you do not need a specific mac address leave the field empty
+    mac: "@MAC_TS@"
     defaultGateway: "@GW_TS@"
+    ## If you do not want to add any routes in your pod then leave this field empty
+    routes: @ROUTES_TS@
     hostInterface: "@IF_NAME_TS@"  # Interface of the host machine on which this pod will be scheduled
   config:
     ueroute: 12.1.1.0/24

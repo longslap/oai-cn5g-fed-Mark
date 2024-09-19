@@ -25,7 +25,11 @@ multus:
   create: false
   ipAdd: "172.21.6.99"
   netmask: "22"
-  defaultGateway: "172.21.7.254"
+  ## If you do not need a specific mac address leave the field empty
+  mac:
+  defaultGateway: ""
+  ## If you do not want to add any routes in your pod then leave this field empty
+  routes: ""
   hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
 
 config:
