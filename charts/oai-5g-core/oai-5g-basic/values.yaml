@@ -226,6 +226,7 @@ oai-traffic-server:
     version: latest
     #pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
+  includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   multus:
     create: @MULTUS_TS@
     ipAdd: "@IP_TS@"
