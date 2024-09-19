@@ -220,15 +220,15 @@ oai-upf:
   nodeSelector: {}
   nodeName: @NODE_UPF@
 oai-traffic-server:
-  enabled: @ENABLED_TS@
+  enabled: @ENABLED_TS@ #true
   trafficServer:
     repository: docker.io/oaisoftwarealliance/trf-gen-cn5g
     version: latest
     #pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   multus:
-    create: false
-    ipAdd: "@MULTUS_TS@"
+    create: @MULTUS_TS@
+    ipAdd: "@IP_TS@"
     netmask: "@NETMASK_TS@"
     defaultGateway: "@GW_TS@"
     hostInterface: "@IF_NAME_TS@"  # Interface of the host machine on which this pod will be scheduled
