@@ -33,7 +33,7 @@ multus:
 
 config:
   timeZone: "Europe/Paris"
-  rfSimServer: "@IP_GNB@" # ip-address of rfsim or service name oai-gnb or oai-du
+  rfSimServer: "oai-ran" 
   fullImsi: "@RFSIM_IMSI@" # make sure all the below entries are present in the subscriber database
   fullKey: "@FULL_KEY@" 
   opc: "@OPC@"
