@@ -212,7 +212,6 @@ oai-traffic-server:
     mac: "@MAC_TS@"
     defaultGateway: "@GW_TS@"
     ## If you do not want to add any routes in your pod then leave this field empty
-    routes: @ROUTES_TS@
     hostInterface: "@IF_NAME_TS@"  # Interface of the host machine on which this pod will be scheduled
   config:
     ueroute: 12.1.1.0/24
