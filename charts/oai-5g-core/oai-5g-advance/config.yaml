@@ -16,10 +16,10 @@ curl_timeout: 6000 #milliseconds can be changed if the network have issues
 snssais:
   - &embb_slice1
     sst: @SLICE1_SST@ #1
-    sd: "@SLICE1_SD@" # no value before
+    sd: @SLICE1_SD@ # no value before
   - &embb_slice2
     sst: @SLICE2_SST@ #1
-    sd: "@SLICE2_SD@" #FFFFFF # in hex
+    sd: @SLICE2_SD@ #FFFFFF # in hex
 
 ############## SBI Interfaces
 ### Each NF takes its local SBI interfaces and remote interfaces from here, unless it gets them using NRF discovery mechanisms
