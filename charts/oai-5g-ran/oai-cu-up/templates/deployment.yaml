@@ -123,7 +123,7 @@ spec:
                 -e s/@E1_IP_ADDRESS@/$E1_IP_ADDRESS/g
                 -e s/@CU_CP_IP_ADDRESS@/$CU_CP_IP_ADDRESS/g
                 -e s/@CU_UP_IP_ADDRESS@/$CU_UP_IP_ADDRESS/g
-                /opt/oai-gnb/etc/cuup.conf | tee /tmp/cuup.conf;"
+                /opt/oai-gnb/etc/cuup.conf | tee /tmp/cuup.conf;
             exec /opt/oai-gnb/bin/nr-cuup -O /tmp/cuup.conf $USE_ADDITIONAL_OPTIONS;
         {{- else}}
         command:
