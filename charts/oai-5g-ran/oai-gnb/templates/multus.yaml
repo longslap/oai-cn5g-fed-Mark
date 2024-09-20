@@ -67,7 +67,7 @@ spec:
         "type": "static",
         "addresses": [
                 {
-                        "address": {{- cat .Values.multus.ruInterface.ipAdd "/" .Values.multus.ruInterface.netmask | nospace | quote }}
+                        "address": {{- cat .Values.multus.ru1Interface.ipAdd "/" .Values.multus.ru1Interface.netmask | nospace | quote }}
                 }
         ]
       }
