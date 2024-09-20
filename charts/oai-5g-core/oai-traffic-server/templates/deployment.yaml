@@ -45,7 +45,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - until ncat -zv {{ .Values.config.upfHost }} 2153 --udp ; do echo waiting for oai-upf to start; sleep 1; done
+            - until ncat -zv oai-upf 2153 --udp ; do echo waiting for oai-upf to start; sleep 1; done
           resources:
             requests:
               memory: 50Mi
