@@ -75,8 +75,7 @@ config:
   tac: "@TAC@" # check the information with AMF
   #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap _TO_CHECK !_
   cuCpHost: "@HOST_CUCP@" # "oai-cu" #
-  n2IfName: "@N2IFNAME_CUUP@" # if multus.n3Interface.create is true then use n3, else use eth0  _TO_CHECK !_
-  n3IfName: "@N3IFNAME_CUUP@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
+  n3IfName: "@N3IFNAME_CUUP@" # if multus.n3Interface.create is true then use n3 or eth0
   f1IfName: "f1u" # "eth0"   #if multus.f1Interface.create is true then use f1
   e1IfName: "@E1IFNAME@" # "eth0"   #if multus.e1Interface.create is true then use e1
   f1cuPort: "@F1CUPORT@" # "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
