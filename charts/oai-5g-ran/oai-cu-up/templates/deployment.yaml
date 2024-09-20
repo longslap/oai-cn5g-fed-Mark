@@ -119,13 +119,13 @@ spec:
             N3_IP_ADDRESS=$(/sbin/ip -f inet addr show $N3_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
             F1_IP_ADDRESS=$(/sbin/ip -f inet addr show $F1_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
             E1_IP_ADDRESS=$(/sbin/ip -f inet addr show $E1_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            sed -e s/@N2_IP_ADDRESS@/$N2_IP_ADDRESS/g
+            echo "sed -e s/@N2_IP_ADDRESS@/$N2_IP_ADDRESS/g
                 -e s/@N3_IP_ADDRESS@/$N3_IP_ADDRESS/g
                 -e s/@F1_IP_ADDRESS@/$F1_IP_ADDRESS/g
                 -e s/@E1_IP_ADDRESS@/$E1_IP_ADDRESS/g
                 -e s/@CU_CP_IP_ADDRESS@/$CU_CP_IP_ADDRESS/g
                 -e s/@CU_UP_IP_ADDRESS@/$CU_UP_IP_ADDRESS/g
-                /opt/oai-gnb/etc/cuup.conf | tee /tmp/cuup.conf;
+                /opt/oai-gnb/etc/cuup.conf | tee /tmp/cuup.conf;"
             exec /opt/oai-gnb/bin/nr-cuup -O /tmp/cuup.conf $USE_ADDITIONAL_OPTIONS;
         {{- else}}
         command:
