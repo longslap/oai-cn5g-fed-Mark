@@ -45,7 +45,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - until curl --connect-timeout 1 --head -X GET http://oai-nrf/nnrf-nfm/v1/nf-instances?nf-type='UPF' --http2-prior-knowledge ; do echo waiting for oai-upf to start; sleep 60; done
+            - until ncat -zv {{ .Values.config.upfHost }} 2152 --udp ; do echo waiting for oai-upf to start; sleep 60; done
           resources:
             requests:
               memory: 50Mi
