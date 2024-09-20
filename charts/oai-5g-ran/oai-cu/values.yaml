@@ -79,7 +79,6 @@ config:
   n2IfName: "@N2IFNAME_CU@" # if multus.n2Interface.create is true then use n2
   n3IfName: "@N3IFNAME_CU@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
   f1IfName: "f1" # "eth0"   #if multus.f1Interface.create is true then use f1
-  cuHost: "@HOST_CU@" # "oai-cu" ## Ip-address or hostname _TO CHECK !_
   f1cuPort: "@F1CUPORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
   f1duPort: "@F1DUPORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
 
