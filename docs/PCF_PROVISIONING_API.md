@@ -243,13 +243,13 @@ Host: oai-pcf:8080
   "flowInfos": [
     {
       "flowDescription": "permit out ip from any to assigned",
-      "flowDescriptionIndex": 1,
-      "flowPrecedence": 60,
+      "flowDirection": "BIDIRECTIONAL",
       "packetFilterUsage": true
     }
   ],
   "precedence": 7,
-  "refQosData": ["non-gbr-qos-5qi-9"]
+  "refQosData": ["non-gbr-qos-5qi-9"],
+  "refTcData": ["redirection-scenario"]
 }
 ```
 ```http
@@ -289,14 +289,14 @@ Host: oai-pcf:8080
   "pccRuleId": "non-gbr-rule-5qi-9",
   "flowInfos": [
     {
-      "flowDescription": "permit out ip from any to any",
-      "flowDescriptionIndex": 1,
-      "flowPrecedence": 50,
+      "flowDescription": "permit out 6 from 1.2.3.4 80, 8080-9090 to assigned",
+      "flowDirection": "BIDIRECTIONAL",
       "packetFilterUsage": true
     }
   ],
   "precedence": 6,
-  "refQosData": ["non-gbr-qos-5qi-9"]
+  "refQosData": ["non-gbr-qos-5qi-9"],
+  "refTcData": ["redirection-scenario"]
 }
 ```
 ```http
@@ -431,8 +431,7 @@ Here are step-by-step examples of how to use the API to provision data:
     "flowInfos": [
       {
         "flowDescription": "permit out ip from any to assigned",
-        "flowDescriptionIndex": 1,
-        "flowPrecedence": 60,
+        "flowDirection": "BIDIRECTIONAL",
         "packetFilterUsage": true
       }
     ],
