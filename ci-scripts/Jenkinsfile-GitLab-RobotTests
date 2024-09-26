@@ -310,6 +310,12 @@ pipeline {
             credentialsId: gitlab_credentials,
             url: 'https://gitlab.eurecom.fr/5gc/5gcsdk.git']])
         }
+
+        // Making sure that the latest version of oai-gnb and oai-nr-ue develop images
+        // is on the test server
+        sh "docker pull oaisoftwarealliance/oai-gnb:develop || true"
+        sh "docker pull oaisoftwarealliance/oai-nr-ue:develop || true"
+        sh "docker image prune -f"
       }
     }
     stage ('Run Robot Framework Tests') {
