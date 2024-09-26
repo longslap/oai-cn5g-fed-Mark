@@ -23,6 +23,7 @@ Library    Process
 Library    CNTestLib.py
 Library    GNBSimTestLib.py
 Library    NGAPTesterLib.py
+Library    RfSimLib.py
 
 Variables    vars.py
 
@@ -98,6 +99,49 @@ Launch EBPF CN
     Start CN
     Check Core Network Health Status
 
+Launch Northbound Test CN
+    @{list} =    Create List  oai-amf   oai-smf   oai-udm   oai-nrf  oai-udr  oai-ausf  mysql  oai-ext-dn   vpp-upf
+    Prepare Scenario    ${list}   Northbound
+
+    @{replace_list} =  Create List    http_version
+    Replace In Config     ${replace_list}   ${1}
+
+    @{replace_list} =  Create List    smf  upfs  ${0}  host
+    Replace In Config    ${replace_list}  vpp-upf.node.5gcn.mnc95.mcc208.3gppnetwork.org
+
+    @{replace_list} =  Create List    amf  supported_encryption_algorithms  ${0}  
+    Replace In Config    ${replace_list}  NEA2
+
+    @{replace_list} =  Create List    amf  supported_integrity_algorithms  ${0}  
+    Replace In Config    ${replace_list}  NIA2
+    
+    @{replace_list} =  Create List  smf  upfs  ${0}  config  enable_usage_reporting
+    Replace In Config    ${replace_list}  yes
+
+    Start Trace    core_network
+    Start CN
+    Check Core Network Health Status
+
+    Prepare RAN     ${1}   ${3}
+    ${replace_list} =  Create List  rfsimulator
+    Replace In gNB Config    ${replace_list}  { serveraddr = "server"; };  add
+    ${replace_list} =  Create List  ra_ResponseWindow
+    Replace In gNB Config    ${replace_list}  ${5}  replace
+    ${replace_list} =  Create List  ulsch_max_frame_inactivity
+    Replace In gNB Config    ${replace_list}  None  delete
+    ${replace_list} =  Create List  amf_ip_address
+    Replace In gNB Config    ${replace_list}  ({ipv4 = "192.168.79.132"  replace
+    ${replace_list} =  Create List  GNB_IPV4_ADDRESS_FOR_NG_AMF
+    Replace In gNB Config    ${replace_list}  "192.168.79.140"  replace
+    ${replace_list} =  Create List  GNB_IPV4_ADDRESS_FOR_NGU
+    Replace In gNB Config    ${replace_list}  "192.168.80.140"  replace
+    ${replace_list} =  Create List  GNB_INTERFACE_NAME_FOR_NGU
+    Replace In gNB Config    ${replace_list}  None  delete
+    ${replace_list} =  Create List  GNB_INTERFACE_NAME_FOR_NG_AMF
+    Replace In gNB Config    ${replace_list}  None  delete
+    ${replace_list} =  Create List  tracking_area_code
+    Replace In gNB Config    ${replace_list}  0xa000  replace
+
 Suite Teardown Default
     Stop Cn
     Collect All Logs
@@ -112,6 +156,10 @@ Suite Teardown Default
 
 Check Core Network Health Status
     Wait Until Keyword Succeeds  60s  1s    Check CN Health Status
+
+Check RAN Elements Health Status
+    Wait Until Keyword Succeeds  60s  1s    Check RAN Health Status
+
 
 Wait and Verify Iperf3 Result
     [Arguments]    ${container}  ${mbits}=50

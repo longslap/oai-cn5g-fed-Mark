@@ -37,6 +37,7 @@ UDR=6
 NSSF=7
 UPF_VPP=8
 PCF=9
+NORTH=10
 
 // Default tags / branches  --> could be passed on by upstream job
 imageNames = ["oai-nrf", "oai-amf", "oai-smf", "oai-upf", "oai-ausf", "oai-udm", "oai-udr", "oai-nssf", "oai-upf-vpp", "oai-pcf"]
@@ -52,6 +53,9 @@ ngapTesterTag = params.ngapTesterTag
 upstreamTagToUse = params.upstreamTagToUse
 
 rfTags = ""
+
+// TODO: once 5gcsdk is public, not required anymore.
+def gitlab_credentials = params.Private_GitLab_Repo_Credentials
 
 //-------------------------------------------------------------------------------
 // Pipeline start
@@ -162,6 +166,8 @@ pipeline {
               upstreamEvent = true
               upstreamJobs[PCF] = true
               break
+            case NORTH:
+                rfTags = rfTags + ' -i North '
             case DEFAULT:
               break
           }
@@ -291,6 +297,25 @@ pipeline {
             error ("Some images are not present!")
           }
         }
+
+        // TODO: once the 5gcsdk repo is public, no longer needed.
+        // A git submodule approach would be better.
+        sh "rm -Rf test/5gcsdk"
+        sh "mkdir -p test/5gcsdk"
+        dir ('test/5gcsdk') {
+          checkout scmGit(
+            branches: [[name: '*/develop-testing']], 
+            extensions: [], 
+            userRemoteConfigs: [[
+            credentialsId: gitlab_credentials,
+            url: 'https://gitlab.eurecom.fr/5gc/5gcsdk.git']])
+        }
+
+        // Making sure that the latest version of oai-gnb and oai-nr-ue develop images
+        // is on the test server
+        sh "docker pull oaisoftwarealliance/oai-gnb:develop || true"
+        sh "docker pull oaisoftwarealliance/oai-nr-ue:develop || true"
+        sh "docker image prune -f"
       }
     }
     stage ('Run Robot Framework Tests') {
