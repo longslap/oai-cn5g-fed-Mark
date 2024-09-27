@@ -45,7 +45,7 @@ database:
   connection_timeout: 300
 
 pcf:
-  use_db_for_policy_storage: yes # Use db instead of yaml, enables dynamic pcc rule creation via API
+  enable_policy_provisioning_api: yes # Use db instead of yaml, enables dynamic pcc rule creation via API
 ```
 
 # 3. Location of the OpenAPI Specification File
