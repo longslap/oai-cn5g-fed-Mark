@@ -388,7 +388,7 @@ pipeline {
             echo '\u2705 \u001B[32mTesting the Deconnexion - Check Re-Attachement of UE\u001B[0m'
             sh 'mkdir -p archives/deconnexion-test'
             dir ('ci-scripts/cots-ue-mbim-scripts') {
-              sleep 60
+              sleep 120
               // I don't want that stage to fail.
               // It's easier then to un-deploy gNB.
               sh 'ping -I wwan0 -c 4 8.8.8.8 2>&1 | tee ../../archives/deconnexion-test/ping_post_deconnexion.log'
@@ -443,6 +443,9 @@ pipeline {
           unstash 'ue_logs'
           unstash 'gNB_image'
           unstash 'gNB_logs'
+          unstash 'ue_logs_start2'
+          unstash 'gNB_logs_after_first_stop'
+          unstash 'ue_logs_stop2'
           if (fileExists('oai-gnb.logs')) {
             sh 'mv oai-gnb.logs archives'
           }
