@@ -74,7 +74,10 @@ config:
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
   tac: "@TAC@" # check the information with AMF
-  #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap _TO CHECK !_
+  sst1: "@SST1@" #currently only 4 standard values are allowed 1,2,3,4
+  sd1: "@SD1@" # must be in HEX format
+  sst2: "@SST2@" #currently only 4 standard values are allowed 1,2,3,4
+  sd2: "@SD2@" # must be in HEX format
   amfhost: "@HOST_AMF@" #  "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
   n2IfName: "@N2IFNAME_CU@" # if multus.n2Interface.create is true then use n2
   n3IfName: "@N3IFNAME_CU@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0

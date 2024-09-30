@@ -74,7 +74,7 @@ config:
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
   tac: "@TAC@" # check the information with AMF
-  #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap
+  sst: "1" #currently only 4 standard values are allowed 1,2,3,4 # configured by demo-oai.sh script 
   usrp: "@RRU_TYPE@"   #allowed values rfsim, aw2s, b2xx, n3xx or x3xx
   f1IfName: "f1" # "eth0"   #if multus.f1Interface.create is true then use f1
   cuHost: "@CU_HOST_FROM_DU@" # "oai-cu" ## Ip-address or hostname

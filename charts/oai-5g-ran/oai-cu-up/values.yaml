@@ -73,7 +73,10 @@ config:
   mcc: "@MCC@" # check the information with AMF, SMF, UPF
   mnc: "@MNC@" # check the information with AMF, SMF, UPF
   tac: "@TAC@" # check the information with AMF
-  #sst: "1"  #currently only 4 standard values are allowed 1,2,3,4 # set via sed configmap _TO_CHECK !_
+  sst1: "@SST1@" #currently only 4 standard values are allowed 1,2,3,4
+  sd1: "@SD1@" # must be in HEX format
+  sst2: "@SST2@" #currently only 4 standard values are allowed 1,2,3,4
+  sd2: "@SD2@" # must be in HEX format
   cuCpHost: "@HOST_CUCP@" # "oai-cu" #
   n3IfName: "@N3IFNAME_CUUP@" # if multus.n3Interface.create is true then use n3 or eth0
   f1IfName: "f1u" # "eth0"   #if multus.f1Interface.create is true then use f1

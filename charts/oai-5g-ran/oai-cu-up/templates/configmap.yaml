@@ -22,11 +22,15 @@ data:
 
           // Tracking area code, 0x0000 and 0xfffe are reserved values
           tracking_area_code  = {{ .Values.config.tac}};
-          {{- if .Values.config.sd }}
-          plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}}; sd = {{ .Values.config.sd}} }) });
-          {{- else}}
-          plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}} }) });
+          {{- if .Values.config.sd1 }}
+            {{- if .Values.config.sd2 }}
+              plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst1}}; sd = {{ .Values.config.sd1} }, { sst = {{ .Values.config.sst2}}; sd = {{ .Values.config.sd2}} }) });
+            {{- else}}
+              plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst1}}; sd = {{ .Values.config.sd1}} }) });
+            {{- end}}
+            plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst1}} }) });
           {{- end}}
+
 
           tr_s_preference = "f1";
 
