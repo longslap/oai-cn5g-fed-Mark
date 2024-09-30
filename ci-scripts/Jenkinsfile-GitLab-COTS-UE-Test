@@ -342,6 +342,8 @@ pipeline {
             sh 'cp -f /tmp/test-start2.log archives/deconnexion-test || true'
             sh 'sudo rm -f /tmp/test-start2.log || true'
             stash allowEmpty: true, includes: 'archives/deconnexion-test/*.*', name: 'ue_logs_start2'
+            // starting a background ping
+            sh 'nohup ping -I wwan0 -c 120 8.8.8.8 > /tmp/bk_ping.log 2>&1 &'
           }
         }
       }
@@ -388,7 +390,7 @@ pipeline {
             echo '\u2705 \u001B[32mTesting the Deconnexion - Check Re-Attachement of UE\u001B[0m'
             sh 'mkdir -p archives/deconnexion-test'
             dir ('ci-scripts/cots-ue-mbim-scripts') {
-              sleep 240
+              sleep 60
               // I don't want that stage to fail.
               // It's easier then to un-deploy gNB.
               sh 'ping -I wwan0 -c 4 8.8.8.8 2>&1 | tee ../../archives/deconnexion-test/ping_post_deconnexion.log'
