@@ -29,6 +29,7 @@ data:
             {{- else}}
               plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst1}}; sd = {{ .Values.config.sd1}} }) });
             {{- end}}
+          {{- else}}
             plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst1}} }) });
           {{- end}}
 
