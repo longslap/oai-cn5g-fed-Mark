@@ -86,10 +86,10 @@ class HtmlReport():
 					else:
 						cmd = re.sub('^.*PASS : ', '', line.strip())
 						cmdStatus = True
-					cmd = re.sub('\[0m.*$', '', cmd)
+					cmd = re.sub('\\[0m.*$', '', cmd)
 					if pushToList:
 						listOfCmds.append((cmd,cmdStatus))
-				result = re.search('Final result for the tutorial (?P<doc_name>[a-zA-Z0-9\.\_:]+)', line)
+				result = re.search('Final result for the tutorial (?P<doc_name>[a-zA-Z0-9\\.\\_:]+)', line)
 				if result is not None:
 					cmdSummary = True
 					tutoName = result.group('doc_name')
@@ -123,7 +123,7 @@ class HtmlReport():
 				continue
 			with open(cwd + '/archives/oai-' + fileRootName + '-image-info.log','r') as imageDetailsFile:
 				for line in imageDetailsFile:
-					result = re.search('Tested Tag is oai-.*:(?P<tag>[a-zA-Z0-9\-\_]+)', line)
+					result = re.search('Tested Tag is oai-.*:(?P<tag>[a-zA-Z0-9\\-\\_]+)', line)
 					if result is not None:
 						imageTag = result.group('tag')
 					result = re.search('Size = (?P<size>[0-9]+) bytes', line)
@@ -135,7 +135,7 @@ class HtmlReport():
 						else:
 							sizeInt = int(sizeInt / 1000000)
 							imageSize = str(sizeInt) + ' MB'
-					result = re.search('Date = (?P<date>[a-zA-Z0-9\-\_:]+)', line)
+					result = re.search('Date = (?P<date>[a-zA-Z0-9\\-\\_:]+)', line)
 					if result is not None:
 						imageDate = re.sub('T', '  ', result.group('date'))
 			deployedContainerImages.append((containerName, imageRootName + imageTag, imageSize, imageDate))

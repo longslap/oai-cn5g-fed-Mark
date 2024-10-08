@@ -93,7 +93,7 @@ class HtmlReport():
                 continue
             with open(cwd + '/archives/' + fileRootName + '-image-info.log','r') as imageDetailsFile:
                 for line in imageDetailsFile:
-                    result = re.search('Tested Tag is .*.*:(?P<tag>[a-zA-Z0-9\-\_]+)', line)
+                    result = re.search('Tested Tag is .*.*:(?P<tag>[a-zA-Z0-9\\-\\_]+)', line)
                     if result is not None:
                         imageTag = result.group('tag')
                     result = re.search('Size = (?P<size>[0-9]+) bytes', line)
@@ -105,7 +105,7 @@ class HtmlReport():
                         else:
                             sizeInt = int(sizeInt / 1000000)
                             imageSize = str(sizeInt) + ' MB'
-                    result = re.search('Date = (?P<date>[a-zA-Z0-9\-\_:]+)', line)
+                    result = re.search('Date = (?P<date>[a-zA-Z0-9\\-\\_:]+)', line)
                     if result is not None:
                         imageDate = re.sub('T', '  ', result.group('date'))
             deployedContainerImages.append((containerName, f'{imageRootName}{imageTag}', imageSize, imageDate))
@@ -141,7 +141,7 @@ class HtmlReport():
                 for line in gnbsimLog:
                     if re.search('ExecuteProfile ended', line) is not None:
                         testCompleted = True
-                    pName = re.search('Init profile: (?P<name>[a-zA-Z0-9\-]+).*profile type: (?P<type>[a-zA-Z0-9\-]+)', line)
+                    pName = re.search('Init profile: (?P<name>[a-zA-Z0-9\\-]+).*profile type: (?P<type>[a-zA-Z0-9\\-]+)', line)
                     if pName is not None:
                         profileName = pName.group('name')
                         profileType = pName.group('type')

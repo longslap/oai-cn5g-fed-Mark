@@ -180,7 +180,7 @@ Check gnbsim IP
     [Arguments]    ${gnbsim_name}
     Wait Until Keyword Succeeds    30s  1s  Check Gnbsim Ongoing   ${gnbsim_name}
     ${ip} =    Get Gnbsim Ip    ${gnbsim_name}    # to get the output we parse again
-    [Return]    ${ip}
+    RETURN      ${ip}
 
 Run NGAP Tester Test
     [Arguments]    ${TC_NAME}    ${MT_PROFILE}=default     ${single_interface}=${TRUE}
