@@ -203,235 +203,328 @@ pipeline {
         }
       }
     }
-    stage ('Deploy gNB') {
-      agent { label gnb_server }
-      steps {
-        script {
-          echo '\u2705 \u001B[32mDeploy gNB\u001B[0m'
-          // As mentioned in the job configuration
-          // FULL_RAN_TAG shall be of "pullable" image format
-          // either porcepix.sboai.cs.eurecom.fr/oai-gnb:ci-tag
-          // or     oaisoftwarealliance/oai-gnb:week-tag
-          // It may temporarly be of porcepix.sboai.cs.eurecom.fr/oai-gnb:raphael/ci-fix-ubuntu-build-log-scheme-24efc76d format
-          //   the raphael/ part shall be fixed to raphael-
-          ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
-          checkAndPullRanImage(ranFullImage)
-          sh 'mkdir -p archives'
-          sh "echo 'Tested Tag is ${ranFullImage}' > archives/oai-gnb-image-info.log"
-          sh "docker image inspect --format='Date = {{.Created}}' ${ranFullImage} >> archives/oai-gnb-image-info.log"
-          sh "docker image inspect --format='Size = {{.Size}} bytes' ${ranFullImage} >> archives/oai-gnb-image-info.log"
-          sh "echo 'OC Pushed Tag is N/A' >> archives/oai-gnb-image-info.log"
-          stash allowEmpty: true, includes: 'archives/oai-gnb-image-info.log', name: 'gNB_image'
-          // Adding capture on SCTP and L2 port 9999
-          sh "sudo rm -f /tmp/oai-gnb-l2-trace.pcap /tmp/oai-gnb-l2-trace.logs"
-          sh 'nohup sudo tshark -i any -f "sctp or udp port 9999" -w /tmp/oai-gnb-l2-trace.pcap > /tmp/oai-gnb-l2-trace.logs 2>&1 &'
-          sleep 2
-          // Deploying now
-          dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
-            sh "sudo b2xx_fx3_utils --reset-device"
-            sh "sudo uhd_find_devices > /dev/null 2>&1 || true"
-            sleep 5
-            sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
-            sh "docker-compose up -d"
-            deployedGNB = true
-            gNBStatus = checkStatusOnGNB()
-            if (gNBStatus > 0) {
-              error ("gNB did NOT deploy properly")
-            }
-          }
-        }
-      }
-      post {
-        success {
-          script {
-            gnbDeploy    = true
-          }
-        }
-        unsuccessful {
-          script {
-            sh "sudo pkill tshark || true"
-            sleep 2
-            sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
-            dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
-              sh "docker-compose stop -t 3 || true"
-              sleep 2
-              sh "docker logs sa-b210-gnb > oai-gnb.logs 2>&1 || true"
-              sh "cp /tmp/oai-gnb-l2-trace.* . || true"
-              sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
-              stash allowEmpty: true, includes: 'oai-gnb.logs, oai-gnb-l2-trace.*', name: 'gNB_logs'
-              sh "docker-compose down -t 3 || true"
-            }
-            deployedGNB  = false
-            gnbDeploy    = false
-            testStart0   = false
-            testStart1   = false
-            testStop0    = false
-            testStop1    = false
-            if (ranFullImage.contains('porcepix')) {
-              sh "docker rmi ${ranFullImage} || true"
-            }
-          }
-        }
-      }
-    }
-    stage ('Test COTS-UE') {
-      agent { label ue_ctl_server }
-      steps {
-        lock(ue_ctl_resource) {
-          script {
-            echo '\u2705 \u001B[32mTest COTS-UE\u001B[0m'
-            sh 'mkdir -p archives'
-            dir ('ci-scripts/cots-ue-mbim-scripts') {
-              // I don't want that stage to fail.
-              // It's easier then to un-deploy gNB.
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start0.log"'
-              } catch (Exception e) {
-                echo "Test-Start #0 seems to have failed!"
-                testStart0 = false
-              }
-              if (testStart0) {
-                sh 'sudo traceroute -4 -T -i wwan0 openairinterface.org | tee /tmp/test-traffic0.log'
-                sh 'curl --interface wwan0 https://openairinterface.org/wp-content/uploads/2015/06/cropped-oai_final_logo.png -o /tmp/test-oai_final_logo.png'
-              }
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop0.log"'
-              } catch (Exception e) {
-                echo "Test-Stop #0 seems to have failed!"
-                testStop0 = false
-              }
-              sleep 5
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start1.log"'
-              } catch (Exception e) {
-                echo "Test-Start #1 seems to have failed!"
-                testStart1 = false
-              }
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop1.log"'
-              } catch (Exception e) {
-                echo "Test-Stop #1 seems to have failed!"
-                testStop1 = false
-              }
-            }
-            sh 'sudo chmod 666 /tmp/test-st*.log'
-            sh 'cp -f /tmp/test-*.log /tmp/test-*.png archives || true'
-            sh 'sudo rm -f /tmp/test-*.log /tmp/test-*.png || true'
-            stash allowEmpty: true, includes: 'archives/*.*', name: 'ue_logs'
-          }
-        }
-      }
-    }
-    stage ('Deconnexion Test - Attach UE') {
-      agent { label ue_ctl_server }
-      steps {
-        lock(ue_ctl_resource) {
-          script {
-            echo '\u2705 \u001B[32mTesting the Deconnexion - Attach UE again\u001B[0m'
-            sh 'mkdir -p archives/deconnexion-test'
-            dir ('ci-scripts/cots-ue-mbim-scripts') {
-              // I don't want that stage to fail.
-              // It's easier then to un-deploy gNB.
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start2.log"'
-              } catch (Exception e) {
-                echo "Test-Start #2 seems to have failed!"
-              }
-            }
-            sh 'sudo chmod 666 /tmp/test-start2.log || true'
-            sh 'cp -f /tmp/test-start2.log archives/deconnexion-test || true'
-            sh 'sudo rm -f /tmp/test-start2.log || true'
-            stash allowEmpty: true, includes: 'archives/deconnexion-test/*.*', name: 'ue_logs_start2'
-            // starting a background ping
-            sh 'nohup ping -I wwan0 -c 120 8.8.8.8 > /tmp/bk_ping.log 2>&1 &'
-          }
-        }
-      }
-    }
-    stage ('Deconnexion Test - Restart gNB') {
-      agent { label gnb_server }
-      steps {
-        script {
-          echo '\u2705 \u001B[32mTesting the Deconnexion - Restart gNB\u001B[0m'
-          sh 'mkdir -p archives/first_stop'
-          if (deployedGNB) {
-            sh "sudo pkill tshark || true"
-            sleep 2
-            sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
-            dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+    stage ('Initial 2 PDU Sessions Test') {
+      stages {
+        stage ('Deploy gNB #0') {
+          agent { label gnb_server }
+          steps {
+            script {
+              echo '\u2705 \u001B[32mDeploy gNB\u001B[0m'
+              // As mentioned in the job configuration
+              // FULL_RAN_TAG shall be of "pullable" image format
+              // either porcepix.sboai.cs.eurecom.fr/oai-gnb:ci-tag
+              // or     oaisoftwarealliance/oai-gnb:week-tag
+              // It may temporarly be of porcepix.sboai.cs.eurecom.fr/oai-gnb:raphael/ci-fix-ubuntu-build-log-scheme-24efc76d format
               ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
-              sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
-              // Stop the gNB.
-              sh "docker-compose stop -t 3 || true"
-              sleep 2
-              sh "docker logs sa-b210-gnb > ../../../archives/first_stop/oai-gnb.logs 2>&1 || true"
-              sh "cp /tmp/oai-gnb-l2-trace.* ../../../archives/first_stop || true"
-              sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
-
+              checkAndPullRanImage(ranFullImage)
+              sh 'mkdir -p archives/initial-2-pdu-session-test'
+              sh "echo 'Tested Tag is ${ranFullImage}' > archives/oai-gnb-image-info.log"
+              sh "docker image inspect --format='Date = {{.Created}}' ${ranFullImage} >> archives/oai-gnb-image-info.log"
+              sh "docker image inspect --format='Size = {{.Size}} bytes' ${ranFullImage} >> archives/oai-gnb-image-info.log"
+              sh "echo 'OC Pushed Tag is N/A' >> archives/oai-gnb-image-info.log"
+              stash allowEmpty: true, includes: 'archives/oai-gnb-image-info.log', name: 'gNB_image'
               // Adding capture on SCTP and L2 port 9999
               sh "sudo rm -f /tmp/oai-gnb-l2-trace.pcap /tmp/oai-gnb-l2-trace.logs"
               sh 'nohup sudo tshark -i any -f "sctp or udp port 9999" -w /tmp/oai-gnb-l2-trace.pcap > /tmp/oai-gnb-l2-trace.logs 2>&1 &'
               sleep 2
-
-              // Restart the gNB again
-              sh "docker-compose restart || true"
-              checkStatusOnGNB()
-            }
-            stash allowEmpty: true, includes: 'archives/first_stop/*.*', name: 'gNB_logs_after_first_stop'
-          }
-        }
-      }
-    }
-    stage ('Deconnexion Test - Check Re-Attachement of UE') {
-      agent { label ue_ctl_server }
-      steps {
-        lock(ue_ctl_resource) {
-          script {
-            echo '\u2705 \u001B[32mTesting the Deconnexion - Check Re-Attachement of UE\u001B[0m'
-            sh 'mkdir -p archives/deconnexion-test'
-            dir ('ci-scripts/cots-ue-mbim-scripts') {
-              sleep 60
-              // I don't want that stage to fail.
-              // It's easier then to un-deploy gNB.
-              sh 'ping -I wwan0 -c 4 8.8.8.8 2>&1 | tee ../../archives/deconnexion-test/ping_post_deconnexion.log'
-              sh 'ping -I wwan0.1 -c 4 8.8.8.8 2>&1 | tee -a ../../archives/deconnexion-test/ping_post_deconnexion.log'
-              try {
-                sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop2.log"'
-              } catch (Exception e) {
-                echo "Test-Stop #2 seems to have failed!"
+              // Deploying now
+              dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+                sh "sudo b2xx_fx3_utils --reset-device"
+                sh "sudo uhd_find_devices > /dev/null 2>&1 || true"
+                sleep 5
+                sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+                sh "docker-compose up -d"
+                deployedGNB = true
+                gNBStatus = checkStatusOnGNB()
+                if (gNBStatus > 0) {
+                  error ("gNB did NOT deploy properly")
+                }
               }
             }
-            sh 'sudo chmod 666 /tmp/test-stop2.log || true'
-            sh 'cp -f /tmp/test-stop2.log archives/deconnexion-test || true'
-            sh 'sudo rm -f /tmp/test-stop2.log || true'
-            stash allowEmpty: true, includes: 'archives/deconnexion-test/*.*', name: 'ue_logs_stop2'
+          }
+          post {
+            success {
+              script {
+                gnbDeploy    = true
+              }
+            }
+            unsuccessful {
+              script {
+                sh "sudo pkill tshark || true"
+                sleep 2
+                sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
+                sh "cp /tmp/oai-gnb-l2-trace.* archives/initial-2-pdu-session-test || true"
+                sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
+                dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+                  sh "docker-compose stop -t 3 || true"
+                  sleep 2
+                  sh "docker logs sa-b210-gnb > ../../../archives/initial-2-pdu-session-test/oai-gnb.logs 2>&1 || true"
+                  sh "docker-compose down -t 3 || true"
+                }
+                stash allowEmpty: true, includes: 'archives/initial-2-pdu-session-test/*.*', name: 'initial_2_pdu_gNB_logs'
+                deployedGNB  = false
+                gnbDeploy    = false
+                testStart0   = false
+                testStart1   = false
+                testStop0    = false
+                testStop1    = false
+                if (ranFullImage.contains('porcepix')) {
+                  sh "docker rmi ${ranFullImage} || true"
+                }
+              }
+            }
+          }
+        }
+        stage ('Test COTS-UE #0') {
+          agent { label ue_ctl_server }
+          steps {
+            lock(ue_ctl_resource) {
+              script {
+                echo '\u2705 \u001B[32mTest COTS-UE\u001B[0m'
+                sh 'mkdir -p archives/initial-2-pdu-session-test'
+                dir ('ci-scripts/cots-ue-mbim-scripts') {
+                  // I don't want that stage to fail.
+                  // It's easier then to un-deploy gNB.
+                  try {
+                    sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start0.log"'
+                  } catch (Exception e) {
+                    echo "Test-Start #0 seems to have failed!"
+                    testStart0 = false
+                  }
+                  if (testStart0) {
+                    sh 'sudo traceroute -4 -T -i wwan0 openairinterface.org | tee /tmp/test-traffic0.log'
+                    sh 'curl --interface wwan0 https://openairinterface.org/wp-content/uploads/2015/06/cropped-oai_final_logo.png -o /tmp/test-oai_final_logo.png'
+                  }
+                  try {
+                    sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop0.log"'
+                  } catch (Exception e) {
+                    echo "Test-Stop #0 seems to have failed!"
+                    testStop0 = false
+                  }
+                  sleep 5
+                  try {
+                    sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start1.log"'
+                  } catch (Exception e) {
+                    echo "Test-Start #1 seems to have failed!"
+                    testStart1 = false
+                  }
+                  try {
+                    sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop1.log"'
+                  } catch (Exception e) {
+                    echo "Test-Stop #1 seems to have failed!"
+                    testStop1 = false
+                  }
+                }
+                sh 'sudo chmod 666 /tmp/test-st*.log'
+                sh 'cp -f /tmp/test-*.log /tmp/test-*.png archives/initial-2-pdu-session-test || true'
+                sh 'sudo rm -f /tmp/test-*.log /tmp/test-*.png || true'
+                stash allowEmpty: true, includes: 'archives/initial-2-pdu-session-test/*.*', name: 'initial_2_pdu_ue_logs'
+              }
+            }
+          }
+        }
+        stage ('Undeploy gNB #0') {
+          agent { label gnb_server }
+          steps {
+            script {
+              echo '\u2705 \u001B[32mUndeploy gNB\u001B[0m'
+              if (deployedGNB) {
+                sh 'mkdir -p archives/initial-2-pdu-session-test'
+                sh "sudo pkill tshark || true"
+                sleep 2
+                sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
+                sh "cp /tmp/oai-gnb-l2-trace.* archives/initial-2-pdu-session-test || true"
+                sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
+                dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+                  ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
+                  sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+                  sh "docker-compose stop -t 3 || true"
+                  sleep 2
+                  sh "docker logs sa-b210-gnb > ../../../archives/initial-2-pdu-session-test/oai-gnb.logs 2>&1 || true"
+                  sh "docker-compose down -t 3 || true"
+                }
+                stash allowEmpty: true, includes: 'archives/initial-2-pdu-session-test/*.*', name: 'initial_2_pdu_gNB_logs'
+                deployedGNB = false
+                if (ranFullImage.contains('porcepix')) {
+                  sh "docker rmi ${ranFullImage} || true"
+                }
+              }
+            }
           }
         }
       }
     }
-    stage ('Undeploy gNB') {
-      agent { label gnb_server }
-      steps {
-        script {
-          echo '\u2705 \u001B[32mUndeploy gNB\u001B[0m'
-          if (deployedGNB) {
-            sh "sudo pkill tshark || true"
-            sleep 2
-            sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
-            dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+    stage ('Deconnection (gNB stop and start) Test') {
+      stages {
+        stage ('Deploy gNB #1') {
+          agent { label gnb_server }
+          steps {
+            script {
+              echo '\u2705 \u001B[32mDeploy gNB\u001B[0m'
               ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
-              sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
-              sh "docker-compose stop -t 3 || true"
+              checkAndPullRanImage(ranFullImage)
+              sh 'mkdir -p archives/deconnection-test'
+              // Adding capture on SCTP and L2 port 9999
+              sh "sudo rm -f /tmp/oai-gnb-l2-trace.pcap /tmp/oai-gnb-l2-trace.logs"
+              sh 'nohup sudo tshark -i any -f "sctp or udp port 9999" -w /tmp/oai-gnb-l2-trace.pcap > /tmp/oai-gnb-l2-trace.logs 2>&1 &'
               sleep 2
-              sh "docker logs sa-b210-gnb > oai-gnb.logs 2>&1 || true"
-              sh "cp /tmp/oai-gnb-l2-trace.* . || true"
-              sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
-              stash allowEmpty: true, includes: 'oai-gnb.logs, oai-gnb-l2-trace.*', name: 'gNB_logs'
-              sh "docker-compose down -t 3 || true"
+              // Deploying now
+              dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+                sh "sudo b2xx_fx3_utils --reset-device"
+                sh "sudo uhd_find_devices > /dev/null 2>&1 || true"
+                sleep 5
+                sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+                sh "docker-compose up -d"
+                deployedGNB = true
+                gNBStatus = checkStatusOnGNB()
+                if (gNBStatus > 0) {
+                  error ("gNB did NOT deploy properly")
+                }
+              }
             }
-            deployedGNB = false
-            if (ranFullImage.contains('porcepix')) {
-              sh "docker rmi ${ranFullImage} || true"
+          }
+          post {
+            success {
+              script {
+                gnbDeploy    = true
+              }
+            }
+            unsuccessful {
+              script {
+                sh "sudo pkill tshark || true"
+                sleep 2
+                sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
+                sh "cp /tmp/oai-gnb-l2-trace.* archives/deconnection-test || true"
+                sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
+                dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+                  sh "docker-compose stop -t 3 || true"
+                  sleep 2
+                  sh "docker logs sa-b210-gnb > ../../../archives/deconnection-test/oai-gnb.logs 2>&1 || true"
+                  sh "docker-compose down -t 3 || true"
+                }
+                stash allowEmpty: true, includes: 'archives/deconnection-test/*.*', name: 'deconnection_gNB_logs'
+                deployedGNB  = false
+                gnbDeploy    = false
+                if (ranFullImage.contains('porcepix')) {
+                  sh "docker rmi ${ranFullImage} || true"
+                }
+              }
+            }
+          }
+        }
+        stage ('Attach UE #1') {
+          agent { label ue_ctl_server }
+          steps {
+            lock(ue_ctl_resource) {
+              script {
+                echo '\u2705 \u001B[32mTesting the Deconnection - Attach UE\u001B[0m'
+                sh 'mkdir -p archives/deconnection-test'
+                dir ('ci-scripts/cots-ue-mbim-scripts') {
+                  // I don't want that stage to fail.
+                  // It's easier then to un-deploy gNB.
+                  try {
+                    sh 'sudo bash -c "set -o pipefail && ./start.sh 2>&1 | tee /tmp/test-start2.log"'
+                  } catch (Exception e) {
+                    echo "Test-Start #2 seems to have failed!"
+                  }
+                }
+                sh 'sudo chmod 666 /tmp/test-start2.log || true'
+                sh 'cp -f /tmp/test-start2.log archives/deconnection-test || true'
+                sh 'sudo rm -f /tmp/test-start2.log || true'
+                stash allowEmpty: true, includes: 'archives/deconnection-test/*.*', name: 'deconnection_ue_logs_start'
+                // starting a background ping
+                sh 'nohup ping -I wwan0 -c 120 8.8.8.8 > /tmp/bk_ping.log 2>&1 &'
+              }
+            }
+          }
+        }
+        stage ('Restart gNB') {
+          agent { label gnb_server }
+          steps {
+            script {
+              echo '\u2705 \u001B[32mTesting the Deconnection - Restart gNB\u001B[0m'
+              sh 'mkdir -p archives/deconnection-test-stop0'
+              if (deployedGNB) {
+                sh "sudo pkill tshark || true"
+                sleep 2
+                sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
+                sh "cp /tmp/oai-gnb-l2-trace.* archives/deconnection-test-stop0 || true"
+                sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
+                dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+                  ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
+                  sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+                  // Stop the gNB.
+                  sh "docker-compose stop -t 3 || true"
+                  sleep 2
+                  sh "docker logs sa-b210-gnb > ../../../archives/deconnection-test-stop0/oai-gnb.logs 2>&1 || true"
+    
+                  // Adding capture on SCTP and L2 port 9999
+                  sh "sudo rm -f /tmp/oai-gnb-l2-trace.pcap /tmp/oai-gnb-l2-trace.logs"
+                  sh 'nohup sudo tshark -i any -f "sctp or udp port 9999" -w /tmp/oai-gnb-l2-trace.pcap > /tmp/oai-gnb-l2-trace.logs 2>&1 &'
+                  sleep 2
+    
+                  // Restart the gNB again
+                  sh "docker-compose restart || true"
+                  checkStatusOnGNB()
+                }
+                stash allowEmpty: true, includes: 'archives/deconnection-test-stop0/*.*', name: 'deconnection_stop_gnb_logs'
+              }
+            }
+          }
+        }
+        stage ('Check Re-Attachement of UE') {
+          agent { label ue_ctl_server }
+          steps {
+            lock(ue_ctl_resource) {
+              script {
+                echo '\u2705 \u001B[32mTesting the Deconnexion - Check Re-Attachement of UE\u001B[0m'
+                sh 'mkdir -p archives/deconnection-test'
+                dir ('ci-scripts/cots-ue-mbim-scripts') {
+                  sleep 60
+                  // I don't want that stage to fail.
+                  // It's easier then to un-deploy gNB.
+                  sh 'ping -I wwan0 -c 4 8.8.8.8 2>&1 | tee ../../archives/deconnection-test/ping_post_deconnection.log'
+                  sh 'ping -I wwan0.1 -c 4 8.8.8.8 2>&1 | tee -a ../../archives/deconnection-test/ping_post_deconnection.log'
+                  try {
+                    sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop2.log"'
+                  } catch (Exception e) {
+                    echo "Test-Stop #2 seems to have failed!"
+                  }
+                }
+                sh 'sudo chmod 666 /tmp/test-stop2.log || true'
+                sh 'cp -f /tmp/test-stop2.log archives/deconnection-test || true'
+                sh 'sudo rm -f /tmp/test-stop2.log || true'
+                stash allowEmpty: true, includes: 'archives/deconnection-test/*.*', name: 'deconnection_ue_logs'
+              }
+            }
+          }
+        }
+        stage ('Undeploy gNB #1') {
+          agent { label gnb_server }
+          steps {
+            script {
+              echo '\u2705 \u001B[32mUndeploy gNB\u001B[0m'
+              if (deployedGNB) {
+                sh 'mkdir -p archives/deconnection-test'
+                sh "sudo pkill tshark || true"
+                sleep 2
+                sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
+                sh "cp /tmp/oai-gnb-l2-trace.* archives/deconnection-test || true"
+                sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
+                dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
+                  ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
+                  sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
+                  sh "docker-compose stop -t 3 || true"
+                  sleep 2
+                  sh "docker logs sa-b210-gnb > ../../../archives/deconnection-test/oai-gnb.logs 2>&1 || true"
+                  sh "docker-compose down -t 3 || true"
+                }
+                stash allowEmpty: true, includes: 'archives/deconnection-test/*.*', name: 'deconnection_gNB_logs'
+                deployedGNB = false
+                if (ranFullImage.contains('porcepix')) {
+                  sh "docker rmi ${ranFullImage} || true"
+                }
+              }
             }
           }
         }
@@ -442,18 +535,16 @@ pipeline {
         script {
           echo '\u2705 \u001B[32mUndeploy Core on Cluster\u001B[0m'
           retrieveLogsFromPods()
-          unstash 'ue_logs'
           unstash 'gNB_image'
-          unstash 'gNB_logs'
-          unstash 'ue_logs_start2'
-          unstash 'gNB_logs_after_first_stop'
-          unstash 'ue_logs_stop2'
-          if (fileExists('oai-gnb.logs')) {
-            sh 'mv oai-gnb.logs archives'
-          }
-          if (fileExists('oai-gnb-l2-trace.pcap')) {
-            sh 'mv oai-gnb-l2-trace.* archives'
-          }
+          // Initial 2-PDU-Session Test
+          unstash 'initial_2_pdu_gNB_logs'
+          unstash 'initial_2_pdu_ue_logs'
+          // Deconnection Test
+          unstash 'deconnection_gNB_logs'
+          unstash 'deconnection_ue_logs_start'
+          unstash 'deconnection_stop_gnb_logs'
+          unstash 'deconnection_ue_logs'
+          //
           dir ('ci-scripts/charts/oai-5g-basic') {
             sh 'helm uninstall $(helm list -aq)'
             // Let's do later a script to check.
@@ -505,16 +596,16 @@ pipeline {
           retrieveLogsFromPods()
           try {
             unstash 'gNB_image'
-            unstash 'gNB_logs'
-            unstash 'ue_logs'
-            unstash 'ue_logs_start2'
-            unstash 'gNB_logs_after_first_stop'
-            unstash 'ue_logs_stop2'
+            // Initial 2-PDU-Session Test
+            unstash 'initial_2_pdu_gNB_logs'
+            unstash 'initial_2_pdu_ue_logs'
+            // Deconnection Test
+            unstash 'deconnection_gNB_logs'
+            unstash 'deconnection_ue_logs_start'
+            unstash 'deconnection_stop_gnb_logs'
+            unstash 'deconnection_ue_logs'
           } catch (Exception e) {
             echo "could not retrieve stashes from gNB or UE server"
-          }
-          if (fileExists('oai-gnb.logs')) {
-            sh 'mv oai-gnb.logs archives'
           }
           dir ('ci-scripts/charts/oai-5g-basic') {
             sh 'helm uninstall $(helm list -aq)'
