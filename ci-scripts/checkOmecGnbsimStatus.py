@@ -81,43 +81,43 @@ def main() -> None:
         stats = myCmds.run('docker stats --no-stream', silent=notSilentForFirstTime)
         for line in stats.stdout.split('\n'):
             if line.count('oai-amf') > 0:
-                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\\.]+)% *(?P<memory_usage>[0-9\\.]+)MiB / ', line)
                 if result is not None:
                     amfTimeX.append(x * LOOP_INTERVAL)
                     amfCpuY.append(float(result.group('cpu_usage')))
                     amfMemY.append(float(result.group('memory_usage')))
             if line.count('oai-nrf') > 0:
-                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\\.]+)% *(?P<memory_usage>[0-9\\.]+)MiB / ', line)
                 if result is not None:
                     nrfTimeX.append(x * LOOP_INTERVAL)
                     nrfCpuY.append(float(result.group('cpu_usage')))
                     nrfMemY.append(float(result.group('memory_usage')))
             if line.count('oai-ausf') > 0:
-                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\\.]+)% *(?P<memory_usage>[0-9\\.]+)MiB / ', line)
                 if result is not None:
                     ausfTimeX.append(x * LOOP_INTERVAL)
                     ausfCpuY.append(float(result.group('cpu_usage')))
                     ausfMemY.append(float(result.group('memory_usage')))
             if line.count('oai-udm') > 0:
-                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\\.]+)% *(?P<memory_usage>[0-9\\.]+)MiB / ', line)
                 if result is not None:
                     udmTimeX.append(x * LOOP_INTERVAL)
                     udmCpuY.append(float(result.group('cpu_usage')))
                     udmMemY.append(float(result.group('memory_usage')))
             if line.count('oai-udr') > 0:
-                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\\.]+)% *(?P<memory_usage>[0-9\\.]+)MiB / ', line)
                 if result is not None:
                     udrTimeX.append(x * LOOP_INTERVAL)
                     udrCpuY.append(float(result.group('cpu_usage')))
                     udrMemY.append(float(result.group('memory_usage')))
             if line.count('oai-smf') > 0:
-                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\\.]+)% *(?P<memory_usage>[0-9\\.]+)MiB / ', line)
                 if result is not None:
                     smfTimeX.append(x * LOOP_INTERVAL)
                     smfCpuY.append(float(result.group('cpu_usage')))
                     smfMemY.append(float(result.group('memory_usage')))
             if line.count('oai-upf') > 0:
-                result = re.search(' (?P<cpu_usage>[0-9\.]+)% *(?P<memory_usage>[0-9\.]+)MiB / ', line)
+                result = re.search(' (?P<cpu_usage>[0-9\\.]+)% *(?P<memory_usage>[0-9\\.]+)MiB / ', line)
                 if result is not None:
                     upfTimeX.append(x * LOOP_INTERVAL)
                     upfCpuY.append(float(result.group('cpu_usage')))

@@ -66,7 +66,7 @@ if __name__ == '__main__':
     receivedBW = 0
     with open(args.log_file, 'r') as logFile:
         for line in logFile:
-            sender = re.search(' *(?P<bw>[0-9\.]+) [MG]bits/sec.*sender', line)
+            sender = re.search(' *(?P<bw>[0-9\\.]+) [MG]bits/sec.*sender', line)
             if sender is not None:
                 sentBW = float(sender.group('bw'))
                 if re.search('Mbits/sec', line) is not None:
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                 else:
                     sentBW *= 1000000000
                 logging.debug(f'sentBW = {sentBW}')
-            receiver = re.search(' *(?P<bw>[0-9\.]+) [MG]bits/sec.*receiver', line)
+            receiver = re.search(' *(?P<bw>[0-9\\.]+) [MG]bits/sec.*receiver', line)
             if receiver is not None:
                 receivedBW = float(receiver.group('bw'))
                 if re.search('Mbits/sec', line) is not None:

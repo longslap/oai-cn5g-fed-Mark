@@ -1057,25 +1057,25 @@ iperf Done.
 **UDP Uplink test**
 
 ``` shell
-docker-compose-host $: docker exec oai-ext-dn /bin/bash -c "iperf3 -B 192.168.72.135 -c 12.1.1.2 -4 -t 10 -u -b 400M -R" 2>&1 | tee /tmp/oai/upf-ebpf-gnbsim/iperf3_udp_ul.log
+docker-compose-host $: docker exec oai-ext-dn /bin/bash -c "iperf3 -B 192.168.72.135 -c 12.1.1.2 -4 -t 10 -u -b 350M -R" 2>&1 | tee /tmp/oai/upf-ebpf-gnbsim/iperf3_udp_ul.log
 Connecting to host 12.1.1.2, port 5201
 Reverse mode, remote host 12.1.1.2 is sending
 [  5] local 192.168.72.135 port 35808 connected to 12.1.1.2 port 5201
 [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-[  5]   0.00-1.00   sec  47.7 MBytes   400 Mbits/sec  0.009 ms  0/35489 (0%)
-[  5]   1.00-2.00   sec  47.7 MBytes   400 Mbits/sec  0.013 ms  0/35509 (0%)
-[  5]   2.00-3.00   sec  47.7 MBytes   400 Mbits/sec  0.009 ms  0/35513 (0%)
-[  5]   3.00-4.00   sec  47.7 MBytes   400 Mbits/sec  0.009 ms  0/35512 (0%)
-[  5]   4.00-5.00   sec  47.7 MBytes   400 Mbits/sec  0.010 ms  0/35510 (0%)
-[  5]   5.00-6.00   sec  47.7 MBytes   400 Mbits/sec  0.025 ms  0/35512 (0%)
-[  5]   6.00-7.00   sec  47.7 MBytes   400 Mbits/sec  0.025 ms  0/35512 (0%)
-[  5]   7.00-8.00   sec  47.7 MBytes   400 Mbits/sec  0.009 ms  0/35511 (0%)
-[  5]   8.00-9.00   sec  47.7 MBytes   400 Mbits/sec  0.009 ms  0/35512 (0%)
-[  5]   9.00-10.00  sec  47.7 MBytes   400 Mbits/sec  0.007 ms  0/35511 (0%)
+[  5]   0.00-1.00   sec  41.7 MBytes   350 Mbits/sec  0.009 ms  0/31489 (0%)
+[  5]   1.00-2.00   sec  41.7 MBytes   350 Mbits/sec  0.013 ms  0/31509 (0%)
+[  5]   2.00-3.00   sec  41.7 MBytes   350 Mbits/sec  0.009 ms  0/31513 (0%)
+[  5]   3.00-4.00   sec  41.7 MBytes   350 Mbits/sec  0.009 ms  0/31512 (0%)
+[  5]   4.00-5.00   sec  41.7 MBytes   350 Mbits/sec  0.010 ms  0/31510 (0%)
+[  5]   5.00-6.00   sec  41.7 MBytes   350 Mbits/sec  0.025 ms  0/31512 (0%)
+[  5]   6.00-7.00   sec  41.7 MBytes   350 Mbits/sec  0.025 ms  0/31512 (0%)
+[  5]   7.00-8.00   sec  41.7 MBytes   350 Mbits/sec  0.009 ms  0/31511 (0%)
+[  5]   8.00-9.00   sec  41.7 MBytes   350 Mbits/sec  0.009 ms  0/31512 (0%)
+[  5]   9.00-10.00  sec  41.7 MBytes   350 Mbits/sec  0.007 ms  0/31511 (0%)
 - - - - - - - - - - - - - - - - - - - - - - - - -
 [ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
-[  5]   0.00-10.00  sec   477 MBytes   400 Mbits/sec  0.000 ms  0/355110 (0%)  sender
-[  5]   0.00-10.00  sec   477 MBytes   400 Mbits/sec  0.007 ms  0/355091 (0%)  receiver
+[  5]   0.00-10.00  sec   419 MBytes   350 Mbits/sec  0.000 ms  0/315110 (0%)  sender
+[  5]   0.00-10.00  sec   419 MBytes   350 Mbits/sec  0.007 ms  0/315091 (0%)  receiver
 
 iperf Done.
 ```
