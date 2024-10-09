@@ -458,10 +458,10 @@ def Check_ue_traffic_notification(iperf_results, imsi):
             smf_traffic_data = extract_info_by_seid_and_urseqn(logs, data['SEID'], data['UR-SEQN'])
             total_traffic_from_logs += int(smf_traffic_data['Volume Total'])
             if int(smf_traffic_data['NoP Total']) != int(data['NoP Total']) or int(smf_traffic_data['Volume Total']) != int(data['Volume Total']):
-                logger.error(f"Traffic data mismatch between SMF logs and handler collection for SUPI: {imsi}, Log NoP Total: {smf_traffic_data['NoP Total']}, Callback NoP Total: {int(data['NoP Total'] )}, Logs Volume Total: {smf_traffic_data['Volume Total']}, Callback Volume Total: {data['Volume Total']}")
+                logger.warning(f"Traffic data mismatch between SMF logs and handler collection for SUPI: {imsi}, Log NoP Total: {smf_traffic_data['NoP Total']}, Callback NoP Total: {int(data['NoP Total'] )}, Logs Volume Total: {smf_traffic_data['Volume Total']}, Callback Volume Total: {data['Volume Total']}")
                 handler_mismatch = True
         if not (min_val <= total_traffic_from_logs <= max_val):
-            logger.error(f"Total traffic from SMF logs does not match iPerf results within 10% tolerance for SUPI: {imsi}, Total traffic from logs: {total_traffic_from_logs}, Iperf Traffic:{traffic_iperf_results}")
+            logger.warning(f"Total traffic from SMF logs does not match iPerf results within 10% tolerance for SUPI: {imsi}, Total traffic from logs: {total_traffic_from_logs}, Iperf Traffic:{traffic_iperf_results}")
             iperf_mismatch = True
         if handler_mismatch or iperf_mismatch:
             raise Exception(f"Traffic data mismatch for SUPI: {imsi}")

@@ -253,4 +253,6 @@ class RfSimLib:
                 imsi = parts[10]
                 return str(imsi)
         raise Exception(f"IMSI not found for {container}")
-            
+
+    def ping_from_rfsim(self, rfsim_name, target_ip, count=4):
+        self.docker_api.exec_on_container(rfsim_name, f"ping -I {self.get_ue_IP_address(rfsim_name)} -c {count} {target_ip}")
