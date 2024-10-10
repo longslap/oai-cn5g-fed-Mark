@@ -322,6 +322,38 @@ def detailsOaiGNBDeployment(folder_name, idx):
     detailsHtml += generate_button_footer()
     return (status, detailsHtml)
 
+def detailsOaiGNBUndeployment(folder_name, idx):
+    status = True
+    detailsHtml = generate_button_header(f'ram-stop-details-{idx}', 'Details on the OAI RAN gNB Undeployment')
+    cwd = os.getcwd()
+    bye_count = 0
+    assertion_count = 0
+    if not os.path.isfile(os.path.join(cwd, f'archives/{folder_name}/oai-gnb.logs')):
+        return generate_list_row(f'could not open archives/{folder_name}/oai-gnb.logs', 'question-sign')
+    with open(os.path.join(cwd, f'archives/{folder_name}/oai-gnb.logs'), 'r') as gnbLogs:
+        for line in gnbLogs:
+           if re.search('Bye', line) is not None:
+               bye_count += 1
+           if re.search('Assertion', line) is not None:
+               assertion_count += 1
+    if (bye_count > 0) and (assertion_count == 0):
+        message = 'Bye message appeared. No issue'
+        iconName = 'check'
+    elif (bye_count == 0) and (assertion_count > 0):
+        message = 'Assertion occured'
+        iconName = 'remove-sign'
+        status = False
+    else:
+        message = 'No Bye message. No Assertion'
+        iconName = 'question-mark'
+        status = False
+    detailsHtml += generate_list_header()
+    detailsHtml += generate_list_row(message, iconName)
+    detailsHtml += generate_list_row(f'For more details look at archives/{folder_name}/oai-gnb.logs', 'info-sign')
+    detailsHtml += generate_list_footer()
+    detailsHtml += generate_button_footer()
+    return (status, detailsHtml)
+
 def detailsUeStartTest(folder_name, runNb):
     status = False
     detailsHtml = generate_button_header(f'ue-start{runNb}-details', f'Details on the UE start test #{runNb}')
@@ -478,7 +510,8 @@ if __name__ == '__main__':
         ueStop1Status = True
     else:
         ueStop1Status = False
-    if not ranStatus or not ueStart0Status or not ueStop0Status or not ueStart1Status or not ueStop1Status:
+    (stopStatus, stopDetails) = detailsOaiGNBUndeployment('initial-2-pdu-session-test', 0)
+    if not ranStatus or not ueStart0Status or not ueStop0Status or not ueStart1Status or not ueStop1Status or not stopStatus:
         initial_2_pdu_session_test = False
     else:
         initial_2_pdu_session_test = True
@@ -488,12 +521,21 @@ if __name__ == '__main__':
     (deconnRanStatus1, deconnRanDetails1) = detailsOaiGNBDeployment('deconnection-test', 2)
     (deconnPostRestartUEStatus, deconnPostRestartDetails) = detailsUeStartTest('deconnection-test', 3)
     (ueStop2Status, ueStopTest2) = detailsUeStopTest('deconnection-test', 2)
+    (deconnStopStatus, deconnStopDetails) = detailsOaiGNBUndeployment('deconnection-test', 1)
     if not deconnRanStatus0 or not ueStart2Status or not deconnRanStatus1 or not deconnPostRestartUEStatus or not ueStop2Status:
         deconnection_test = False
     else:
         deconnection_test = True
     # Out-of-Coverage Test
-    out_of_coverage_test = True
+    (outCoverageRanStatus0, outCoverageRanDetails0) = detailsOaiGNBDeployment('out-of-coverage-test', 4)
+    (ueStart4Status, ueStartTest4) = detailsUeStartTest('out-of-coverage-test', 4)
+    (ueStart5Status, ueStartTest5) = detailsUeStartTest('out-of-coverage-test', 5)
+    (ueStop4Status, ueStopTest4) = detailsUeStopTest('out-of-coverage-test', 4)
+    (outCoverageStopStatus, outCoverageStopDetails) = detailsOaiGNBUndeployment('out-of-coverage-test', 4)
+    if not outCoverageRanStatus0 or not ueStart4Status or not ueStart5Status or not ueStop4Status or not outCoverageStopStatus:
+        out_of_coverage_test = False
+    else:
+        out_of_coverage_test = True
     # Core Undeployment
     (undeployStatus, undeployDetails) = detailsCoreUndeployment()
 
@@ -501,10 +543,10 @@ if __name__ == '__main__':
     with open(os.path.join(cwd, REPORT_NAME), 'w') as wfile:
         wfile.write(generate_header(args))
         wfile.write(generate_nav_pills_list_header())
-        wfile.write(generate_nav_pills_list_item('OAI-CN5G Deployment', 'oai-cn5g-deployment', 'log-in', active=True))
-        wfile.write(generate_nav_pills_list_item('Initial 2 PDU sessions Test', 'init-2-pdu-sessions-test', 'tasks'))
-        wfile.write(generate_nav_pills_list_item('Deconnection Test', 'deconnection-test', 'repeat'))
-        wfile.write(generate_nav_pills_list_item('Out-of-Coverage Test', 'out-of-coverage-test', 'new-window'))
+        wfile.write(generate_nav_pills_list_item('OAI-CN5G Deployment', 'oai-cn5g-deployment', 'log-in', active=True, status=coreStatus))
+        wfile.write(generate_nav_pills_list_item('Initial 2 PDU sessions Test', 'init-2-pdu-sessions-test', 'tasks', status=initial_2_pdu_session_test))
+        wfile.write(generate_nav_pills_list_item('Deconnection Test', 'deconnection-test', 'repeat', status=deconnection_test))
+        wfile.write(generate_nav_pills_list_item('Out-of-Coverage Test', 'out-of-coverage-test', 'new-window', status=out_of_coverage_test))
         wfile.write(generate_nav_pills_list_item('OAI-CN5G Undeployment', 'oai-cn5g-undeployment', 'log-out'))
         wfile.write(generate_nav_pills_list_footer())
         wfile.write(generate_tab_content_header('oai-cn5g-deployment', active=True))
@@ -524,6 +566,8 @@ if __name__ == '__main__':
         wfile.write(ueStartTest1)
         wfile.write(generate_chapter('COTS-UE Deconnection #1', 'PDU Session release / Deregistration', ueStop1Status))
         wfile.write(ueStopTest1)
+        wfile.write(generate_chapter('OAI-gNB Un-deployment #0', 'Status for the un-deployment', stopStatus))
+        wfile.write(stopDetails)
         wfile.write(generate_tab_content_footer())
         wfile.write(generate_tab_content_header('deconnection-test'))
         wfile.write(generate_chapter('OAI-gNB Deployment #1', 'Status for the deployment', deconnRanStatus0))
@@ -536,9 +580,20 @@ if __name__ == '__main__':
         wfile.write(deconnPostRestartDetails)
         wfile.write(generate_chapter('COTS-UE Deconnection #2', 'PDU Session release / Deregistration', ueStop2Status))
         wfile.write(ueStopTest2)
+        wfile.write(generate_chapter('OAI-gNB Un-deployment #1', 'Status for the un-deployment', deconnStopStatus))
+        wfile.write(deconnStopDetails)
         wfile.write(generate_tab_content_footer())
         wfile.write(generate_tab_content_header('out-of-coverage-test'))
-        wfile.write(generate_chapter('Not Run Yet', 'N/A', False))
+        wfile.write(generate_chapter('OAI-gNB Deployment #2', 'Status for the deployment', outCoverageRanStatus0))
+        wfile.write(outCoverageRanDetails0)
+        wfile.write(generate_chapter('COTS-UE Connection #3', 'Registration / PDU session establishment / Ping Traffic status', ueStart4Status))
+        wfile.write(ueStartTest4)
+        wfile.write(generate_chapter('COTS-UE Connection #3', 'Ping Traffic status post out-of-coverage', ueStart5Status))
+        wfile.write(ueStartTest5)
+        wfile.write(generate_chapter('COTS-UE Deconnection #4', 'PDU Session release / Deregistration', ueStop4Status))
+        wfile.write(ueStopTest4)
+        wfile.write(generate_chapter('OAI-gNB Un-deployment #2', 'Status for the un-deployment', outCoverageStopStatus))
+        wfile.write(outCoverageStopDetails)
         wfile.write(generate_tab_content_footer())
         wfile.write(generate_tab_content_header('oai-cn5g-undeployment'))
         wfile.write(generate_chapter('Shutdown Analysis', 'Status for undeployment', undeployStatus))

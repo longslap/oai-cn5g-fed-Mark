@@ -625,19 +625,19 @@ pipeline {
           steps {
             script {
               echo '\u2705 \u001B[32mTesting the Out-Of-Coverage - Making the UE out of coverage\u001B[0m'
-              sh 'mkdir -p archives/out-of-coverage'
+              sh 'mkdir -p archives/out-of-coverage-test'
               sh 'sudo ./ci-scripts/control-attenuators.py --set-attenuation 0 || true'
               // Normally the RSRP is around -109 dB
               // Let's go quickly to -121 dB first
-              sh 'sudo ./ci-scripts/control-attenuators.py --range 12 --delay 24 2>&1 | tee archives/out-of-coverage/attenuation-control.log'
-              // Then slowly to -125 dB
-              sh 'sudo ./ci-scripts/control-attenuators.py --range 5 --delay 25 2>&1 | tee -a archives/out-of-coverage/attenuation-control.log'
+              sh 'sudo ./ci-scripts/control-attenuators.py --range 12 --delay 24 2>&1 | tee archives/out-of-coverage-test/attenuation-control.log'
+              // Then slowly to -127 dB
+              sh 'sudo ./ci-scripts/control-attenuators.py --range 7 --delay 35 2>&1 | tee -a archives/out-of-coverage-test/attenuation-control.log'
               sleep 5
               // Back up to -121 dB slowly
-              sh 'sudo ./ci-scripts/control-attenuators.py --range -5 --delay 25 2>&1 | tee -a archives/out-of-coverage/attenuation-control.log'
+              sh 'sudo ./ci-scripts/control-attenuators.py --range -7 --delay 35 2>&1 | tee -a archives/out-of-coverage-test/attenuation-control.log'
               sleep 5
               // And back quickly to -109 dB
-              sh 'sudo ./ci-scripts/control-attenuators.py --range -12 --delay 24 2>&1 | tee -a archives/out-of-coverage/attenuation-control.log'
+              sh 'sudo ./ci-scripts/control-attenuators.py --range -12 --delay 24 2>&1 | tee -a archives/out-of-coverage-test/attenuation-control.log'
               stash allowEmpty: true, includes: 'archives/out-of-coverage-test/*.*', name: 'out_of_coverage_attenuation_logs'
             }
           }
@@ -674,21 +674,21 @@ pipeline {
             script {
               echo '\u2705 \u001B[32mUndeploy gNB\u001B[0m'
               if (deployedGNB) {
-                sh 'mkdir -p archives/out_of_coverage-test'
+                sh 'mkdir -p archives/out-of-coverage-test'
                 sh "sudo pkill tshark || true"
                 sleep 2
                 sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
-                sh "cp /tmp/oai-gnb-l2-trace.* archives/out_of_coverage-test || true"
+                sh "cp /tmp/oai-gnb-l2-trace.* archives/out-of-coverage-test || true"
                 sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
                 dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
                   ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
                   sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yml"
                   sh "docker-compose stop -t 3 || true"
                   sleep 2
-                  sh "docker logs sa-b210-gnb > ../../../archives/out_of_coverage-test/oai-gnb.logs 2>&1 || true"
+                  sh "docker logs sa-b210-gnb > ../../../archives/out-of-coverage-test/oai-gnb.logs 2>&1 || true"
                   sh "docker-compose down -t 3 || true"
                 }
-                stash allowEmpty: true, includes: 'archives/out_of_coverage-test/*.*', name: 'out_of_coverage_gNB_logs'
+                stash allowEmpty: true, includes: 'archives/out-of-coverage-test/*.*', name: 'out_of_coverage_gNB_logs'
                 deployedGNB = false
                 if (ranFullImage.contains('porcepix')) {
                   sh "docker rmi ${ranFullImage} || true"
