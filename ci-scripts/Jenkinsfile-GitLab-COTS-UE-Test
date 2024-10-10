@@ -432,8 +432,10 @@ pipeline {
                 sh 'cp -f /tmp/test-start2.log archives/deconnection-test || true'
                 sh 'sudo rm -f /tmp/test-start2.log || true'
                 stash allowEmpty: true, includes: 'archives/deconnection-test/*.*', name: 'deconnection_ue_logs_start'
-                // starting a background ping
-                sh 'nohup ping -I wwan0 -c 120 8.8.8.8 > /tmp/bk_ping.log 2>&1 &'
+                if (params.deconnection_test_background_ping) {
+                  // starting a background ping
+                  sh 'nohup ping -I wwan0 -c 120 8.8.8.8 > /tmp/bk_ping.log 2>&1 &'
+                }
               }
             }
           }
