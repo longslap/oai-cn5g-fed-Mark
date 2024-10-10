@@ -638,6 +638,7 @@ pipeline {
               sleep 5
               // And back quickly to -109 dB
               sh 'sudo ./ci-scripts/control-attenuators.py --range -12 --delay 24 2>&1 | tee -a archives/out-of-coverage/attenuation-control.log'
+              stash allowEmpty: true, includes: 'archives/out-of-coverage-test/*.*', name: 'out_of_coverage_attenuation_logs'
             }
           }
         }
@@ -649,7 +650,6 @@ pipeline {
                 echo '\u2705 \u001B[32mTesting the Out-Of-Coverage - Check Re-Attachement of UE\u001B[0m'
                 sh 'mkdir -p archives/out-of-coverage-test'
                 dir ('ci-scripts/cots-ue-mbim-scripts') {
-                  sleep 60
                   // I don't want that stage to fail.
                   // It's easier then to un-deploy gNB.
                   sh 'ping -I wwan0 -c 4 8.8.8.8 2>&1 | tee ../../archives/out-of-coverage-test/test-start5.log'
@@ -713,7 +713,11 @@ pipeline {
           unstash 'deconnection_ue_logs_start'
           unstash 'deconnection_stop_gnb_logs'
           unstash 'deconnection_ue_logs'
-          //
+          // Out of Coverage Test
+          unstash 'out_of_coverage_gNB_logs'
+          unstash 'out_of_coverage_ue_logs_start'
+          unstash 'out_of_coverage_attenuation_logs'
+          unstash 'out_of_coverage_ue_logs'
           dir ('ci-scripts/charts/oai-5g-basic') {
             sh 'helm uninstall $(helm list -aq)'
             // Let's do later a script to check.
@@ -773,6 +777,11 @@ pipeline {
             unstash 'deconnection_ue_logs_start'
             unstash 'deconnection_stop_gnb_logs'
             unstash 'deconnection_ue_logs'
+            // Out of Coverage Test
+            unstash 'out_of_coverage_gNB_logs'
+            unstash 'out_of_coverage_ue_logs_start'
+            unstash 'out_of_coverage_attenuation_logs'
+            unstash 'out_of_coverage_ue_logs'
           } catch (Exception e) {
             echo "could not retrieve stashes from gNB or UE server"
           }
