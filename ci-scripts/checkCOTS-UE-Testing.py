@@ -40,6 +40,11 @@ from common.python.generate_html import (
     generate_list_header,
     generate_list_footer,
     generate_list_row,
+    generate_nav_pills_list_header,
+    generate_nav_pills_list_footer,
+    generate_nav_pills_list_item,
+    generate_tab_content_header,
+    generate_tab_content_footer,
 )
 
 REPORT_NAME = 'test_results_oai_cn5g_cots_ue.html'
@@ -281,12 +286,12 @@ def detailsCoreUndeployment():
     detailsHtml += generate_button_footer()
     return (status, detailsHtml)
 
-def checkAMFconnection():
+def checkAMFconnection(folder_name):
     cwd = os.getcwd()
     count = 0
-    if not os.path.isfile(os.path.join(cwd, f'archives/oai-gnb.logs')):
-        return generate_list_row(f'could not open archives/oai-gnb.logs', 'question-sign')
-    with open(os.path.join(cwd, f'archives/oai-gnb.logs'), 'r') as gnbLogs:
+    if not os.path.isfile(os.path.join(cwd, f'archives/{folder_name}/oai-gnb.logs')):
+        return generate_list_row(f'could not open archives/{folder_name}/oai-gnb.logs', 'question-sign')
+    with open(os.path.join(cwd, f'archives/{folder_name}/oai-gnb.logs'), 'r') as gnbLogs:
         for line in gnbLogs:
            if re.search('Received NGAP_REGISTER_GNB_CNF: associated AMF 1', line) is not None:
                count += 1
@@ -298,9 +303,9 @@ def checkAMFconnection():
         iconName = 'remove-sign'
     return generate_list_row(message, iconName)
 
-def detailsOaiGNBDeployment():
+def detailsOaiGNBDeployment(folder_name, idx):
     status = True
-    detailsHtml = generate_button_header('ran-details', 'Details on the OAI RAN gNB Deployment')
+    detailsHtml = generate_button_header(f'ran-details-{idx}', 'Details on the OAI RAN gNB Deployment')
     detailsHtml += generate_image_table_header()
     imageStatus = nfDetails('oai-gnb')
     detailsHtml += imageStatus
@@ -308,28 +313,28 @@ def detailsOaiGNBDeployment():
         status = False
     detailsHtml += generate_image_table_footer()
     detailsHtml += generate_list_header()
-    amfConnection = checkAMFconnection()
+    amfConnection = checkAMFconnection(folder_name)
     detailsHtml += amfConnection
     if re.search('could not open', amfConnection) is not None or re.search('NOT', amfConnection) is not None:
         status = False
-    detailsHtml += generate_list_row('For more details look at archives/oai-gnb.logs', 'info-sign')
+    detailsHtml += generate_list_row(f'For more details look at archives/{folder_name}/oai-gnb.logs', 'info-sign')
     detailsHtml += generate_list_footer()
     detailsHtml += generate_button_footer()
     return (status, detailsHtml)
 
-def detailsUeStartTest(runNb):
+def detailsUeStartTest(folder_name, runNb):
     status = False
     detailsHtml = generate_button_header(f'ue-start{runNb}-details', f'Details on the UE start test #{runNb}')
     detailsHtml += generate_list_header()
     cwd = os.getcwd()
-    if not os.path.isfile(os.path.join(cwd, f'archives/test-start{runNb}.log')):
-        detailsHtml += generate_list_row(f'could not open archives/test-start{runNb}.log', 'question-sign')
+    if not os.path.isfile(os.path.join(cwd, f'archives/{folder_name}/test-start{runNb}.log')):
+        detailsHtml += generate_list_row(f'could not open archives/{folder_name}/test-start{runNb}.log', 'question-sign')
         detailsHtml += generate_list_footer()
         detailsHtml += generate_button_footer()
         return (status, detailsHtml)
     pingStatus = [False, False]
     pingIdx = 0
-    with open(os.path.join(cwd, f'archives/test-start{runNb}.log'), 'r') as testRunLog:
+    with open(os.path.join(cwd, f'archives/{folder_name}/test-start{runNb}.log'), 'r') as testRunLog:
         for line in testRunLog:
             if re.search('PING 8\.8\.8\.8 \(8\.8\.8\.8\) from 12\.1\.1\.', line) is not None:
                 detailsHtml += generate_list_row(line.strip(), 'info-sign')
@@ -347,24 +352,24 @@ def detailsUeStartTest(runNb):
                 detailsHtml += generate_list_row(line.strip(), 'info-sign')
     if pingStatus[0] and pingStatus[1]:
         status = True
-    detailsHtml += generate_list_row(f'More details in archives/test-start{runNb}.log', 'info-sign')
+    detailsHtml += generate_list_row(f'More details in archives/{folder_name}/test-start{runNb}.log', 'info-sign')
     detailsHtml += generate_list_footer()
     detailsHtml += generate_button_footer()
     return (status, detailsHtml)
 
-def detailsUeStopTest(runNb):
+def detailsUeStopTest(folder_name, runNb):
     detailsHtml = generate_button_header(f'ue-stop{runNb}-details', f'Details on the UE stop test #{runNb}')
     detailsHtml += generate_list_header()
     cwd = os.getcwd()
-    if not os.path.isfile(os.path.join(cwd, f'archives/test-stop{runNb}.log')):
-        detailsHtml += generate_list_row(f'could not open archives/test-stop{runNb}.log', 'question-sign')
+    if not os.path.isfile(os.path.join(cwd, f'archives/{folder_name}/test-stop{runNb}.log')):
+        detailsHtml += generate_list_row(f'could not open archives/{folder_name}/test-stop{runNb}.log', 'question-sign')
         detailsHtml += generate_list_footer()
         detailsHtml += generate_button_footer()
         return (False, detailsHtml)
     status = True
     previousCmd = ''
     errorIssues = ''
-    with open(os.path.join(cwd, f'archives/test-stop{runNb}.log'), 'r') as testRunLog:
+    with open(os.path.join(cwd, f'archives/{folder_name}/test-stop{runNb}.log'), 'r') as testRunLog:
         for line in testRunLog:
             if re.search('^---- ', line) is not None:
                 previousCmd = re.sub('^---- ', '', line.strip())
@@ -373,17 +378,17 @@ def detailsUeStopTest(runNb):
                 errorIssues += generate_list_row(f'This command returned an error: <pre><b>{previousCmd}</b></pre>', 'fire')
                 errorIssues += generate_list_row(line.strip(), 'remove-sign')
     detailsHtml += errorIssues
-    detailsHtml += generate_list_row(f'More details in archives/test-stop{runNb}.log', 'info-sign')
+    detailsHtml += generate_list_row(f'More details in archives/{folder_name}/test-stop{runNb}.log', 'info-sign')
     detailsHtml += generate_list_footer()
     detailsHtml += generate_button_footer()
     return (status, detailsHtml)
 
-def detailsUeTrafficTest(runNb):
+def detailsUeTrafficTest(folder_name, runNb):
     detailsHtml = generate_button_header(f'ue-traffic{runNb}-details', f'Details on the UE traffic test #{runNb}')
     detailsHtml += generate_list_header()
     cwd = os.getcwd()
-    if not os.path.isfile(os.path.join(cwd, f'archives/test-traffic{runNb}.log')) or not os.path.isfile(os.path.join(cwd, f'archives/test-oai_final_logo.png')):
-        detailsHtml += generate_list_row(f'could not open archives/test-traffic{runNb}.log', 'question-sign')
+    if not os.path.isfile(os.path.join(cwd, f'archives/{folder_name}/test-traffic{runNb}.log')) or not os.path.isfile(os.path.join(cwd, f'archives/{folder_name}/test-oai_final_logo.png')):
+        detailsHtml += generate_list_row(f'could not open archives/{folder_name}/test-traffic{runNb}.log', 'question-sign')
         detailsHtml += generate_list_footer()
         detailsHtml += generate_button_footer()
         return (False, detailsHtml)
@@ -391,7 +396,7 @@ def detailsUeTrafficTest(runNb):
     # Checking the trace route message
     cnt = 0
     oai_org_final_destination = ''
-    with open(os.path.join(cwd, f'archives/test-traffic{runNb}.log'), 'r') as testRunLog:
+    with open(os.path.join(cwd, f'archives/{folder_name}/test-traffic{runNb}.log'), 'r') as testRunLog:
         for line in testRunLog:
             if re.search('12.1.1.1', line) is not None:
                 cnt += 1
@@ -422,10 +427,10 @@ def detailsUeTrafficTest(runNb):
         detailsHtml += generate_list_row('TraceRoute was complete', 'thumbs-up')
     # Checking the OAI logo image
     myCmds = cls_cmd.LocalCmd()
-    res = myCmds.run(f'file {cwd}/archives/test-oai_final_logo.png', silent=True)
+    res = myCmds.run(f'file {cwd}/archives/{folder_name}/test-oai_final_logo.png', silent=True)
     if res.returncode != 0:
         status = False
-    htmlMessage = re.sub(f'{cwd}/archives/test-oai_final_logo.png', 'archives/test-oai_final_logo.png', res.stdout)
+    htmlMessage = re.sub(f'{cwd}/archives/{folder_name}/test-oai_final_logo.png', f'archives/{folder_name}/test-oai_final_logo.png', res.stdout)
     if re.search('PNG image data, 800 x 267, 8-bit/color RGBA, non-interlaced', res.stdout) is None:
         detailsHtml += generate_list_row(htmlMessage, 'thumbs-down')
         status = False
@@ -446,54 +451,100 @@ if __name__ == '__main__':
         coreStatus = True
     else:
         coreStatus = False
-    (ranStatus, ranDetails) = detailsOaiGNBDeployment()
+    # Initial 2 PDU Sessions Test
+    (ranStatus, ranDetails) = detailsOaiGNBDeployment('initial-2-pdu-session-test', 0)
     if ranStatus and not args.gnb_deploy_failed:
         ranStatus = True
     else:
         ranStatus = False
-    (ueStart0Status, ueStartTest0) = detailsUeStartTest(0)
+    (ueStart0Status, ueStartTest0) = detailsUeStartTest('initial-2-pdu-session-test', 0)
     if ueStart0Status and not args.ue_test0_start_failed:
         ueStart0Status = True
     else:
         ueStart0Status = False
-    (ueTraffic0Status, ueTrafficTest0) = detailsUeTrafficTest(0)
-    (ueStop0Status, ueStopTest0) = detailsUeStopTest(0)
+    (ueTraffic0Status, ueTrafficTest0) = detailsUeTrafficTest('initial-2-pdu-session-test', 0)
+    (ueStop0Status, ueStopTest0) = detailsUeStopTest('initial-2-pdu-session-test', 0)
     if ueStop0Status and not args.ue_test0_stop_failed:
         ueStop0Status = True
     else:
         ueStop0Status = False
-    (ueStart1Status, ueStartTest1) = detailsUeStartTest(1)
+    (ueStart1Status, ueStartTest1) = detailsUeStartTest('initial-2-pdu-session-test', 1)
     if ueStart1Status and not args.ue_test1_start_failed:
         ueStart1Status = True
     else:
         ueStart1Status = False
-    (ueStop1Status, ueStopTest1) = detailsUeStopTest(1)
+    (ueStop1Status, ueStopTest1) = detailsUeStopTest('initial-2-pdu-session-test', 1)
     if ueStop1Status and not args.ue_test1_stop_failed:
         ueStop1Status = True
     else:
         ueStop1Status = False
+    if not ranStatus or not ueStart0Status or not ueStop0Status or not ueStart1Status or not ueStop1Status:
+        initial_2_pdu_session_test = False
+    else:
+        initial_2_pdu_session_test = True
+    # Deconnection Test
+    (deconnRanStatus0, deconnRanDetails0) = detailsOaiGNBDeployment('deconnection-test-stop0', 1)
+    (ueStart2Status, ueStartTest2) = detailsUeStartTest('deconnection-test', 2)
+    (deconnRanStatus1, deconnRanDetails1) = detailsOaiGNBDeployment('deconnection-test', 2)
+    (deconnPostRestartUEStatus, deconnPostRestartDetails) = detailsUeStartTest('deconnection-test', 3)
+    (ueStop2Status, ueStopTest2) = detailsUeStopTest('deconnection-test', 2)
+    if not deconnRanStatus0 or not ueStart2Status or not deconnRanStatus1 or not deconnPostRestartUEStatus or not ueStop2Status:
+        deconnection_test = False
+    else:
+        deconnection_test = True
+    # Out-of-Coverage Test
+    out_of_coverage_test = True
+    # Core Undeployment
     (undeployStatus, undeployDetails) = detailsCoreUndeployment()
 
     cwd = os.getcwd()
     with open(os.path.join(cwd, REPORT_NAME), 'w') as wfile:
         wfile.write(generate_header(args))
+        wfile.write(generate_nav_pills_list_header())
+        wfile.write(generate_nav_pills_list_item('OAI-CN5G Deployment', 'oai-cn5g-deployment', 'log-in', active=True))
+        wfile.write(generate_nav_pills_list_item('Initial 2 PDU sessions Test', 'init-2-pdu-sessions-test', 'tasks'))
+        wfile.write(generate_nav_pills_list_item('Deconnection Test', 'deconnection-test', 'repeat'))
+        wfile.write(generate_nav_pills_list_item('Out-of-Coverage Test', 'out-of-coverage-test', 'new-window'))
+        wfile.write(generate_nav_pills_list_item('OAI-CN5G Undeployment', 'oai-cn5g-undeployment', 'log-out'))
+        wfile.write(generate_nav_pills_list_footer())
+        wfile.write(generate_tab_content_header('oai-cn5g-deployment', active=True))
         wfile.write(generate_chapter('OAI-CN5G Deployment', 'Status for the deployment', coreStatus))
         wfile.write(coreDetails)
-        wfile.write(generate_chapter('OAI-gNB Deployment', 'Status for the deployment', ranStatus))
+        wfile.write(generate_tab_content_footer())
+        wfile.write(generate_tab_content_header('init-2-pdu-sessions-test'))
+        wfile.write(generate_chapter('OAI-gNB Deployment #0', 'Status for the deployment', ranStatus))
         wfile.write(ranDetails)
-        wfile.write(generate_chapter('First COTS-UE Connection', 'Registration / PDU session establishment / Ping Traffic status', ueStart0Status))
+        wfile.write(generate_chapter('COTS-UE Connection #0', 'Registration / PDU session establishment / Ping Traffic status', ueStart0Status))
         wfile.write(ueStartTest0)
-        wfile.write(generate_chapter('First COTS-UE Traffic Test', 'Traceroute / Curl', ueTraffic0Status))
+        wfile.write(generate_chapter('COTS-UE Traffic Test #0', 'Traceroute / Curl', ueTraffic0Status))
         wfile.write(ueTrafficTest0)
-        wfile.write(generate_chapter('First COTS-UE Deconnection', 'PDU Session release / Deregistration', ueStop0Status))
+        wfile.write(generate_chapter('COTS-UE Deconnection #0', 'PDU Session release / Deregistration', ueStop0Status))
         wfile.write(ueStopTest0)
-        wfile.write(generate_chapter('Second COTS-UE Connection', 'Registration / PDU session establishment / Ping Traffic status', ueStart1Status))
+        wfile.write(generate_chapter('COTS-UE Connection #1', 'Registration / PDU session establishment / Ping Traffic status', ueStart1Status))
         wfile.write(ueStartTest1)
-        wfile.write(generate_chapter('Second COTS-UE Deconnection', 'PDU Session release / Deregistration', ueStop1Status))
+        wfile.write(generate_chapter('COTS-UE Deconnection #1', 'PDU Session release / Deregistration', ueStop1Status))
         wfile.write(ueStopTest1)
+        wfile.write(generate_tab_content_footer())
+        wfile.write(generate_tab_content_header('deconnection-test'))
+        wfile.write(generate_chapter('OAI-gNB Deployment #1', 'Status for the deployment', deconnRanStatus0))
+        wfile.write(deconnRanDetails0)
+        wfile.write(generate_chapter('COTS-UE Connection #2', 'Registration / PDU session establishment / Ping Traffic status', ueStart2Status))
+        wfile.write(ueStartTest2)
+        wfile.write(generate_chapter('OAI-gNB Deployment #1', 'Status for the restart', deconnRanStatus1))
+        wfile.write(deconnRanDetails1)
+        wfile.write(generate_chapter('COTS-UE Connection #2', 'Ping Traffic status post gNB Restart', deconnPostRestartUEStatus))
+        wfile.write(deconnPostRestartDetails)
+        wfile.write(generate_chapter('COTS-UE Deconnection #2', 'PDU Session release / Deregistration', ueStop2Status))
+        wfile.write(ueStopTest2)
+        wfile.write(generate_tab_content_footer())
+        wfile.write(generate_tab_content_header('out-of-coverage-test'))
+        wfile.write(generate_chapter('Not Run Yet', 'N/A', False))
+        wfile.write(generate_tab_content_footer())
+        wfile.write(generate_tab_content_header('oai-cn5g-undeployment'))
         wfile.write(generate_chapter('Shutdown Analysis', 'Status for undeployment', undeployStatus))
         wfile.write(undeployDetails)
+        wfile.write(generate_tab_content_footer(final=True))
         wfile.write(generate_footer())
-    if not coreStatus or not ranStatus or not ueStart0Status or not ueStop0Status or not ueStart1Status or not ueStop1Status:
+    if not coreStatus or not initial_2_pdu_session_test or not deconnection_test or not out_of_coverage_test:
         sys.exit(1)
     sys.exit(0)

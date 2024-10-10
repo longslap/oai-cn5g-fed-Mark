@@ -483,8 +483,8 @@ pipeline {
                   sleep 60
                   // I don't want that stage to fail.
                   // It's easier then to un-deploy gNB.
-                  sh 'ping -I wwan0 -c 4 8.8.8.8 2>&1 | tee ../../archives/deconnection-test/ping_post_deconnection.log'
-                  sh 'ping -I wwan0.1 -c 4 8.8.8.8 2>&1 | tee -a ../../archives/deconnection-test/ping_post_deconnection.log'
+                  sh 'ping -I wwan0 -c 4 8.8.8.8 2>&1 | tee ../../archives/deconnection-test/test-start3.log'
+                  sh 'ping -I wwan0.1 -c 4 8.8.8.8 2>&1 | tee -a ../../archives/deconnection-test/test-start3.log'
                   try {
                     sh 'sudo bash -c "set -o pipefail && ./stop.sh 2>&1 | tee /tmp/test-stop2.log"'
                   } catch (Exception e) {
