@@ -447,7 +447,7 @@ paths:
             type: integer
         - name: sd
           in: query
-          required: true
+          required: false
           schema:
             type: string
       responses:
@@ -469,7 +469,7 @@ paths:
             type: integer
         - name: sd
           in: query
-          required: true
+          required: false
           schema:
             type: string
       requestBody:
@@ -494,7 +494,7 @@ paths:
             type: integer
         - name: sd
           in: query
-          required: true
+          required: false
           schema:
             type: string
       responses:
