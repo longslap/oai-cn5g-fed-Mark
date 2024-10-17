@@ -168,7 +168,7 @@ spec:
         command:
           - /bin/sh
           - -c
-          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - /usr/bin/tcpdump -i f1 -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
         {{- else}}
         command:
           - /bin/sleep
