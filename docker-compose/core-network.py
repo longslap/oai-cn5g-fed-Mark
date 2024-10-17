@@ -155,7 +155,7 @@ def deploy(file_name, extra_interface=False):
     print(res)
     logging.debug('\033[0;32m OAI 5G Core network started, checking the health status of the containers... takes few secs\033[0m....')
     notSilentForFirstTime = False
-    for x in range(50):
+    for x in range(100):
         cmd = f'docker-compose -f {file_name} ps -a'
         res = run_cmd(cmd, notSilentForFirstTime)
         notSilentForFirstTime = True
