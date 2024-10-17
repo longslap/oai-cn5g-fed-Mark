@@ -1,5 +1,4 @@
 # In this docker-compose upf is not privileged access, it is good example for security purpose
-version: '3.8'
 services:
     mysql:
         container_name: "mysql"

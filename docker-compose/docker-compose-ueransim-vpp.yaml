@@ -1,4 +1,3 @@
-version: '3.8'
 services:
     ueransim:
         container_name: ueransim
@@ -47,8 +46,8 @@ services:
             retries: 5
 networks:
     public_net:
-        external:
-            name: demo-oai-public-net
+        name: demo-oai-public-net
+        external: True
     public_net_access:
-        external:
-            name: oai-public-access
+        name: oai-public-access
+        external: True
