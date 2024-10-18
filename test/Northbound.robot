@@ -15,7 +15,7 @@ Suite Teardown    Northbound Suite Teardown
 
 *** Test Cases ***
 Check AMF Registration Notifications
-    [tags]  North   AMF
+    [tags]  North
     [Setup]    Test Setup For Northbound 
     [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check Callback registration notification
@@ -23,7 +23,7 @@ Check AMF Registration Notifications
     Wait Until Keyword Succeeds  60s  6s    Check AMF Reg Callback    ${3}    ${logs}
 
 Check AMF Location Report  
-    [tags]  North   AMF
+    [tags]  North
     [Setup]    Test Setup For Northbound 
     [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check Callback Location Notification
@@ -31,7 +31,7 @@ Check AMF Location Report
     Wait Until Keyword Succeeds  60s  6s    Check AMF Location Report Callback    '${logs}'    ${3}
 
 Check SMF Notifications
-    [tags]  North   SMF
+    [tags]  North
     [Setup]    Test Setup For Northbound 
     [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check SMF Callback Notification (PDU Session Establishment)
@@ -39,7 +39,7 @@ Check SMF Notifications
     Wait Until Keyword Succeeds  60s  6s    Check SMF Callback    '${logs}'    ${3}
 
 Check SMF Traffic Notification
-    [tags]   North   SMF
+    [tags]   North
     [Setup]    Test Setup For Northbound 
     [Teardown]    Test Teardown for Northbound 
     [Documentation]    Check SMF Traffic Notification Callback
@@ -55,7 +55,7 @@ Check SMF Traffic Notification
     END
 
 Check AMF Deregistration Notification
-    [tags]  North   AMF
+    [tags]  North
     [Setup]    Test Setup for Deregistration
     [Teardown]    Test Teardown With RAN
     [Documentation]    Remove all UEs added during the test and check their DEREGISTRATION Notifications
@@ -63,7 +63,7 @@ Check AMF Deregistration Notification
     Wait Until Keyword Succeeds  60s  6s    Check AMF Dereg Callback    ${logs}    ${3}
 
 Check AMF Mobility Location Report
-    [tags]  North   AMF
+    [tags]  North
     [Setup]    Test Setup With MobSim
     [Teardown]    Test Teardown With MobSim
     [Documentation]    Check AMF Mobility Location Report Callback
