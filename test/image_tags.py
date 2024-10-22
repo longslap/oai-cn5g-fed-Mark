@@ -23,6 +23,7 @@ For more information about the OpenAirInterface (OAI) Software Alliance:
 # Here you can define the image and tags that are used for the tests
 # skip whitespace to make sed-ing easier from CI
 image_tags = {
+    "mysql": "mysql:8.0",
     "oai-nrf": "oaisoftwarealliance/oai-nrf:develop",
     "oai-amf": "oaisoftwarealliance/oai-amf:develop",
     "oai-smf": "oaisoftwarealliance/oai-smf:develop",
