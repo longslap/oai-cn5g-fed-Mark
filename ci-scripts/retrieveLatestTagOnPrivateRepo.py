@@ -59,13 +59,13 @@ def main() -> None:
             if len(tag) == nbChars or len(tag) == (nbChars+1):
                 cmd = f'curl --insecure -Ss -u oaicicd:oaicicd {PRIVATE_LOCAL_REGISTRY_URL}/v2/{args.repo_name}/manifests/{tag} | jq .history'
                 tagInfo = myCmds.run(cmd, silent=True)
-                res2 = re.search('"created.*(?P<date>202[0-9-]\-[0-9]+-[0-9]+T[0-9]+:[0-9]+:[0-9]+).*docker_version', tagInfo.stdout)
+                res2 = re.search('"created.*(?P<date>202[0-9-]\\-[0-9]+-[0-9]+T[0-9]+:[0-9]+:[0-9]+).*docker_version', tagInfo.stdout)
                 if res2 is not None:
                     date = datetime.strptime(res2.group('date'), '%Y-%m-%dT%H:%M:%S')
                     if date > latestDate:
                         latestDate = date
                         latestTag = tag
-                res2 = re.search('"created.*(?P<date>202[0-9-]\-[0-9]+-[0-9]+T[0-9]+:[0-9]+:[0-9]+).*container_config.*WORKDIR', tagInfo.stdout)
+                res2 = re.search('"created.*(?P<date>202[0-9-]\\-[0-9]+-[0-9]+T[0-9]+:[0-9]+:[0-9]+).*container_config.*WORKDIR', tagInfo.stdout)
                 if res2 is not None:
                     date = datetime.strptime(res2.group('date'), '%Y-%m-%dT%H:%M:%S')
                     if date > latestDate:

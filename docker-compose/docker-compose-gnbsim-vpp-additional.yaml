@@ -1,4 +1,3 @@
-version: '3.8'
 services:
     gnbsim-vpp2:
         container_name: gnbsim-vpp2
@@ -83,8 +82,8 @@ services:
 
 networks:
     public_net:
-        external:
-            name: demo-oai-public-net
+        name: demo-oai-public-net
+        external: True
     public_net_access:
-        external:
-            name: oai-public-access
+        name: oai-public-access
+        external: True

@@ -151,7 +151,7 @@ docker-compose-host $: sudo chmod 666 /tmp/oai/slicing-with-nssf/slicing-with-ns
 <!---
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name mysql --timeout 120
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name mysql --timeout 180
 docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name oai-upf-slice1 --timeout 30
 ```
 -->

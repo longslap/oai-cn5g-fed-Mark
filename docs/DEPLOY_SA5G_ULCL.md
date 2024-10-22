@@ -151,7 +151,7 @@ Creating oai-smf             ... done
 <!--
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name mysql --timeout 120
+docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name mysql --timeout 180
 docker-compose-host $: ../ci-scripts/checkContainerStatus.py --container_name oai-amf --timeout 30
 docker-compose-host $: docker-compose -f docker-compose-basic-vpp-pcf-ulcl.yaml ps -a
 ```
