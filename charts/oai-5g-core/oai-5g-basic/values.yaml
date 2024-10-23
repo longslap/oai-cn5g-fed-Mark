@@ -19,7 +19,7 @@ oai-nrf:
   enabled: @ENABLED_NRF@ #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-nrf          ## The image will be pulled from dockerhub
-    version: v2.1.0                          ## The branch to be used to pull from dockerhub
+    version: develop                          ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -41,7 +41,7 @@ oai-lmf:
   enabled: true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-lmf          ## The image will be pulled from dockerhub
-    version: v2.1.0                          ## The branch to be used to pull from dockerhub
+    version: develop                          ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -59,7 +59,7 @@ oai-udr:
   enabled: @ENABLED_UDR@ #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udr           ## The image will be pulled from dockerhub
-    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
+    version: develop                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -78,7 +78,7 @@ oai-udm:
   enabled: @ENABLED_UDM@ #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-udm           ## The image will be pulled from dockerhub
-    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
+    version: develop                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -97,7 +97,7 @@ oai-ausf:
   enabled: @ENABLED_AUSF@ #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-ausf           ## The image will be pulled from dockerhub
-    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
+    version: develop                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -120,7 +120,7 @@ oai-amf:
   enabled: @ENABLED_AMF@ #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-amf           ## The image will be pulled from dockerhub
-    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
+    version: develop                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -157,7 +157,7 @@ oai-upf:
   enabled: @ENABLED_UPF@ #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-upf    ## The image will be pulled from dockerhub
-    version: v2.1.0                                    ## The branch to be used to pull from dockerhub
+    version: develop                                    ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
@@ -254,7 +254,7 @@ oai-smf:
   enabled: @ENABLED_SMF@ #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-smf           ## The image will be pulled from dockerhub
-    version: v2.1.0                         ## The branch to be used to pull from dockerhub
+    version: develop                         ## The branch to be used to pull from dockerhub
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
