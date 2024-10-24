@@ -167,7 +167,8 @@ pipeline {
               upstreamJobs[PCF] = true
               break
             case NORTH:
-                rfTags = rfTags + ' -i North '
+              rfTags = rfTags + ' -i North '
+              break
             case DEFAULT:
               break
           }
@@ -285,6 +286,8 @@ pipeline {
               // Logout
               sh 'docker logout selfix.sboai.cs.eurecom.fr > /dev/null 2>&1'
             }
+          }
+          if (cn_ci_host == 'orion') {
             // Forcing to run on Northbound testing on orion
             // TODO: remove this when UPF-VPP runs again on Ubuntu-24
             rfTags = '-i North '
