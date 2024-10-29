@@ -24,8 +24,6 @@ It replaces the yaml based configuration of the policy rules and is following th
 You can create QoS Data and Traffic Data. While creating a PCC Rule you can assign QoS Data and TrafficControl Data by the Id.
 Policy decisions are assignments from PCC rule ids to a SUPI, a DNN or a slice.
 
-The Provisioning API is a critical component in the 5G Core Network, allowing for the dynamic provisioning of PCC Rules, QoS data, Traffic Control data, and policy decisions (based on SUPI, DNN, or slices). It replaces the YAML-based configuration by enabling runtime policy management but is following the same concepts.
-
 This API supports creating, retrieving, and deleting policy configurations, which are essential for maintaining Quality of Service (QoS) and applying appropriate network policies for different users and services.
 
 At the moment we are only supporting MySQL.
