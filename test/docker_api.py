@@ -163,5 +163,6 @@ class DockerApi:
             size = int(size / 1000000)
             image_size = str(size) + ' MB'
         time = info["Created"].split(".")[0]
+        time = time.replace('Z', '')
         time = datetime.datetime.fromisoformat(time)
         return image_size, time.strftime("%Y-%m-%d %H:%M:%S ")
