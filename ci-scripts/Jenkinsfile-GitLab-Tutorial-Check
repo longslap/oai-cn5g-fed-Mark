@@ -271,7 +271,7 @@ pipeline {
 
 
           // On Ubuntu servers, we shall pull from private local registry
-          if ((cn_ci_host == 'selfix') || (cn_ci_host == 'orion')) {
+          if ((cn_ci_host == 'selfix') || (cn_ci_host == 'orion') || (cn_ci_host == 'alambix') || (cn_ci_host == 'cetautomatix')) {
             pullFromSelfix = true
             try {
               // Login

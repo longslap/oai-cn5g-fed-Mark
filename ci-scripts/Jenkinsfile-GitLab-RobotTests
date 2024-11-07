@@ -267,7 +267,7 @@ pipeline {
           }
 
           // On Ubuntu servers, we shall pull from private local registry
-          if ((cn_ci_host == 'selfix') || (cn_ci_host == 'orion')) {
+          if ((cn_ci_host == 'selfix') || (cn_ci_host == 'orion') || (cn_ci_host == 'alambix')) {
             pullFromSelfix = true
             try {
               // Login
@@ -287,8 +287,8 @@ pipeline {
               sh 'docker logout selfix.sboai.cs.eurecom.fr > /dev/null 2>&1'
             }
           }
-          if (cn_ci_host == 'orion') {
-            // Forcing to run on Northbound testing on orion
+          if (cn_ci_host == 'alambix') {
+            // Forcing to run on Northbound testing on alambix
             // TODO: remove this when UPF-VPP runs again on Ubuntu-24
             rfTags = '-i North '
           }
@@ -330,9 +330,6 @@ pipeline {
           sh 'cp -Rf /opt/ngap-tester-robot/* test/template/'
 
           sh 'sed -i -e "s@ngap-tester:develop@ngap-tester:' + ngapTesterTag + '@" test/image_tags.py'
-          if (cn_ci_host == 'orion') {
-            sh 'sed -i -e "s@mysql:8.0@mysql:5.7@" test/image_tags.py'
-          }
           for (ii = 0; ii < imageTags.size(); ii++) {
             prepareRobotImageTags(imageNames[ii], imageTags[ii])
           }
