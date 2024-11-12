@@ -94,7 +94,7 @@ spec:
         command:
           - /bin/sh
           - -c
-          - /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap
+          - 'mkdir -p /tmp/pcap && /usr/bin/tcpdump -i any -w /tmp/pcap/{{ .Chart.Name }}_`date +%Y-%m-%d_%H_%M-%S-%Z`.pcap'
         {{- else}}
         command:
           - /bin/sleep
@@ -149,6 +149,11 @@ spec:
           name: http
           protocol: TCP
         {{- if .Values.start.amf}}
+        #command:
+        # - /openair-amf/bin/oai_amf
+        # - -c
+        # - /openair-amf/etc/conf.yaml
+        #  - -o
         {{- else}}
         command:
           - /bin/sleep

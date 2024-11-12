@@ -22,12 +22,12 @@ data:
           gNB_name  = "{{ .Values.config.cucpName}}";
 
           // Tracking area code, 0x0000 and 0xfffe are reserved values
-          tracking_area_code  = {{ .Values.config.tac}};
-          {{- if .Values.config.sd }}
-          plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}}; sd = {{ .Values.config.sd}} }) });
-          {{- else}}
-          plmn_list = ({ mcc = {{ .Values.config.mcc}}; mnc = {{ .Values.config.mnc}}; mnc_length = 2; snssaiList = ({ sst = {{ .Values.config.sst}} }) });
-          {{- end}}
+          tracking_area_code  = {{ .Values.config.tac }};
+          plmn_list = ({ mcc = {{ .Values.config.mcc }}; 
+                         mnc = {{ .Values.config.mnc }}; 
+                         mnc_length ={{ .Values.config.mncLength }};
+                         snssaiList = {{ .Values.config.snssaiList }}
+                      });
 
           nr_cellid = 12345678L;
 
@@ -35,7 +35,7 @@ data:
 
           local_s_if_name = "{{ .Values.config.f1IfName}}";
           local_s_address = "@F1_IP_ADDRESS@";
-          remote_s_address = "127.0.0.1";
+          remote_s_address = "{{ .Values.config.f1DuIpAddress }}";
           local_s_portc   = 501;
           local_s_portd   = {{ .Values.config.f1cuPort}};
           remote_s_portc  = 500;
@@ -59,7 +59,7 @@ data:
               type = "cp";
               ipv4_cucp = "@CUCP_IP_ADDRESS@";
               port_cucp = 38462;
-              ipv4_cuup = "0.0.0.0";
+              ipv4_cuup = "{{ .Values.config.e1CuUpIpAddress }}";
               port_cuup = 38462;
             }
           )
@@ -87,16 +87,18 @@ data:
         drb_ciphering = "yes";
         drb_integrity = "no";
       };
-           log_config :
-           {
-             global_log_level                      ="info";
-             hw_log_level                          ="info";
-             phy_log_level                         ="info";
-             mac_log_level                         ="info";
-             rlc_log_level                         ="debug";
-             pdcp_log_level                        ="info";
-             rrc_log_level                         ="info";
-             f1ap_log_level                         ="info";
-             ngap_log_level                         ="debug";
-          };
+
+      log_config :
+      {
+        global_log_level = "info";
+        hw_log_level     = "info";
+        phy_log_level    = "info";
+        mac_log_level    = "info";
+        rlc_log_level    = "info";
+        pdcp_log_level   = "info";
+        rrc_log_level    = "debug";
+        e1ap_log_level   = "debug";
+        f1ap_log_level   = "debug";
+        ngap_log_level   = "debug";
+      };
 

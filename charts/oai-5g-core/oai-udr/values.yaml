@@ -1,4 +1,4 @@
-kubernetesDistribution: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
+kubernetesDistribution: Openshift  #Vanilla for community kubernetes distribution else Openshift for Openshift
 
 ## In case of using these charts on Openshift then please use UBI images
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift

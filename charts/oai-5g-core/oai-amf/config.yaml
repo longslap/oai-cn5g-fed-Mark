@@ -26,8 +26,7 @@ snssais:
   - &embb_slice1
     sst: 1
   - &embb_slice2
-    sst: 1
-    sd: 000001
+    sst: 2
 
 ############## SBI Interfaces
 ### Each NF takes its local SBI interfaces and remote interfaces from here, unless it gets them using NRF discovery mechanisms
