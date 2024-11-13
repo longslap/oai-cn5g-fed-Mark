@@ -83,6 +83,8 @@ spec:
       containers:
       - name: gnbdu
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
         {{- if eq .Values.config.usrp "aw2s" }}
           - mountPath: /opt/oai-gnb-aw2s/etc
