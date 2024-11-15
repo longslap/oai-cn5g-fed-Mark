@@ -25,7 +25,9 @@ podSecurityContext:
 
 #service type is fixed to clusterIP, it is only support for non multus interface (eth0)
 exposedPorts:
-  sbi: 80Vanillafault port no need to change unless necessary
+  sbi: 80
+  n4: 8805
+  n3: 2152
 
 # oai-upf can be configured with multiple interface which may correspond to 3GPP logical interfaces. There can be one to one or one to many. 
 # In case of one to one mapping n3,n4,n6 all can have separate virtual interfaces. 

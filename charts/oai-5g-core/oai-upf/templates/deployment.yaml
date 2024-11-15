@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       labels:
+        app: oai-upf
         {{- include "oai-upf.selectorLabels" . | nindent 8 }}
     {{- if .Values.multus.n3Interface.create }}
       annotations:

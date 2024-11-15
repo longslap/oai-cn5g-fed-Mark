@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       labels:
+        app: oai-nrf
         {{- include "oai-nrf.selectorLabels" . | nindent 8 }}
     spec:
       securityContext:

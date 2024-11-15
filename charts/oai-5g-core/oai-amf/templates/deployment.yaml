@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       labels:
+        app: oai-amf
         {{- include "oai-amf.selectorLabels" . | nindent 8 }}
     {{- if .Values.multus.n2Interface.create }}
       annotations:

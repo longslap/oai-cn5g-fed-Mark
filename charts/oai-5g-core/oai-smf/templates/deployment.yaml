@@ -14,6 +14,7 @@ spec:
   template:
     metadata:
       labels:
+        app: oai-smf
         {{- include "oai-smf.selectorLabels" . | nindent 8 }}
     {{- if .Values.multus.n4Interface.create }}
       annotations:

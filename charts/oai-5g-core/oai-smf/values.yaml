@@ -9,8 +9,8 @@ nfimage:
   pullPolicy: IfNotPresent
 
 # good to use when pulling images from docker-hub mention for RHEL images it can be commented
-imagePullSecrets: 
-  - name: "regcred"
+#imagePullSecrets: 
+#  - name: "regcred"
 
 serviceAccount:
   # Specifies whether a service account should be created

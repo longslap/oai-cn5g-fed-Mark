@@ -199,7 +199,7 @@ oai-upf:
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
   nodeSelector: {}
 oai-upf-local:
-  enabled: false
+  enabled: false #true
   nfimage:  # image name either locally present or in a public/private repository
     repository: docker.io/oaisoftwarealliance/oai-upf    ## The image will be pulled from dockerhub
     version: v2.1.0                                    ## The branch to be used to pull from dockerhub
