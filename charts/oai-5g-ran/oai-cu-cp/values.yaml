@@ -3,8 +3,11 @@ kubernetesDistribution: Openshift  #Vanilla for community kubernetes distributio
 ## In case of using these charts on Openshift then please use UBI images
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:   # image name either locally present or in a public/private repository
-  repository: oai-gnb # docker.io/oaisoftwarealliance/oai-gnb           ## dockerhub oaisoftwarealliance/oai-gnb  
-  version: develop-e8d8384e # 2024.w32 # image tag or develop
+  #repository: docker.io/oaisoftwarealliance/oai-gnb           ## dockerhub oaisoftwarealliance/oai-gnb  
+  #version: develop # 2024.w32 # image tag or develop
+  #repository: default-route-openshift-image-registry.apps.oai.cs.eurecom.fr/oaicicd-ran/oai-gnb
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-ran/oai-gnb
+  version: develop-e8d8384e
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
@@ -62,7 +65,8 @@ multus:
 ## It is taken from https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/ci-scripts/conf_files/gnb-cucp.sa.f1.conf
 config:
   timeZone: "Europe/Paris"
-  useAdditionalOptions: "--sa --log_config.global_log_options level,nocolor,time"
+  #useAdditionalOptions: "--sa --log_config.global_log_options level,nocolor,time"
+  useAdditionalOptions: "--log_config.global_log_options level,nocolor,time"
   cucpName: "oai-cu-cp"
   mcc: "208"   # check the information with AMF, SMF, UPF
   mnc: "92"    # check the information with AMF, SMF, UPF
