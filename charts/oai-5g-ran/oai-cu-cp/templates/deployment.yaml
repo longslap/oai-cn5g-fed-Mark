@@ -16,10 +16,12 @@ spec:
       labels:
         {{- include "oai-cu-cp.selectorLabels" . | nindent 8 }}
         app: oai-cu-cp
-    {{- if .Values.multus.e1Interface.create }}
+    {{- if or .Values.multus.e1Interface.create .Values.multus.n2Interface.create .Values.multus.f1cInterface.create }}
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
-          [{
+          [
+          {{- if .Values.multus.e1Interface.create }}
+          {
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.e1Interface.name }}",
                  "interface": "{{ .Values.multus.e1Interface.name }}"
                 {{- if .Values.multus.defaultGateway }}
@@ -29,8 +31,12 @@ spec:
                 ,"gateway": "{{ .Values.multus.e1Interface.gateway }}"
                 {{- end }}
           }
+          {{- end }}
           {{- if .Values.multus.n2Interface.create }}
-          ,{
+          {{- if .Values.multus.e1Interface.create }}
+          ,
+          {{- end }}
+          {
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
                  "interface": "{{ .Values.multus.n2Interface.name }}"
                 {{- if .Values.multus.n2Interface.gateway }}
@@ -39,7 +45,10 @@ spec:
           }
           {{- end }}
           {{- if .Values.multus.f1cInterface.create }}
-          ,{
+          {{- if or .Values.multus.e1Interface.create .Values.multus.n2Interface.create }}
+          ,
+          {{- end }}
+          {
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.f1cInterface.name }}",
                  "interface": "{{ .Values.multus.f1cInterface.name }}"
                 {{- if .Values.multus.f1cInterface.gateway }}

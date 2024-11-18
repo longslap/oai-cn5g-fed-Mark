@@ -48,7 +48,7 @@ multus:
     netmask: "22"
     name: "n2"
     # if gatway is empty then it will be removed
-    #gateway: ""
+    gateway: ""
     routes: [{'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
     hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
   f1cInterface:
