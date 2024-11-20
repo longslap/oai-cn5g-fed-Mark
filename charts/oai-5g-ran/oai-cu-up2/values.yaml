@@ -21,7 +21,7 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: "oai-cu-up-sa"
+  name: "oai-cu-up2-sa"
 
 # oai-cu-up can be configured with multiple interface which may correspond to 3GPP logical interfaces. There can be one to one or one to many. 
 # In case of one to one mapping e1,f1u,n3 all can have separate virtual interfaces. 
@@ -34,7 +34,7 @@ multus:
   defaultGateway: ""
   e1Interface:
     create: true
-    ipAdd: "172.21.6.191"
+    ipAdd: "172.21.6.192"
     netmask: "22"
     name: "e1"
     # if gatway is empty then it will be removed
@@ -43,7 +43,7 @@ multus:
     hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
   n3Interface:
     create: false
-    ipAdd: "172.21.6.191"
+    ipAdd: "172.21.6.192"
     netmask: "22"
     name: "n3"
     # if gatway is empty then it will be removed
@@ -52,7 +52,7 @@ multus:
     hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
   f1uInterface:
     create: false
-    ipAdd: "172.21.6.191"
+    ipAdd: "172.21.6.192"
     netmask: "22"
     name: "f1u"
     # if gatway is empty then it will be removed
@@ -65,12 +65,12 @@ multus:
 config:
   timeZone: "Europe/Paris"
   useAdditionalOptions: "--sa"
-  cuupName: "oai-cuup"
+  cuupName: "oai-cuup2"
   mcc: "208"   # check the information with AMF, SMF, UPF
   mnc: "92"    # check the information with AMF, SMF, UPF
   mncLength: "2" # check the information with AMF, SMF, UPF
   tac: "1"     # check the information with AMF
-  snssaiList: "({ sst = 1, sd = 0xffffff })"
+  snssaiList: "({ sst = 2, sd = 0xffffff })"
   cuCpHost: "172.21.6.190" #"oai-cu" E1 IP address of CUCP
   n2IfName: "eth0"    # if multus.n2Interface.create is true then use n2
   n3IfName: "e1"   #if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0 

@@ -15,7 +15,7 @@ spec:
     metadata:
       labels:
         {{- include "oai-gnb-cu-up.selectorLabels" . | nindent 8 }}
-        app: oai-gnb-cu-up
+        app: oai-gnb-cu-up2
     {{- if .Values.multus.e1Interface.create }}
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
