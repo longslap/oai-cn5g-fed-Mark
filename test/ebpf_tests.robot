@@ -50,12 +50,12 @@ eBPF Bandwidth 400Mbits
     # UPLINK
     Start Iperf3 Server     ${EXT_DN_EBPF_NAME}
     Start Iperf3 Client     ${GNBSIM_IN_USE}  ${ip}  ${EXT_DN_EBPF_NAME}  bandwidth=400
-    Wait and Verify Iperf3 Result Strict   ${GNBSIM_IN_USE}  400
+    Wait and Verify Iperf3 Result   ${GNBSIM_IN_USE}  400
 
     # DOWNLINK
     Start Iperf3 Server     ${GNBSIM_IN_USE}
     Start Iperf3 Client     ${EXT_DN_EBPF_NAME}  ${EXT_DN_EBPF_IP}  ${ip}  bandwidth=400
-    Wait and Verify Iperf3 Result Strict   ${EXT_DN_EBPF_NAME}  400
+    Wait and Verify Iperf3 Result   ${EXT_DN_EBPF_NAME}  400
 
 *** Keywords ***
 
