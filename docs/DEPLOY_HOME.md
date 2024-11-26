@@ -14,6 +14,7 @@ Welcome to the tutorial home page of the OAI 5g Core project. Here you can find 
     - [Pull the container images](./RETRIEVE_OFFICIAL_IMAGES.md)
     - [Build the container images](./BUILD_IMAGES.md)
 - [Configuring the Containers](./CONFIGURATION.md)
+    - [How to use PCF Provisionning API](./PCF_PROVISIONING_API.md)
 - 5G Core Network Deployment
     - [Using Docker-Compose, perform a `basic` deployment](./DEPLOY_SA5G_BASIC_DEPLOYMENT.md)
     - [Using Docker-Compose, perform a `basic` deployment with `eBPF` implementation of UPF](./DEPLOY_SA5G_WITH_UPF_EBPF.md)
