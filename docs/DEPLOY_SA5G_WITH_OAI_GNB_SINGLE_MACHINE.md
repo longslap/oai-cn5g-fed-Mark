@@ -5,6 +5,8 @@ Instead of configuring oai-upf to use demo-n3, demo-n6 in the container. We crea
 - `docker-compose/conf/basic_nrf_config_ebpf_veth.yaml`
 - `scripts/setup-veth.sh`
 
+`Note: this set up requires Linux kernel >= 5.13`
+
 ## Set up
 
 It should build nr-softmodem (gNB) and then nr-uesoftmodem
