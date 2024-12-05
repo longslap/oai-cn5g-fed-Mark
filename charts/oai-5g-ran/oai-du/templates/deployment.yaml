@@ -61,6 +61,12 @@ spec:
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        capabilities:
+          add:
+            - NET_ADMIN
+            - NET_RAW
+          drop:
+            - ALL
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         {{ toYaml .Values.imagePullSecrets | indent 8 }}
@@ -159,13 +165,6 @@ spec:
             memory: {{ .Values.resources.limits.tcpdump.memory | quote }}
             cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
-        securityContext:
-           capabilities:
-              add:
-               - NET_ADMIN
-               - NET_RAW
-              drop:
-               - ALL
         {{- if .Values.start.tcpdump}}
         command:
           - /bin/sh
