@@ -263,7 +263,7 @@ pipeline {
             sh "sudo uhd_find_devices > /dev/null 2>&1 || true"
             sleep 5
             sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yaml"
-            sh "docker-compose up -d"
+            sh "docker compose up -d"
             deployedGNB = true
             gNBStatus = checkStatusOnGNB()
             if (gNBStatus > 0) {
@@ -284,13 +284,13 @@ pipeline {
             sleep 2
             sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
             dir ('ci-scripts/docker-compose/gnb-ci-testbed-ebpf') {
-              sh "docker-compose stop -t 3 || true"
+              sh "docker compose stop -t 3 || true"
               sleep 2
               sh "docker logs sa-b210-gnb > oai-gnb.logs 2>&1 || true"
               sh "cp /tmp/oai-gnb-l2-trace.* . || true"
               sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
               stash allowEmpty: true, includes: 'oai-gnb.logs, oai-gnb-l2-trace.*', name: 'gNB_logs'
-              sh "docker-compose down -t 3 || true"
+              sh "docker compose down -t 3 || true"
               sh "./remove-route-to-cn5g-on-selfix.sh || true"
             }
             deployedGNB  = false
@@ -366,13 +366,13 @@ pipeline {
             dir ('ci-scripts/docker-compose/gnb-ci-testbed-ebpf') {
               ranFullImage = fixFullRanImageTag(params.FULL_RAN_TAG)
               sh "sed -i -e 's@image: oaisoftwarealliance/oai-gnb:develop@image: ${ranFullImage}@' docker-compose.yaml"
-              sh "docker-compose stop -t 3 || true"
+              sh "docker compose stop -t 3 || true"
               sleep 2
               sh "docker logs sa-b210-gnb > oai-gnb.logs 2>&1 || true"
               sh "cp /tmp/oai-gnb-l2-trace.* . || true"
               sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
               stash allowEmpty: true, includes: 'oai-gnb.logs, oai-gnb-l2-trace.*', name: 'gNB_logs'
-              sh "docker-compose down -t 3 || true"
+              sh "docker compose down -t 3 || true"
               sh "./remove-route-to-cn5g-on-selfix.sh || true"
             }
             deployedGNB = false
@@ -490,3 +490,75 @@ def cleanUpDockerCompose(filename) {
   sh 'docker network prune --force'
   sh 'docker volume prune --force'
 }
+
+def fixFullRanImageTag (ranFullImage) {
+  // if format is porcepix.sboai.cs.eurecom.fr/oai-gnb:raphael/ci-fix-ubuntu-build-log-scheme-24efc76d
+  if (ranFullImage.contains('porcepix')) {
+    def arr = ranFullImage.split(':')
+    arr[1] = arr[1].replaceAll('/', '-')
+    ranFullImage = arr[0] + ':' + arr[1]
+  }
+  return ranFullImage
+}
+
+def checkAndPullRanImage (ranFullImage) {
+  imageToPull = false
+  try {
+    echo "Checking if RAN image is present on test server"
+    sh "docker image inspect --format='Date = {{.Created}}' ${ranFullImage}"
+    sh "docker image inspect --format='Size = {{.Size}} bytes' ${ranFullImage}"
+  } catch (Exception e) {
+    echo "Image is not present --> pulling it"
+    imageToPull = true
+  }
+  if (imageToPull) {
+    if (ranFullImage.contains('porcepix')) {
+      sh 'docker login -u oaicicd -p oaicicd porcepix.sboai.cs.eurecom.fr'
+    }
+    sh "docker pull ${ranFullImage}"
+    if (ranFullImage.contains('porcepix')) {
+      sh 'docker logout porcepix.sboai.cs.eurecom.fr'
+    }
+  }
+}
+
+def checkStatusOnGNB() {
+  status = 0
+  sh "docker compose ps --all"
+  cnt = 0
+  while (cnt < 10) {
+    psStatus = sh returnStdout: true, script: "docker compose ps --all"
+    if (psStatus.contains('(healthy)')) {
+      cnt = 30
+      echo "gNB container is healthy"
+    } else {
+      cnt += 1
+      sleep 2
+    }
+  }
+  if (cnt != 30) {
+    status += 1
+  }
+  cnt = 0
+  while (cnt < 10) {
+    syncStatus = sh returnStdout: true, script: "docker logs sa-b210-gnb 2>&1 | grep sync || true"
+    if (syncStatus.contains('got sync')) {
+      echo "gNB radio is ready"
+      cnt = 30
+    } else {
+      cnt += 1
+      sleep 2
+    }
+  }
+  if (cnt != 30) {
+    status += 4
+  }
+  amfStatus = sh returnStdout: true, script: "docker logs sa-b210-gnb 2>&1 | grep 'Received NGAP_REGISTER_GNB_CNF' || true"
+  if (amfStatus.contains('Received NGAP_REGISTER_GNB_CNF: associated AMF 1')) {
+    echo "gNB is connected to AMF"
+  } else {
+    status += 2
+  }
+  return status
+}
+
