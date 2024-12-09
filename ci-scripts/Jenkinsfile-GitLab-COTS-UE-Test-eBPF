@@ -55,6 +55,7 @@ pulledImages = [false, false, false, false, false, false, false]
 containerNames = ["oai-nrf", "oai-amf", "oai-smf", "oai-upf", "oai-ausf", "oai-udm", "oai-udr", "oai-ext-dn"]
 
 // Status booleans
+boolean analysisToDo = false
 boolean deployedCore = false
 boolean deployedGNB  = false
 boolean coreDeploy   = true
@@ -227,7 +228,7 @@ pipeline {
             sh 'nohup sudo tshark -i demo-oai -i demo-n3 -i demo-n6 -w /tmp/oai-cn5g-trace.pcap > /tmp/oai-cn5g-trace.logs 2>&1 &'
             sh '../../checkContainerStatus.py --container_name mysql --timeout 40'
             sh '../../checkContainerStatus.py --container_name oai-upf --timeout 40'
-            sh "docker compose ps -a"
+            sh "docker compose ps -a 2>&1 | tee ../../../archives/describe-pods.logs"
             deployedCore = true
           }
         }
@@ -413,6 +414,34 @@ pipeline {
         }
       }
     }
+    stage ('Post-Run Analysis') {
+      steps {
+        script {
+          analysisToDo = false
+          OPTIONS=''
+          if (coreDeploy == false) {
+            OPTIONS += ' --core_deploy_failed'
+          }
+          if (gnbDeploy == false) {
+            OPTIONS += ' --gnb_deploy_failed'
+          }
+          if (testStart0 == false) {
+            OPTIONS += ' --ue_test0_start_failed'
+          }
+          if (testStop0 == false) {
+            OPTIONS += ' --ue_test0_stop_failed'
+          }
+          if (testStart1 == false) {
+            OPTIONS += ' --ue_test1_start_failed'
+          }
+          if (testStop1 == false) {
+            OPTIONS += ' --ue_test1_stop_failed'
+          }
+          // The python script may return an error
+          sh " ./ci-scripts/checkCOTS-UE-Testing.py --job_name ${JOB_NAME} --job_id ${BUILD_ID} --job_url ${BUILD_URL}${OPTIONS}"
+        }
+      }
+    }
   }
   post {
     always {
@@ -422,10 +451,10 @@ pipeline {
         if (fileExists('cn5g_fed_ebpf_logs.zip')) {
           archiveArtifacts artifacts: 'cn5g_fed_ebpf_logs.zip'
         }
-        //sh './ci-scripts/checkTutorialHtmlReport.py --job_name ' + JOB_NAME + ' --job_id ' + BUILD_ID + ' --job_url ' + BUILD_URL
-        //if (fileExists('test_results_oai_cn5g_tutorials.html')) {
-        //  archiveArtifacts artifacts: 'test_results_oai_cn5g_tutorials.html'
-        //}
+        if (fileExists('test_results_oai_cn5g_cots_ue.html')) {
+          sh "mv test_results_oai_cn5g_cots_ue.html test_results_oai_cn5g_ebpf_cots_ue.html"
+          archiveArtifacts artifacts: 'test_results_oai_cn5g_ebpf_cots_ue.html'
+        }
       }
     }
     cleanup {
