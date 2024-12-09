@@ -1,0 +1,47 @@
+services:
+    gnb_mono_tdd:
+        container_name: sa-b210-gnb
+        image: oaisoftwarealliance/oai-gnb:2024.w45
+        cap_drop:
+            - ALL
+        cap_add:
+            - SYS_NICE
+            - IPC_LOCK
+        ulimits:
+          core: -1 # for core dumps
+        environment:
+            USE_B2XX: 'yes'
+            USE_ADDITIONAL_OPTIONS: --continuous-tx --RUs.[0].sdr_addrs serial=30A3E69 --log_config.global_log_options level,nocolor,time,line_num,function --opt.type wireshark
+        devices:
+            -  /dev/bus/usb/:/dev/bus/usb/
+        volumes:
+            - ./gnb-n77.conf:/opt/oai-gnb/etc/gnb.conf
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.10
+            n3_net:
+                ipv4_address: 192.168.71.10
+        healthcheck:
+            # pgrep does NOT work
+            test: /bin/bash -c "ps aux | grep -v grep | grep -c softmodem"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+networks:
+    public_net:
+        driver: bridge
+        name: demo-oai-public-net
+        ipam:
+            config:
+                - subnet: 192.168.70.0/26
+        driver_opts:
+            com.docker.network.bridge.name: "demo-oai"
+    n3_net:
+        driver: bridge
+        name: demo-oai-n3-net
+        ipam:
+            config:
+                - subnet: 192.168.71.0/26
+        driver_opts:
+            com.docker.network.bridge.name: "demo-n3"
