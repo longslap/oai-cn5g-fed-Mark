@@ -222,7 +222,7 @@ pipeline {
           dir ('ci-scripts/docker-compose/cn5g-ci-testbed-ebpf') {
             sh "sudo rm -f /tmp/oai-cn5g-ebpf.pcap /tmp/oai-cn5g-ebpf.logs"
             updateDockerCompose('docker-compose.yaml')
-            sh "add-route-to-gnb-on-dogmatix.sh"
+            sh "./add-route-to-gnb-on-dogmatix.sh"
             sh "docker compose up -d"
             sh 'nohup sudo tshark -i demo-oai -i demo-n3 -i demo-n6 -w /tmp/oai-cn5g-trace.pcap > /tmp/oai-cn5g-trace.logs 2>&1 &'
             sh '../../checkContainerStatus.py --container_name mysql --timeout 40'
@@ -258,7 +258,7 @@ pipeline {
           sleep 2
           // Deploying now
           dir ('ci-scripts/docker-compose/gnb-ci-testbed-ebpf') {
-            sh "add-route-to-cn5g-on-selfix.sh"
+            sh "./add-route-to-cn5g-on-selfix.sh"
             sh "sudo b2xx_fx3_utils --reset-device"
             sh "sudo uhd_find_devices > /dev/null 2>&1 || true"
             sleep 5
@@ -291,7 +291,7 @@ pipeline {
               sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
               stash allowEmpty: true, includes: 'oai-gnb.logs, oai-gnb-l2-trace.*', name: 'gNB_logs'
               sh "docker-compose down -t 3 || true"
-              sh "remove-route-to-cn5g-on-selfix.sh || true"
+              sh "./remove-route-to-cn5g-on-selfix.sh || true"
             }
             deployedGNB  = false
             gnbDeploy    = false
@@ -373,7 +373,7 @@ pipeline {
               sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
               stash allowEmpty: true, includes: 'oai-gnb.logs, oai-gnb-l2-trace.*', name: 'gNB_logs'
               sh "docker-compose down -t 3 || true"
-              sh "remove-route-to-cn5g-on-selfix.sh || true"
+              sh "./remove-route-to-cn5g-on-selfix.sh || true"
             }
             deployedGNB = false
             if (ranFullImage.contains('porcepix')) {
@@ -408,6 +408,7 @@ pipeline {
             sh 'cp /tmp/oai-cn5g-trace.* ../../../archives'
             sh "sudo rm -f /tmp/oai-cn5g-trace.*"
             cleanUpDockerCompose('docker-compose.yaml')
+            sh "./remove-route-to-gnb-on-dogmatix.sh || true"
           }
         }
       }
