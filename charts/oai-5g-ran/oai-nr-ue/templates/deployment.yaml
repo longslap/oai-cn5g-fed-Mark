@@ -50,7 +50,7 @@ spec:
       - name: nr-ue
         image: "{{ .Values.nfimage.repository }}:{{ .Values.nfimage.version }}"
         securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
+          privileged: true
         volumeMounts:
           - mountPath: /opt/oai-nr-ue/etc
             name: configuration
@@ -70,8 +70,6 @@ spec:
             memory: {{ .Values.resources.limits.nf.memory | quote }}
             cpu: {{ .Values.resources.limits.nf.cpu | quote }}
         {{- end}}
-        securityContext:
-          privileged: true
         {{- if .Values.start.nrue}}
         command: [ "/bin/bash", "-c" ]
         args:
