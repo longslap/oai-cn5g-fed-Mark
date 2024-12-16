@@ -12,7 +12,7 @@ services:
             - TAC=0xa000
             - LINK_IP=192.168.70.149
             - NGAP_IP=192.168.70.149
-            - GTP_IP=192.168.70.149
+            - GTP_IP=192.168.71.149
             - NGAP_PEER_IP=192.168.70.132
             - SST=222
             - SD=123
@@ -38,17 +38,20 @@ services:
         networks:
             public_net:
                 ipv4_address: 192.168.70.149
+            n3_net:
+                ipv4_address: 192.168.71.149
         healthcheck:
             test: /bin/bash -c "ifconfig uesimtun0"
             interval: 10s
             timeout: 5s
             retries: 5
-
-
 networks:
     public_net:
         external:
             name: demo-oai-public-net
+    n3_net:
+        external:
+            name: demo-oai-n3-net
     framed_route_net:
         driver: bridge
         name: demo-oai-framed-route-net
@@ -58,6 +61,7 @@ networks:
         driver_opts:
             com.docker.network.bridge.name: "framed-route"
 
+
 #### Commands for Test Setup
 #
 #    # setup subnet IP address
@@ -66,4 +70,4 @@ networks:
 #    # add routing
 #    docker exec -it ueransim-fr ip rule add from 192.168.128.1 lookup rt_uesimtun0
 #    docker exec -it ueransim-fr ip route add 192.168.128.1 dev uesimtun0 table rt_uesimtun0
-#    docker exec -it ueransim-fr ip route add 8.8.8.8 via 12.1.1.2 dev uesimtun0 src 192.168.128.1 (for ping 8.8.8.8)
+#    docker exec -it ueransim-fr ip route add 8.8.8.8 via 12.1.1.2 dev uesimtun0 src 192.168.128.1 (for ping to 8.8.8.)
