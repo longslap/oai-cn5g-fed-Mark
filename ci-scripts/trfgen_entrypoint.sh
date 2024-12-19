@@ -5,7 +5,7 @@ USE_FQDN=${USE_FQDN:-no}
 UE_NETWORK=${UE_NETWORK:-12.1.1.0/24}
 
 EBPF_GW_SETUP=${EBPF_GW_SETUP:-no}
-EBPF_GW_MTU=${EBPF_GW_MTU:-1460}
+EBPF_GW_MTU=${EBPF_GW_MTU:-1450}
 
 if [[ ${USE_FQDN} == "yes" ]];then
     echo -e "Trying to resolve UPF by FQDN : $UPF_FQDN"
