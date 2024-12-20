@@ -169,13 +169,13 @@ You just add the `--build-arg BASE_IMAGE=ubuntu:xxxx` option.
 For example, I am building using `ubuntu:focal` as base image:
 
 ```bash
-$ docker build --target oai-amf --tag oai-amf:v1.5.1 \
+$ docker build --target oai-amf --tag oai-amf:v2.1.0 \
                --file component/oai-amf/docker/Dockerfile.amf.ubuntu \
-               --build-arg BASE_IMAGE=ubuntu:focal \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-amf
 $ docker image prune --force
 $ docker image ls
-oai-amf                 v1.5.1             f478bafd7a06        1 minute ago          179MB
+oai-amf                 v2.1.0            f478bafd7a06        1 minute ago          179MB
 ...
 ```
 
@@ -206,13 +206,13 @@ The above command is with podman, in case you use docker, it can be changed with
 For example, I am building using `ubuntu:22.04` as base image:
 
 ```bash
-$ docker build --target oai-smf --tag oai-smf:v1.5.1 \
+$ docker build --target oai-smf --tag oai-smf:v2.1.0 \
                --file component/oai-smf/docker/Dockerfile.smf.ubuntu \
-               --build-arg BASE_IMAGE=ubuntu:22.04 \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-smf
 $ docker image prune --force
 $ docker image ls
-oai-smf                 v1.5.1             f478bafd7a06        1 minute ago          193MB
+oai-smf                 v2.1.0             f478bafd7a06        1 minute ago          193MB
 ...
 ```
 
@@ -242,13 +242,13 @@ The above command is with podman, in case you use docker it can be changed with 
 For example, I am building using `ubuntu:jammy` as base image:
 
 ```bash
-$ docker build --target oai-nrf --tag oai-nrf:v1.5.1 \
+$ docker build --target oai-nrf --tag oai-nrf:v2.1.0 \
                --file component/oai-nrf/docker/Dockerfile.nrf.ubuntu \
                --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-nrf
 $ docker image prune --force
 $ docker image ls
-oai-nrf                 v1.5.1             04334b29e103        1 minute ago          247MB
+oai-nrf                 v2.1.0             04334b29e103        1 minute ago          247MB
 ...
 ```
 
@@ -278,13 +278,13 @@ The above command is with podman, in case you use docker it can be changed with 
 For example, I am building using `ubuntu:20.04` as base image:
 
 ```bash
-$ docker build --target oai-upf --tag oai-upf:develop \
+$ docker build --target oai-upf --tag oai-upf:v2.1.0 \
                --file component/oai-upf/docker/Dockerfile.upf.ubuntu \
-               --build-arg BASE_IMAGE=ubuntu:20.04 \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-upf
 $ docker image prune --force
 $ docker image ls
-oai-upf                 develop            dec6311cef3b        1 minute ago          155MB
+oai-upf                 v2.1.0            dec6311cef3b        1 minute ago          155MB
 ...
 ```
 
@@ -312,12 +312,13 @@ The above command is with podman, in case you use docker it can be changed with 
 ## 7.1 On a Ubuntu Host ##
 
 ```bash
-$ docker build --target oai-ausf --tag oai-ausf:v1.5.1 \
+$ docker build --target oai-ausf --tag oai-ausf:v2.1.0 \
                --file component/oai-ausf/docker/Dockerfile.ausf.ubuntu \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-ausf
 $ docker image prune --force
 $ docker image ls
-oai-ausf          v1.5.1              77a96de94c23        1 minute ago        231MB
+oai-ausf          v2.1.0              77a96de94c23        1 minute ago        231MB
 ...
 ```
 
@@ -345,12 +346,13 @@ The above command is with podman, in case you use docker it can be changed with 
 ## 8.1 On a Ubuntu Host ##
 
 ```bash
-$ docker build --target oai-udm --tag oai-udm:v1.5.1 \
+$ docker build --target oai-udm --tag oai-udm:v2.1.0 \
                --file component/oai-udm/docker/Dockerfile.udm.ubuntu \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-udm
 $ docker image prune --force
 $ docker image ls
-oai-udm                 v1.5.1             10a4334e31be        1 minute ago          229MB
+oai-udm                 v2.1.0             10a4334e31be        1 minute ago          229MB
 ...
 ```
 
@@ -378,12 +380,13 @@ The above command is with podman, in case you use docker it can be changed with 
 ## 9.1 On a Ubuntu Host ##
 
 ```bash
-$ docker build --target oai-udr --tag oai-udr:v1.5.1 \
+$ docker build --target oai-udr --tag oai-udr:v2.1.0 \
                --file component/oai-udr/docker/Dockerfile.udr.ubuntu \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-udr
 $ docker image prune --force
 $ docker image ls
-oai-udr                 v1.5.1             581e07d59ec3        1 minute ago          234MB
+oai-udr                 v2.1.0             581e07d59ec3        1 minute ago          234MB
 ...
 ```
 
@@ -412,12 +415,13 @@ The above command is with podman, in case you use docker it can be changed with 
 ## 10.1 On a Ubuntu Host ##
 
 ```bash
-$ docker build --target oai-upf-vpp --tag oai-upf-vpp:v1.5.1 \
+$ docker build --target oai-upf-vpp --tag oai-upf-vpp:v2.1.0 \
                --file component/oai-upf-vpp/docker/Dockerfile.upf-vpp.ubuntu \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-upf-vpp
 $ docker image prune --force
 $ docker image ls
-oai-upf-vpp             v1.5.1             581e07d59ec3        1 minute ago          937MB
+oai-upf-vpp             v2.1.0             581e07d59ec3        1 minute ago          937MB
 ...
 ```
 
@@ -445,12 +449,13 @@ The above command is with podman, in case you use docker it can be changed with 
 ## 11.1 On a Ubuntu Host ##
 
 ```bash
-$ docker build --target oai-nssf --tag oai-nssf:v1.5.1 \
+$ docker build --target oai-nssf --tag oai-nssf:v2.1.0 \
                --file component/oai-nssf/docker/Dockerfile.nssf.ubuntu \
+               --build-arg BASE_IMAGE=ubuntu:jammy \
                component/oai-nssf
 $ docker image prune --force
 $ docker image ls
-oai-nssf          v1.5.1              77a96de94c23        1 minute ago        231MB
+oai-nssf          v2.1.0              77a96de94c23        1 minute ago        231MB
 ...
 ```
 
