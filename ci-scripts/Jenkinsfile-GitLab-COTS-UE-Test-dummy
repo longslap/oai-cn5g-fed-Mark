@@ -1,0 +1,82 @@
+#!/bin/groovy
+/*
+ * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The OpenAirInterface Software Alliance licenses this file to You under
+ * the OAI Public License, Version 1.1  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
+
+// Location of the CN builder node
+// It should also have access to our Openshift Cluster to push images
+// The resource lock will be based on this OC access
+def cn_oc_client = params.cn_oc_client
+def cn_oc_session_resource = params.cn_oc_session_resource
+def cn_oc_credentials = params.cn_oc_credentials
+
+// Location of the gNB node
+def gnb_server = params.gnb_server
+def gnb_resource = params.gnb_resource
+
+// Location of the COTS UE control node
+def ue_ctl_server = params.ue_ctl_server
+def ue_ctl_resource = params.ue_ctl_resource
+
+//-------------------------------------------------------------------------------
+// Pipeline start
+pipeline {
+  agent {
+    label cn_oc_client
+  }
+  options {
+    disableConcurrentBuilds()
+    timestamps()
+    ansiColor('xterm')
+    lock(extra: [[resource: gnb_resource]], resource: cn_oc_session_resource)
+  }
+  stages {
+    stage ('Verify Parameters') {
+      steps {
+        script {
+          echo '\u2705 \u001B[32mVerify Parameters\u001B[0m'
+
+          sh "git clean -x -d -ff > /dev/null 2>&1"
+          sh "git submodule foreach --recursive 'git clean -x -d -ff' > /dev/null 2>&1"
+          sh "git submodule deinit --force --all > /dev/null 2>&1"
+          sh "git submodule update --init --recursive ci-scripts/common"
+          sh "mkdir -p archives"
+        }
+      }
+    }
+    stage ('Post-Run Analysis') {
+      steps {
+        script {
+          // The python script may return an error
+          sh " ./ci-scripts/checkCOTS-UE-Testing.py --job_name ${JOB_NAME} --job_id ${BUILD_ID} --job_url ${BUILD_URL}"
+        }
+      }
+    }
+  }
+  post {
+    cleanup {
+      script {
+        if (fileExists('test_results_oai_cn5g_cots_ue.html')) {
+          archiveArtifacts artifacts: 'test_results_oai_cn5g_cots_ue.html'
+        }
+      }
+    }
+  }
+}
