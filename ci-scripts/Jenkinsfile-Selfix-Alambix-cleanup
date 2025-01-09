@@ -1,7 +1,7 @@
-def node1 = "selfix"
-def resource1 = "CI-Selfix-CN5G-Ubuntu22"
-def node2 = "alambix"
-def resource2 = "CI-Alambix-Usage"
+def node1 = "Selfix"
+def resource1 = "Selfix"
+def node2 = "Alambix"
+def resource2 = "Alambix"
 
 pipeline {
   agent {
