@@ -53,7 +53,7 @@ RUN apt-get update && \
 
 WORKDIR /tmp
 
-COPY trfgen_entrypoint.sh .
+COPY ./ci-scripts/trfgen_entrypoint.sh .
 
 ENTRYPOINT ["/bin/bash","/tmp/trfgen_entrypoint.sh"]
 

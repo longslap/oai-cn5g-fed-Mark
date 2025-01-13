@@ -31,8 +31,11 @@ spec:
         volumeMounts:
         - mountPath: /tmp/script.sh
           name: scripts
-          subPath: script.sh 
-        command: ["./tmp/script.sh"]
+          subPath: script.sh
+        command:
+            - /bin/sh
+            - -c
+            - /tmp/script.sh
         image: "{{ .Values.trafficServer.repository }}:{{ .Values.trafficServer.version }}"
         imagePullPolicy: IfNotPresent
         securityContext:

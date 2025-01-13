@@ -7,14 +7,14 @@ nfimage:
   pullPolicy: IfNotPresent
 
 tcpdumpimage:
-  repository: support-tools
-  version: 8.7-8
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-gen
+  version: latest
   #pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 initContainer:
-  repository: docker.io/alpine/curl
-  version: 3.14
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-init
+  version: latest
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
@@ -61,21 +61,21 @@ persistent:
   size: 1Gi
 
 resources:
-  define: false
+  define: true
   limits:
     tcpdump:
       cpu: 100m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 512Mi
   requests:
     tcpdump:
       cpu: 100m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 200m
+      memory: 512Mi
 
 readinessProbe: true
 
@@ -85,4 +85,4 @@ terminationGracePeriodSeconds: 60
 
 nodeSelector: {}
 
-nodeName: demophon
+nodeName: 

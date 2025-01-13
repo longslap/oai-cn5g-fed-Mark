@@ -1,11 +1,11 @@
-kubernetesType: Vanilla  #Vanilla for community kubernetes distribution
+kubernetesType: Openshift  #Vanilla for community kubernetes distribution
 
 podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
 trafficServer:
-  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-server
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-gen
   version: latest
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
@@ -25,7 +25,7 @@ multus:
   IPadd: "172.21.6.202"
   Netmask: "22"
   Gateway: "172.21.7.254"
-  hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+  hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
 
 config:
   ueroute: 12.1.1.0/24
@@ -40,4 +40,4 @@ terminationGracePeriodSeconds: 2
 
 nodeSelector: {}
 
-nodeName: 
+nodeName:

@@ -28,6 +28,13 @@ spec:
             - /bin/sh
             - -c 
             - until curl --head -X GET http://{{ .Values.config.nrfFqdn }}/nnrf-nfm/v1/nf-instances?nf-type='NRF' {{ .Values.config.http2Param }}; do echo waiting for oai-nrf; sleep 2; done
+          resources:
+            requests:
+              memory: 50Mi
+              cpu: 1m
+            limits:
+              memory: 50Mi
+              cpu: 1m
       containers:
       - name: tcpdump
         image: "{{ .Values.tcpdumpimage.repository }}:{{ .Values.tcpdumpimage.version }}"
@@ -37,11 +44,11 @@ spec:
         {{- if .Values.resources.define}}
         resources:
           requests:
-            memory: {{ .Values.resources.tcpdump.requests.memory | quote }}
-            cpu: {{ .Values.resources.tcpdump.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.tcpdump.memory | quote }}
+            cpu: {{ .Values.resources.requests.tcpdump.cpu | quote }}
           limits:
-            memory: {{ .Values.resources.tcpdump.limits.memory | quote }}
-            cpu: {{ .Values.resources.tcpdump.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.tcpdump.memory | quote }}
+            cpu: {{ .Values.resources.limits.tcpdump.cpu | quote }}
         {{- end}}
         {{- if .Values.start.tcpdump}}
         command:
@@ -67,11 +74,11 @@ spec:
         {{- if .Values.resources.define}}
         resources:
           requests:
-            memory: {{ .Values.resources.nf.requests.memory | quote }}
-            cpu: {{ .Values.resources.nf.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.nf.memory | quote }}
+            cpu: {{ .Values.resources.requests.nf.cpu | quote }}
           limits:
-            memory: {{ .Values.resources.nf.limits.memory | quote }}
-            cpu: {{ .Values.resources.nf.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.nf.memory | quote }}
+            cpu: {{ .Values.resources.limits.nf.cpu | quote }}
         {{- end}}
         {{- if .Values.readinessProbe}}
         readinessProbe:
