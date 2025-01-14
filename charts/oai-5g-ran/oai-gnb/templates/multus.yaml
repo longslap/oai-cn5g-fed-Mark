@@ -64,12 +64,16 @@ spec:
       {{- end }}
       "mode": "bridge",
       "ipam": {
+        {{- if eq .Values.multus.ru1Interface.ipAdd "dhcp" }}
+        "type": "dhcp",
+        {{- else }}
         "type": "static",
         "addresses": [
                 {
                         "address": {{- cat .Values.multus.ru1Interface.ipAdd "/" .Values.multus.ru1Interface.netmask | nospace | quote }}
                 }
         ]
+        {{- end }}
       }
     }'
 {{- end }}
@@ -89,12 +93,16 @@ spec:
       {{- end }}
       "mode": "bridge",
       "ipam": {
+        {{- if eq .Values.multus.ru2Interface.ipAdd "dhcp" }}
+        "type": "dhcp",
+        {{- else }}
         "type": "static",
         "addresses": [
                 {
                         "address": {{- cat .Values.multus.ru2Interface.ipAdd "/" .Values.multus.ru2Interface.netmask | nospace | quote }}
                 }
         ]
+        {{- end }}
       }
     }'
 {{- end }}
