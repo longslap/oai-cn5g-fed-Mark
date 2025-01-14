@@ -43,7 +43,7 @@ spec:
       "mode": "bridge",
       "ipam": {
         {{- if eq .Values.multus.ru1Interface.ipAdd "dhcp" }}
-        "type": "dhcp",
+        "type": "dhcp"
         {{- else }}
         "type": "static",
         "addresses": [
@@ -75,7 +75,7 @@ spec:
       "mode": "bridge",
       "ipam": {
         {{- if eq .Values.multus.ru2Interface.ipAdd "dhcp" }}
-        "type": "dhcp",
+        "type": "dhcp"
         {{- else }}
         "type": "static",
         "addresses": [
