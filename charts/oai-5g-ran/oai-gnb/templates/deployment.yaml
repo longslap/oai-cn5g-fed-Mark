@@ -137,7 +137,9 @@ spec:
           protocol: SCTP
         command: [ "/bin/bash", "-c" ]
         args:
-         -  sed -e s/@AMF_IP_ADDRESS@/$AMF_IP_ADDRESS/g
+         -  RU1_IP_ADDRESS=$(ip -4 addr show ru1 | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            sed -e s/@AMF_IP_ADDRESS@/$AMF_IP_ADDRESS/g
+                -e s/@RU1_IP_ADDRESS@/$RU1_IP_ADDRESS/g
             {{- if eq .Values.config.usrp "aw2s" }}
                 /opt/oai-gnb-aw2s/etc/gnb.conf | tee /tmp/gnb.conf;
             {{- else }}
