@@ -53,7 +53,7 @@ multus:
   n3Ip: "172.21.6.201"
   n3Netmask: "22"
   n6Gw: "172.21.7.254"
-  hostInterface: "bond0"
+  hostInterface: "br-ex"
 
 config:
   fqdn: "oai-spgwu-tiny"

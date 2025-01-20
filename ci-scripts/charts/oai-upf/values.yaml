@@ -7,16 +7,17 @@ nfimage:
   pullPolicy: IfNotPresent
 
 tcpdumpimage:
-  repository: support-tools
-  version: 8.7-8
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-gen
+  version: latest
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: Always
+
+initContainer:
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-init
+  version: latest
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
-initContainer:
-  repository: docker.io/alpine/curl
-  version: 3.14
-  #pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
 
 ## good to use when pulling images from docker-hub
 #imagePullSecrets:
@@ -53,36 +54,10 @@ multus:
   n3Ip: "172.21.6.201"
   n3Netmask: "22"
   n6Gw: "172.21.7.254"
-  hostInterface: "bond0"
+  hostInterface: "br-ex"
 
 config:
-  fqdn: "oai-upf"
-  n3If: "net1"  # net1 if gNB is outside the cluster network and multus creation is true else eth0
-  n4If: "eth0" # use for SMF communication
-  n6If: "net1"  # net1 if gNB is outside the cluster network and multus creation is true else eth0 (important because it sends the traffic towards internet)
-  threadsN3Ul: "1"
-  threadsN6Dl: "1"
-  threadsN6Prio: 99
-  threadsN3Prio: 98
-  threadsN4Prio: 88
-  netUeNatOption: "yes"
-  bypassUlPfcpRules: "no" #standart feature is no, put yes if you want less UL packet delay
-  smfIpAdd: "127.0.0.1" # SMF ip-address incase NRF is not used to initiate a PFCP session
-  netUeIp1: "12.1.1.0/24"  # The range in which UE ip-address will be allocated should be configured the same in SMF
-  ## Optional (set for ims dnn)
-  #netUeIp2: "12.2.1.0/24"  # The range in which UE ip-address will be allocated should be configured the same in SMF
-  registerNRF: "yes"
-  useFqdnNrf: "yes"  # use FQDN to resolve nrf ip-address
-  nrfFqdn: "oai-nrf" # make sure this can be resolved by container dns
-  #Mandatory to configure atlease one slice
-  nssaiSst0: 1 # should match with SMF information
-  nssaiSd0: "0xFFFFFF"  # should match with SMF information (Optional, if removed sd value will be 0xFFFFFF)
-  dnn0: "oai" # should match with SMF information
-  #Upto 4 slices can be added from here to add more you need to add manullay in config.yaml. Please follow the same way of adding slices nssaiSST$,nssaiSd$,dnn$ ($=0,1,2,3)
-  nssaiSst1: 1 # should match with SMF information (Optional, if removed slice will not be configured)
-  nssaiSd1: "0xFFFFFF"  # should match with SMF information (Optional, if removed sd value will be 0xFFFFFF only if nssaiSst1 is configured)
-  dnn1: "ims" # should match with SMF information
-  logLevel: "debug"
+  nrfFqdn: "oai-nrf"  # amf communicates using FQDN
 
 ## currently only used by tcpdump container to store the tcpdump, this volume will be shared between all the network functions
 persistent:
@@ -92,21 +67,21 @@ persistent:
 
 
 resources:
-  define: false
+  define: true
   limits:
     tcpdump:
-      cpu: 100m
+      cpu: 1000m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 1000m
+      memory: 512Mi
   requests:
     tcpdump:
-      cpu: 100m
+      cpu: 1000m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 1000m
+      memory: 512Mi
 
 readinessProbe: true
 
@@ -116,4 +91,4 @@ terminationGracePeriodSeconds: 60
 
 nodeSelector: {}
 
-nodeName: perse
+nodeName:

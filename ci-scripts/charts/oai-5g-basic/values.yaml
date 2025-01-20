@@ -59,11 +59,9 @@ oai-amf:
     n2IPadd: "172.21.6.200"
     n2Netmask: "22"
     n2Gateway: "172.21.7.254"
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   config:
     http2Param: "--http2-prior-knowledge"
-  nodeSelector:     #Using dedicated nodeName in the chart directly
-    worker: "telco"
 oai-upf:
   enabled: true
   kubernetesType: Openshift #Openshift/Vanilla Vanilla for Upstream Kubernetes
@@ -77,16 +75,14 @@ oai-upf:
     n3Ip: "172.21.6.201"
     n3Netmask: "22"
     n6Gw: "172.21.7.254"
-    hostInterface: "bond0"
-  nodeSelector: 
-    worker: "telcort"
+    hostInterface: "br-ex"
   config:
     http2Param: "--http2-prior-knowledge"
 oai-traffic-server:
   enabled: true
   kubernetesType: Openshift #Openshift/Vanilla Vanilla for Upstream Kubernetes
   trafficServer:
-    repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-server
+    repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-gen
     version: latest
     #pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
@@ -95,7 +91,7 @@ oai-traffic-server:
     n3Ip: "172.21.6.202"
     n3Netmask: "22"
     n6Gw: "172.21.7.254"
-    hostInterface: "bond0"
+    hostInterface: "br-ex"
   config:
     ueroute: 12.1.1.0/24
     upfIpadd: 172.21.6.201

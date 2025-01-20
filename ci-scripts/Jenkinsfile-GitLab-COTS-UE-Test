@@ -36,7 +36,8 @@ def ue_ctl_server = params.ue_ctl_server
 def ue_ctl_resource = params.ue_ctl_resource
 
 oc_registry_url = 'https://default-route-openshift-image-registry.apps.oai.cs.eurecom.fr'
-oc_project_name = 'oaicicd-core'
+oc_image_project_name = 'oaicicd-core'
+oc_test_project_name = 'oaicicd-core-testing'
 
 // Variables that can used in main pipeline and in functions
 NRF=0
@@ -149,11 +150,11 @@ pipeline {
           withCredentials([
             [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.cn_oc_credentials}", usernameVariable: 'OC_Username', passwordVariable: 'OC_Password']
           ]) {
-            sh "oc login -u ${OC_Username} -p ${OC_Password}"
+            sh "oc login -u ${OC_Username} -p ${OC_Password} --server=https://api.oai.cs.eurecom.fr:6443"
             logoutToDo = true
-            sh "oc project ${oc_project_name}"
+            sh "oc project ${oc_image_project_name}"
             for (ii = 0; ii < imageNames.size(); ii++) {
-              sh "./ci-scripts/checkOcRegistry.py --image-name ${imageNames[ii]} --tag ${destTags[ii]} --project ${oc_project_name} -u ${OC_Username}"
+              sh "./ci-scripts/checkOcRegistry.py --image-name ${imageNames[ii]} --tag ${destTags[ii]} --project ${oc_image_project_name} -u ${OC_Username}"
             }
           }
           // Putting the new tags in charts
@@ -162,6 +163,7 @@ pipeline {
             for (ii = 0; ii < imageNames.size(); ii++) {
               sh "sed -i 's/${chartKeyTags[ii]}/${destTags[ii]}/g' values.yaml"
             }
+            sh "oc project ${oc_test_project_name}"
             sh "helm dependency update"
             deployedCore = true
             // Normally spray should time out at 5 minutes. Just being cautious
@@ -495,13 +497,16 @@ def checkCoreNetworkDeployment() {
   nrf_url = sh returnStdout: true, script: 'oc get svc oai-nrf -o json | jq -r ".status.loadBalancer.ingress[0].ip"'
   nrf_url = nrf_url.trim()
   echo "nrf_url = ${nrf_url}"
+  nrf_pod_name = sh returnStdout: true, script: 'oc get pods -l app.kubernetes.io/name=oai-nrf -o jsonpath="{.items[*].metadata.name}"'
+  nrf_pod_name = nrf_pod_name.trim()
+  echo "nrf_pod_name = ${nrf_pod_name}"
   // Only AMF, SMF and UPF are registered to NRF
   // AUSF, UDM and UDR in the charts are not-configured to register
-  AMF_namf = sh returnStdout: true, script: "curl -s --http2-prior-knowledge -X GET 'http://${nrf_url}/nnrf-nfm/v1/nf-instances?nf-type=AMF' | jq -r ._links.item[0].href 2>&1 | tee archives/amf-nf-registration.log"
+  AMF_namf = sh returnStdout: true, script: "oc exec -it ${nrf_pod_name} -- curl -s --http2-prior-knowledge -X GET 'http://${nrf_url}/nnrf-nfm/v1/nf-instances?nf-type=AMF' | jq -r ._links.item[0].href 2>&1 | tee archives/amf-nf-registration.log"
   AMF_namf = AMF_namf.trim()
-  SMF_nsmf = sh returnStdout: true, script: "curl -s --http2-prior-knowledge -X GET 'http://${nrf_url}/nnrf-nfm/v1/nf-instances?nf-type=SMF' | jq -r ._links.item[0].href 2>&1 | tee archives/smf-nf-registration.log"
+  SMF_nsmf = sh returnStdout: true, script: "oc exec -it ${nrf_pod_name} -- curl -s --http2-prior-knowledge -X GET 'http://${nrf_url}/nnrf-nfm/v1/nf-instances?nf-type=SMF' | jq -r ._links.item[0].href 2>&1 | tee archives/smf-nf-registration.log"
   SMF_nsmf = SMF_nsmf.trim()
-  UPF_nupf = sh returnStdout: true, script: "curl -s --http2-prior-knowledge -X GET 'http://${nrf_url}/nnrf-nfm/v1/nf-instances?nf-type=UPF' | jq -r ._links.item[0].href 2>&1 | tee archives/upf-nf-registration.log"
+  UPF_nupf = sh returnStdout: true, script: "oc exec -it ${nrf_pod_name} -- curl -s --http2-prior-knowledge -X GET 'http://${nrf_url}/nnrf-nfm/v1/nf-instances?nf-type=UPF' | jq -r ._links.item[0].href 2>&1 | tee archives/upf-nf-registration.log"
   UPF_nupf = UPF_nupf.trim()
   if ((AMF_namf.length() > 0) && (SMF_nsmf.length() > 0) && (UPF_nupf.length() > 0)) {
     echo "All NF registered to NRF"
@@ -511,7 +516,7 @@ def checkCoreNetworkDeployment() {
   }
 
   // Checking the PFCP heart-beat w/ SMF
-  UPF_POD = sh returnStdout: true, script: "oc get pods | grep oai-upf | awk {'print \$1'}"
+  UPF_POD = sh returnStdout: true, script: 'oc get pods -l app.kubernetes.io/name=oai-upf -o jsonpath="{.items[*].metadata.name}"'
   UPF_POD = UPF_POD.trim()
   UPF_log1 = sh returnStdout: true, script: "oc logs ${UPF_POD} upf | grep 'Received SX HEARTBEAT REQUEST' 2>&1 | tee archives/upf_pcfp_heartbeat.log"
   UPF_log1 = UPF_log1.trim()

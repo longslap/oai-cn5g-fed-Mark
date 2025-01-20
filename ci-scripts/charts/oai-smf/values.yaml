@@ -7,14 +7,14 @@ nfimage:
   pullPolicy: IfNotPresent
 
 tcpdumpimage:
-  repository: support-tools
-  version: 8.7-8
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-gen
+  version: latest
   #pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 initContainer:
-  repository: docker.io/alpine/curl
-  version: 3.14
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-init
+  version: latest
   #pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
@@ -60,7 +60,7 @@ multus:
   n4IPadd: "172.21.6.202"
   n4Netmask: "22"
   n4Gateway: "172.21.7.254"
-  hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+  hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
 
 config:
   nrfFqdn: "oai-nrf" # configure if NRF can be reached using Kubernetes service
@@ -75,21 +75,21 @@ persistent:
 
 
 resources:
-  define: false
+  define: true
   limits:
     tcpdump:
       cpu: 100m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 500m
+      memory: 512Mi
   requests:
     tcpdump:
       cpu: 100m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 500m
+      memory: 512Mi
 
 readinessProbe: true
 livenessProbe: false
@@ -98,4 +98,4 @@ terminationGracePeriodSeconds: 60
 
 nodeSelector: {}
 
-nodeName: dedale
+nodeName:

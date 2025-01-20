@@ -216,7 +216,7 @@ pipeline {
 
 
           // On Ubuntu servers, we shall pull from private local registry
-          if ((cn_ci_host == 'selfix') || (cn_ci_host == 'orion') || (cn_ci_host == 'alambix') || (cn_ci_host == 'cetautomatix')) {
+          if ((cn_ci_host == 'Selfix') || (cn_ci_host == 'Alambix') || (cn_ci_host == 'Cetautomatix')) {
             pullFromSelfix = true
             try {
               // Login
@@ -226,7 +226,7 @@ pipeline {
               pullFromSelfix = false
             }
             if (pullFromSelfix) {
-              // We will try to pull from selfix registry.
+              // We will try to pull from Selfix registry.
               // If the NF CI is yet ready, it's OK, it will fail but keep working with local registry
               for (ii = 0; ii < imageNames.size(); ii++) {
                 imageTags[ii] = pullImageFromSelfix(ii, imageNames[ii], imageTags[ii], branchNames[ii])

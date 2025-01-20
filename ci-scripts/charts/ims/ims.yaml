@@ -38,7 +38,7 @@ spec:
   config: '{
       "cniVersion": "0.3.0",
       "type": "macvlan",
-      "master": "bond0",
+      "master": "br-ex",
       "mode": "bridge",
       "ipam": {
         "type": "static",

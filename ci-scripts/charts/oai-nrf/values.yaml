@@ -8,10 +8,10 @@ nfimage:
   pullPolicy: IfNotPresent
 
 tcpdumpimage:
-  repository: support-tools
-  version: 8.7-8
+  repository: image-registry.openshift-image-registry.svc:5000/oaicicd-core/oai-traffic-gen
+  version: latest
   #pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 ## good to use when pulling images from docker-hub mention 
 #imagePullSecrets: 
@@ -57,21 +57,21 @@ persistent:
   size: 1Gi
 
 resources:
-  define: false
+  define: true
   limits:
     tcpdump:
       cpu: 100m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 500m
+      memory: 512Mi
   requests:
     tcpdump:
       cpu: 100m
       memory: 128Mi
     nf:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 500m
+      memory: 512Mi
 
 terminationGracePeriodSeconds: 60
 
@@ -81,4 +81,4 @@ livenessProbe: false
 
 nodeSelector: {}
 
-nodeName: demophon
+nodeName:
