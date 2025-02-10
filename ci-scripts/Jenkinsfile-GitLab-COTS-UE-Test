@@ -166,10 +166,9 @@ pipeline {
             sh "oc project ${oc_test_project_name}"
             sh "helm dependency update"
             deployedCore = true
-            // Normally spray should time out at 5 minutes. Just being cautious
-            // helm spray --timeout 300 .
             timeout (8) {
-              sh "helm install oai5gcn ."
+              // helm default timeout is 5mins
+              sh "helm install oai5gcn . --wait"
             }
           }
           sh "oc describe pod &> archives/describe-pods.logs"
@@ -192,7 +191,6 @@ pipeline {
         }
         unsuccessful {
           script {
-            // In case the spray command fails, to have some context.
             sh "oc describe pod &> archives/describe-pods.logs"
             sh "oc get pods -o wide"
             coreDeploy   = false
@@ -377,7 +375,8 @@ pipeline {
             sh 'mv oai-gnb-l2-trace.* archives'
           }
           dir ('ci-scripts/charts/oai-5g-basic') {
-            sh 'helm uninstall $(helm list -aq)'
+            // helm default timeout is 5mins
+            sh 'helm uninstall $(helm list -aq) --wait'
             // Let's do later a script to check.
             sleep 20
             sh "oc get pods -o wide"
@@ -436,7 +435,8 @@ pipeline {
             sh 'mv oai-gnb.logs archives'
           }
           dir ('ci-scripts/charts/oai-5g-basic') {
-            sh 'helm uninstall $(helm list -aq)'
+            // helm default timeout is 5mins
+            sh 'helm uninstall $(helm list -aq) --wait'
             sleep 20
           }
         }
