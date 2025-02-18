@@ -116,13 +116,13 @@ spec:
         args:
          -  AMF_IP_ADDRESS=$(getent hosts $AMF_HOST | awk '{print $1}');
             AMF_IP_ADDRESS=$(if [[ $AMF_IP_ADDRESS ]]; then echo $AMF_IP_ADDRESS; else echo $AMF_HOST;fi)
-            N2_IP_ADDRESS=$(/sbin/ip -f inet addr show $N2_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            N3_IP_ADDRESS=$(/sbin/ip -f inet addr show $N3_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            F1_IP_ADDRESS=$(/sbin/ip -f inet addr show $F1_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            sed -e s/@N2_IP_ADDRESS@/$N2_IP_ADDRESS/g
+            N2_IP_ADDRESS=$(ip -4 addr show $N2_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            N3_IP_ADDRESS=$(ip -4 addr show $N3_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            F1_IP_ADDRESS=$(ip -4 addr show $F1_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            sed -e s/@AMF_IP_ADDRESS@/$AMF_IP_ADDRESS/g
+                -e s/@N2_IP_ADDRESS@/$N2_IP_ADDRESS/g
                 -e s/@N3_IP_ADDRESS@/$N3_IP_ADDRESS/g
                 -e s/@F1_IP_ADDRESS@/$F1_IP_ADDRESS/g
-                -e s/@AMF_IP_ADDRESS@/$AMF_IP_ADDRESS/g
                 /opt/oai-gnb/etc/cu.conf | tee /tmp/cu.conf;
             exec /opt/oai-gnb/bin/nr-softmodem -O /tmp/cu.conf $USE_ADDITIONAL_OPTIONS;
         {{- else}}
@@ -138,7 +138,7 @@ spec:
           - name: OAI_GDBSTACKS
             value: "1"
           - name: AMF_HOST
-            value: {{ .Values.config.amfhost }}
+            value: {{ .Values.config.amfHost }}
           - name: N2_IF_NAME
             value: {{ .Values.config.n2IfName }}
           - name: N3_IF_NAME

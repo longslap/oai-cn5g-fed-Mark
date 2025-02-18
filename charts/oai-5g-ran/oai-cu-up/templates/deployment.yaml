@@ -114,15 +114,14 @@ spec:
         args:
          -  CU_CP_IP_ADDRESS=$(getent hosts $CU_CP_HOST | awk '{print $1}');
             CU_CP_IP_ADDRESS=$(if [[ $CU_CP_IP_ADDRESS ]]; then echo $CU_CP_IP_ADDRESS; else echo $CU_CP_HOST;fi)
-            CU_UP_IP_ADDRESS=$(/sbin/ip -f inet addr show $E1_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            N3_IP_ADDRESS=$(/sbin/ip -f inet addr show $N3_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            F1_IP_ADDRESS=$(/sbin/ip -f inet addr show $F1_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            E1_IP_ADDRESS=$(/sbin/ip -f inet addr show $E1_IF_NAME | grep -o "inet [0-9]*\.[0-9]*\.[0-9]*\.[0-9]*" | grep -o "[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*");
-            sed -e s/@N3_IP_ADDRESS@/$N3_IP_ADDRESS/g
+            CU_UP_IP_ADDRESS=$(ip -4 addr show $E1_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1); 
+            N3_IP_ADDRESS=$(ip -4 addr show $N3_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            F1_IP_ADDRESS=$(ip -4 addr show $F1_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            sed -e s/@CU_CP_IP_ADDRESS@/$CU_CP_IP_ADDRESS/g
+                -e s/@CU_UP_IP_ADDRESS@/$CU_UP_IP_ADDRESS/g
+                -e s/@N3_IP_ADDRESS@/$N3_IP_ADDRESS/g
                 -e s/@F1_IP_ADDRESS@/$F1_IP_ADDRESS/g
                 -e s/@E1_IP_ADDRESS@/$E1_IP_ADDRESS/g
-                -e s/@CU_CP_IP_ADDRESS@/$CU_CP_IP_ADDRESS/g
-                -e s/@CU_UP_IP_ADDRESS@/$CU_UP_IP_ADDRESS/g
                 /opt/oai-gnb/etc/cuup.conf | tee /tmp/cuup.conf;
             exec /opt/oai-gnb/bin/nr-cuup -O /tmp/cuup.conf $USE_ADDITIONAL_OPTIONS;
         {{- else}}

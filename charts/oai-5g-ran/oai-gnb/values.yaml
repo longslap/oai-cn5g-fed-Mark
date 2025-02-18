@@ -94,7 +94,7 @@ config:
   tac: "@TAC@" # check the information with AMF
   sst: "1" #currently only 4 standard values are allowed 1,2,3,4 # configured by demo-oai.sh script
   usrp: "@RRU_TYPE@" #allowed values rfsim, b2xx, n3xx or x3xx
-  amfIpAddress: "@AMF_IP_ADDRESS@" # amf ip-address or service-name oai-amf-svc
+  amfHost: "@HOST_AMF@" # amf ip-address or service-name oai-amf-svc
   n2IfName: "@GNB_N2_IF_NAME@" # n2 or eth0 if no multus
   n3IfName: "@GNB_N3_IF_NAME@" # n3 or eth0 if no multus
 

@@ -60,7 +60,7 @@ data:
           (
             {
               type = "cp";
-              ipv4_cucp = "@CUCP_IP_ADDRESS@";
+              ipv4_cucp = "@E1_IP_ADDRESS@";
               port_cucp = 38462;
               ipv4_cuup = "0.0.0.0";
               port_cuup = 38462;

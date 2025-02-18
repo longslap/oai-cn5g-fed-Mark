@@ -43,7 +43,7 @@ multus:
   n2Interface:
     create: @MULTUS_CU_N2@
     ipAdd: "@IP_CU_N2@"
-    name: "n2"
+    name: "@GNB_N2_IF_NAME@"
     netmask: "@NETMASK_CU_N2@"
     # if mac is empty then it will be removed
     mac: "@MAC_CU_N2@"
@@ -54,7 +54,7 @@ multus:
   n3Interface:
     create: @MULTUS_CU_N3@
     ipAdd: "@IP_CU_N3@"
-    name: "n3"
+    name: "@GNB_N3_IF_NAME@"
     netmask: "@NETMASK_CU_N3@"
     # if mac is empty then it will be removed
     mac: "@MAC_CU_N3@"
@@ -78,9 +78,9 @@ config:
   sd1: "@SD1@" # must be in HEX format
   sst2: "@SST2@" #currently only 4 standard values are allowed 1,2,3,4
   sd2: "@SD2@" # must be in HEX format
-  amfhost: "@HOST_AMF@" #  "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
-  n2IfName: "@N2IFNAME_CU@" # if multus.n2Interface.create is true then use n2
-  n3IfName: "@N3IFNAME_CU@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
+  amfHost: "@HOST_AMF@" #  "oai-amf"  # amf ip-address or service-name oai-amf-svc or 172.21.6.94
+  n2IfName: "@GNB_N2_IF_NAME@" # if multus.n2Interface.create is true then use n2
+  n3IfName: "@GNB_N3_IF_NAME@" # if multus.n3Interface.create is true then use n3 or you can only use 1 interface n2 or eth0
   f1IfName: "f1" # "eth0"   #if multus.f1Interface.create is true then use f1
   f1cuPort: "@F1CUPORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
   f1duPort: "@F1DUPORT@" # 2153 if using same interface for f1 and n3 else standard port 2152 should be used if f1 and n3 interface are different
