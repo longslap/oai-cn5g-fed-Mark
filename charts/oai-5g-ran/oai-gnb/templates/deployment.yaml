@@ -137,8 +137,12 @@ spec:
           protocol: SCTP
         command: [ "/bin/bash", "-c" ]
         args:
-         -  RU1_IP_ADDRESS=$(ip -4 addr show ru1 | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+         -  N2_IP_ADDRESS=$(ip -4 addr show $N2_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            N3_IP_ADDRESS=$(ip -4 addr show $N3_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
+            RU1_IP_ADDRESS=$(ip -4 addr show ru1 | grep inet | awk '{ print $2 }' | cut -d/ -f1);
             sed -e s/@AMF_IP_ADDRESS@/$AMF_IP_ADDRESS/g
+                -e s/@GNB_N2_IP_ADDRESS@/$N2_IP_ADDRESS/g
+                -e s/@GNB_N3_IP_ADDRESS@/$N3_IP_ADDRESS/g
                 -e s/@RU1_IP_ADDRESS@/$RU1_IP_ADDRESS/g
             {{- if eq .Values.config.usrp "aw2s" }}
                 /opt/oai-gnb-aw2s/etc/gnb.conf | tee /tmp/gnb.conf;
@@ -168,6 +172,10 @@ spec:
             value: {{ .Values.config.useAdditionalOptions }}
           - name: AMF_IP_ADDRESS
             value: {{ .Values.config.amfIpAddress }}
+          - name: N2_IF_NAME
+            value: {{ .Values.config.n2IfName }}
+          - name: N3_IF_NAME
+            value: {{ .Values.config.n3IfName }}
       {{- if .Values.includeTcpDumpContainer }}
       - name: tcpdump
         image: "{{ .Values.tcpdumpimage.repository }}:{{ .Values.tcpdumpimage.version }}"

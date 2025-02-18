@@ -40,7 +40,7 @@ multus:
     create: @MULTUS_GNB_N2@
     ipAdd: "@IP_GNB_N2@"
     netmask: "@NETMASK_GNB_N2@"
-    name: "n2"
+    name: "@GNB_N2_IF_NAME@"
     # if Mac is empty then it will be removed
     mac: "@MAC_GNB_N2@"
     # if gateway is empty then it will be removed
@@ -51,7 +51,7 @@ multus:
     create: @MULTUS_GNB_N3@
     ipAdd: "@IP_GNB_N3@"
     netmask: "@NETMASK_GNB_N3@"
-    name: "n3"
+    name: "GNB_N3_IF_NAME"
     # if mac is empty then it will be removed
     mac: "@MAC_GNB_N3@"
     # if gateway is empty then it will be removed
@@ -95,6 +95,8 @@ config:
   sst: "1" #currently only 4 standard values are allowed 1,2,3,4 # configured by demo-oai.sh script
   usrp: "@RRU_TYPE@" #allowed values rfsim, b2xx, n3xx or x3xx
   amfIpAddress: "@AMF_IP_ADDRESS@" # amf ip-address or service-name oai-amf-svc
+  n2IfName: "@N2_IF_NAME@" # n2 or eth0 if no multus
+  n3IfName: "@N3_IF_NAME@" # n3 or eth0 if no multus
 
 ## Debugging section
 start:
