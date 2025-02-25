@@ -167,6 +167,8 @@ pipeline {
             sh "helm dependency update"
             deployedCore = true
             timeout (8) {
+              // Check and uninstall if there are any releases in the namespace
+              sh "helm list -aq -n ${oc_test_project_name} | xargs -r helm uninstall -n ${oc_test_project_name} --wait || true"
               // helm default timeout is 5mins
               sh "helm install oai5gcn . --wait"
             }
