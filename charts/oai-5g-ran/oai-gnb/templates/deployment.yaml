@@ -16,7 +16,7 @@ spec:
       labels:
         {{- include "oai-gnb.selectorLabels" . | nindent 8 }}
         app: oai-gnb
-    {{- if .Values.multus.n2Interface.create or .Values.multus.n3Interface.create or .Values.multus.ru1Interface.create or .Values.multus.ru2Interface.create }}
+    {{- if or (or (or .Values.multus.n2Interface.create .Values.multus.n3Interface.create) .Values.multus.ru1Interface.create) .Values.multus.ru2Interface.create }}
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
           [
