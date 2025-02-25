@@ -16,10 +16,12 @@ spec:
       labels:
         {{- include "oai-gnb.selectorLabels" . | nindent 8 }}
         app: oai-gnb
-    {{- if .Values.multus.n2Interface.create }}
+    {{- if .Values.multus.n2Interface.create or .Values.multus.n3Interface.create or .Values.multus.ru1Interface.create or .Values.multus.ru2Interface.create }}
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
-          [{
+          [
+          {{- if .Values.multus.n2Interface.create }}
+          {
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
                  "interface": "{{ .Values.multus.n2Interface.name }}"
                 {{- if .Values.multus.n2Interface.mac }}
@@ -31,9 +33,10 @@ spec:
                 {{- if .Values.multus.n2Interface.gateway }}
                  ,"gateway": ["{{ .Values.multus.n2Interface.gateway }}"]
                 {{- end }}
-          }
+          },
+          {{- end }}
           {{- if .Values.multus.n3Interface.create }}
-          ,{
+          {
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
                  "interface": "{{ .Values.multus.n3Interface.name }}"
                 {{- if .Values.multus.n3Interface.mac }}
@@ -42,10 +45,10 @@ spec:
                 {{- if .Values.multus.n3Interface.gateway }}
                 ,"gateway": {{ .Values.multus.n3Interface.gateway }}
                 {{- end }}
-          }
+          },
           {{- end }}
           {{- if .Values.multus.ru1Interface.create }}
-          ,{
+          {
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.ru1Interface.name }}",
                  "interface": "{{ .Values.multus.ru1Interface.name }}"
                 {{- if .Values.multus.ru1Interface.mac }}
@@ -54,10 +57,10 @@ spec:
                 {{- if .Values.multus.ru1Interface.gateway }}
                  ,"gateway": ["{{ .Values.multus.ru1Interface.gateway }}"]
                 {{- end }}
-          }
+          },
           {{- end }}
           {{- if .Values.multus.ru2Interface.create }}
-          ,{
+          {
                  "name": "{{ .Chart.Name }}-{{ .Values.multus.ru2Interface.name }}",
                  "interface": "{{ .Values.multus.ru2Interface.name }}"
                 {{- if .Values.multus.ru2Interface.mac }}
