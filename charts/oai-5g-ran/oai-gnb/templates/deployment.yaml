@@ -45,11 +45,11 @@ spec:
                 {{- if .Values.multus.n3Interface.gateway }}
                 ,"gateway": {{ .Values.multus.n3Interface.gateway }}
                 {{- end }}
-          },
+          }
           {{- end }}
           {{- if .Values.multus.ru1Interface.create }}
           {
-                 "name": "{{ .Chart.Name }}-{{ .Values.multus.ru1Interface.name }}",
+                 ,"name": "{{ .Chart.Name }}-{{ .Values.multus.ru1Interface.name }}",
                  "interface": "{{ .Values.multus.ru1Interface.name }}"
                 {{- if .Values.multus.ru1Interface.mac }}
                  ,"mac":  "{{ .Values.multus.ru1Interface.mac }}"
@@ -57,11 +57,11 @@ spec:
                 {{- if .Values.multus.ru1Interface.gateway }}
                  ,"gateway": ["{{ .Values.multus.ru1Interface.gateway }}"]
                 {{- end }}
-          },
+          }
           {{- end }}
           {{- if .Values.multus.ru2Interface.create }}
           {
-                 "name": "{{ .Chart.Name }}-{{ .Values.multus.ru2Interface.name }}",
+                 ,"name": "{{ .Chart.Name }}-{{ .Values.multus.ru2Interface.name }}",
                  "interface": "{{ .Values.multus.ru2Interface.name }}"
                 {{- if .Values.multus.ru2Interface.mac }}
                  ,"mac":  "{{ .Values.multus.ru2Interface.mac }}"
