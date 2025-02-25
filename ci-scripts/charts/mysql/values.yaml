@@ -8,7 +8,7 @@ strategy:
   type: Recreate
 
 busybox:
-  image: "busybox"
+  image: "docker.io/busybox"
   tag: "latest"
 
 testFramework:
