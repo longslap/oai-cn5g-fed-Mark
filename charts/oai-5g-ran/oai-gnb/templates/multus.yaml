@@ -36,8 +36,8 @@ spec:
       }
     }'
 {{- end }}
----
 {{- if .Values.multus.n3Interface.create }}
+---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition 
 metadata:
@@ -103,8 +103,8 @@ spec:
       }
     }'
 {{- end }}
----
 {{- if .Values.multus.ru2Interface.create }}
+---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition 
 metadata:
