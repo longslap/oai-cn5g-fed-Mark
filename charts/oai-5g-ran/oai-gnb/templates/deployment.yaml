@@ -22,53 +22,62 @@ spec:
           [
           {{- if .Values.multus.n2Interface.create }}
           {
-                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
-                 "interface": "{{ .Values.multus.n2Interface.name }}"
-                {{- if .Values.multus.n2Interface.mac }}
-                 ,"mac":  "{{ .Values.multus.n2Interface.mac }}"
-                {{- end }}
-                {{- if .Values.multus.defaultGateway }}
-                 ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
-                {{- end }}
-                {{- if .Values.multus.n2Interface.gateway }}
-                 ,"gateway": ["{{ .Values.multus.n2Interface.gateway }}"]
-                {{- end }}
-          },
+            "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
+            "interface": "{{ .Values.multus.n2Interface.name }}"
+            {{- if .Values.multus.n2Interface.mac }}
+            ,"mac":  "{{ .Values.multus.n2Interface.mac }}"
+            {{- end }}
+            {{- if .Values.multus.defaultGateway }}
+            ,"default-route": ["{{ .Values.multus.defaultGateway }}"]
+            {{- end }}
+            {{- if .Values.multus.n2Interface.gateway }}
+            ,"gateway": ["{{ .Values.multus.n2Interface.gateway }}"]
+            {{- end }}
+          }
+          {{- if or (or .Values.multus.n3Interface.create .Values.multus.ru1Interface.create) .Values.multus.ru2Interface.create }}
+            ,
+          {{- end }}
           {{- end }}
           {{- if .Values.multus.n3Interface.create }}
           {
-                 "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
-                 "interface": "{{ .Values.multus.n3Interface.name }}"
-                {{- if .Values.multus.n3Interface.mac }}
-                 ,"mac":  "{{ .Values.multus.n3Interface.mac }}"
-                {{- end }}
-                {{- if .Values.multus.n3Interface.gateway }}
-                ,"gateway": {{ .Values.multus.n3Interface.gateway }}
-                {{- end }}
+             "name": "{{ .Chart.Name }}-{{ .Values.multus.n3Interface.name }}",
+             "interface": "{{ .Values.multus.n3Interface.name }}"
+             {{- if .Values.multus.n3Interface.mac }}
+             ,"mac":  "{{ .Values.multus.n3Interface.mac }}"
+             {{- end }}
+             {{- if .Values.multus.n3Interface.gateway }}
+             ,"gateway": {{ .Values.multus.n3Interface.gateway }}
+             {{- end }}
           }
+          {{- if or .Values.multus.ru1Interface.create .Values.multus.ru2Interface.create }}
+            ,
+          {{- end }}
           {{- end }}
           {{- if .Values.multus.ru1Interface.create }}
           {
-                 ,"name": "{{ .Chart.Name }}-{{ .Values.multus.ru1Interface.name }}",
-                 "interface": "{{ .Values.multus.ru1Interface.name }}"
-                {{- if .Values.multus.ru1Interface.mac }}
-                 ,"mac":  "{{ .Values.multus.ru1Interface.mac }}"
-                {{- end }}
-                {{- if .Values.multus.ru1Interface.gateway }}
-                 ,"gateway": ["{{ .Values.multus.ru1Interface.gateway }}"]
-                {{- end }}
+             "name": "{{ .Chart.Name }}-{{ .Values.multus.ru1Interface.name }}",
+             "interface": "{{ .Values.multus.ru1Interface.name }}"
+             {{- if .Values.multus.ru1Interface.mac }}
+             ,"mac":  "{{ .Values.multus.ru1Interface.mac }}"
+             {{- end }}
+             {{- if .Values.multus.ru1Interface.gateway }}
+             ,"gateway": ["{{ .Values.multus.ru1Interface.gateway }}"]
+             {{- end }}
           }
+          {{- if .Values.multus.ru2Interface.create }}
+            ,
+          {{- end }}
           {{- end }}
           {{- if .Values.multus.ru2Interface.create }}
           {
-                 ,"name": "{{ .Chart.Name }}-{{ .Values.multus.ru2Interface.name }}",
-                 "interface": "{{ .Values.multus.ru2Interface.name }}"
-                {{- if .Values.multus.ru2Interface.mac }}
-                 ,"mac":  "{{ .Values.multus.ru2Interface.mac }}"
-                {{- end }}
-                {{- if .Values.multus.ru2Interface.gateway }}
-                 ,"gateway": ["{{ .Values.multus.ru2Interface.gateway }}"]
-                {{- end }}
+             "name": "{{ .Chart.Name }}-{{ .Values.multus.ru2Interface.name }}",
+             "interface": "{{ .Values.multus.ru2Interface.name }}"
+             {{- if .Values.multus.ru2Interface.mac }}
+             ,"mac":  "{{ .Values.multus.ru2Interface.mac }}"
+             {{- end }}
+             {{- if .Values.multus.ru2Interface.gateway }}
+             ,"gateway": ["{{ .Values.multus.ru2Interface.gateway }}"]
+             {{- end }}
           }
           {{- end }}
           ]
