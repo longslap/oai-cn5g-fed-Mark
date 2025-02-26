@@ -37,7 +37,7 @@ spec:
           {{- if or .Values.multus.n2Interface.create .Values.multus.f1cInterface.create }}
             ,
           {{- end }}
-          {{- end }
+          {{- end }}
           {{- if .Values.multus.n2Interface.create }}
           {
              "name": "{{ .Chart.Name }}-{{ .Values.multus.n2Interface.name }}",
