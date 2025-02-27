@@ -40,7 +40,7 @@ multus:
     create: @MULTUS_GNB_N2@
     ipAdd: "@IP_GNB_N2@"
     netmask: "@NETMASK_GNB_N2@"
-    name: "@GNB_N2_IF_NAME@"
+    name: "n2"
     # if Mac is empty then it will be removed
     mac: "@MAC_GNB_N2@"
     # if gateway is empty then it will be removed
@@ -51,7 +51,7 @@ multus:
     create: @MULTUS_GNB_N3@
     ipAdd: "@IP_GNB_N3@"
     netmask: "@NETMASK_GNB_N3@"
-    name: "@GNB_N3_IF_NAME@"
+    name: "n3"
     # if mac is empty then it will be removed
     mac: "@MAC_GNB_N3@"
     # if gateway is empty then it will be removed

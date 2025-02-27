@@ -44,7 +44,7 @@ multus:
   n2Interface:
     create: @MULTUS_CUCP_N2@
     ipAdd: "@IP_CUCP_N2@"
-    name: "@GNB_N2_IF_NAME@"
+    name: "n2"
     netmask: "@NETMASK_CUCP_N2@"
     # if Mac is empty then it will be removed
     mac: "@MAC_CUCP_N2@"

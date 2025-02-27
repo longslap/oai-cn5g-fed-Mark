@@ -43,7 +43,7 @@ multus:
     hostInterface: "@IF_NAME_CUUP_E1@" # "bond0" # Interface of the host machine on which this pod will be scheduled
   n3Interface:
     create: @MULTUS_CUUP_N3@
-    name: "@GNB_N3_IF_NAME@"
+    name: "n3"
     ipAdd: "@IP_CUUP_N3@"
     netmask: "@NETMASK_CUUP_N3@"
     # if mac is empty then it will be removed

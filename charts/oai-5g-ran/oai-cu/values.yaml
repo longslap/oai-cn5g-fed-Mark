@@ -43,7 +43,7 @@ multus:
   n2Interface:
     create: @MULTUS_CU_N2@
     ipAdd: "@IP_CU_N2@"
-    name: "@GNB_N2_IF_NAME@"
+    name: "n2"
     netmask: "@NETMASK_CU_N2@"
     # if mac is empty then it will be removed
     mac: "@MAC_CU_N2@"
@@ -54,7 +54,7 @@ multus:
   n3Interface:
     create: @MULTUS_CU_N3@
     ipAdd: "@IP_CU_N3@"
-    name: "@GNB_N3_IF_NAME@"
+    name: "n3"
     netmask: "@NETMASK_CU_N3@"
     # if mac is empty then it will be removed
     mac: "@MAC_CU_N3@"
