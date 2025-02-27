@@ -78,7 +78,7 @@ config:
   sst2: "@SST2@" #currently only 4 standard values are allowed 1,2,3,4
   sd2: "@SD2@" # must be in HEX format
   cuCpHost: "@HOST_CUCP@" # "oai-cu" #
-  n3IfName: "@GNB_N3_IF_NAME@" # if multus.n3Interface.create is true then use n3 or eth0
+  n3IfName: "@CUUP_N3_IF_NAME@" # if multus.n3Interface.create is true then use n3 or eth0
   f1IfName: "f1u" # "eth0"   #if multus.f1Interface.create is true then use f1
   e1IfName: "@E1IFNAME@" # "eth0"   #if multus.e1Interface.create is true then use e1
   f1cuPort: "@F1CUPORT@" # "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
