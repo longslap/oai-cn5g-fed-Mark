@@ -179,10 +179,6 @@ spec:
       restartPolicy: Always
       serviceAccountName: {{ .Chart.Name }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
-      {{- if .Values.nodeSelector}}
-      nodeSelector:
-         {{- toYaml .Values.nodeSelector | nindent 12 }}
-      {{- end }}
       {{- if .Values.nodeName}}
       nodeName: {{ .Values.nodeName }}
       {{- end }}

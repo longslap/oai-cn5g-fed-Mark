@@ -36,7 +36,7 @@ oai-amf:
     n1IPadd: "172.21.6.201"
     n1Netmask: "22"
     n1Gateway: "172.21.7.254"
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   config:
     amfInterfaceNameForNGAP: "eth0" # If multus creation is true then net1 else eth0
     amfInterfaceNameForN11: "eth0"  # Service based interface
@@ -74,7 +74,7 @@ oai-spgwu-tiny:
     n3Ip: "172.21.6.200"
     n3Netmask: "22"
     n6Gw: "172.21.7.254"
-    hostInterface: "bond0"
+    hostInterface: "br-ex"
   config:
     n3If: "eth0"  # net1 if gNB is outside the cluster network and multus creation is true else eth0
     n4If: "eth0" # use for SMF communication

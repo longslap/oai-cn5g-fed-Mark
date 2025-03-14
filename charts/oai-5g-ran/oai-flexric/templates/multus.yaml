@@ -1,0 +1,30 @@
+---
+{{- if .Values.multus.e2Interface.create }}
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition 
+metadata:
+  name: {{ .Chart.Name }}-e2
+  labels:
+    app: oai-flexric
+spec:
+  config: '{ 
+      "cniVersion": "0.3.1",
+      "type": "macvlan",
+      "master": {{- cat .Values.multus.e2Interface.hostInterface | nospace | quote }},
+      "mode": "bridge",
+      "ipam": {
+        "type": "static",
+        "addresses": [
+                {
+                        "address": {{- cat .Values.multus.e2Interface.IPadd "/" .Values.multus.e2Interface.Netmask | nospace | quote }}
+                        {{- if .Values.multus.e2Interface.Gateway }}
+                        ,"gateway": {{- cat .Values.multus.e2Interface.Gateway | nospace | quote }}
+                        {{- end }}
+                }
+        ]
+        {{- if .Values.multus.e2Interface.routes }}
+        ,"routes":  {{- .Values.multus.e2Interface.routes | toJson }}
+        {{- end }}
+      }
+    }'
+{{- end }}

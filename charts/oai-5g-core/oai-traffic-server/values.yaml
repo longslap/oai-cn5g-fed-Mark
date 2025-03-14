@@ -11,8 +11,8 @@ trafficServer:
   pullPolicy: IfNotPresent
 
 # good to use when pulling images from docker-hub mention for RHEL images it can be commented
-# imagePullSecrets: 
-#   - name: "regcred"
+imagePullSecrets:
+ - name: "regcred"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -26,7 +26,7 @@ multus:
   ipAdd: "172.21.6.99"
   netmask: "22"
   defaultGateway: "172.21.7.254"
-  hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+  hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
 
 config:
   ueroute: 12.1.1.0/24
@@ -41,8 +41,8 @@ securityContext:
     drop:
      - ALL
 
-## NF is the network function and tcpdump is the tcpdump container. 
-## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
+## NF is the network function and tcpdump is the tcpdump container.
+## To know more about request and limit it is better to understand that how Kubernetes QoS works.
 ## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
@@ -63,6 +63,4 @@ enabled: true
 
 terminationGracePeriodSeconds: 2
 
-nodeSelector: {}
-
-nodeName: 
+nodeName:

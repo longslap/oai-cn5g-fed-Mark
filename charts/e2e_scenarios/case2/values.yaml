@@ -126,7 +126,7 @@ oai-amf:
       gateway: 172.21.7.254
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: ""
-      hostInterface: "bond0" # Interface of the host machine on which this pod will be scheduled
+      hostInterface: "br-ex" # Interface of the host machine on which this pod will be scheduled
   resources:
     define: false
     limits:
@@ -162,7 +162,7 @@ oai-upf:
       gateway: ""
       ## If you don't want to add a default route in your pod then replace this field with ""
       routes: ""
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
     ## For n4 it is better to re-use eth0 interface inside the pod (primary CNI of Kubernetes)
     n4Interface:
       create: false
@@ -173,7 +173,7 @@ oai-upf:
       gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: ""
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
     n6Interface:
       create: false
       ipAdd: "192.168.22.2"
@@ -183,7 +183,7 @@ oai-upf:
       gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: ""
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
   #NOTE: If the interface you selected for n6 does not have internet access then UE will not be able to reach internet
   resources:
     define: false
@@ -207,7 +207,7 @@ oai-traffic-server:
     ipAdd: "172.21.6.12"
     netmask: "22"
     defaultGateway: "172.21.7.254"
-    hostInterface: "bond0"  # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"  # Interface of the host machine on which this pod will be scheduled
   config:
     ueroute: 12.1.1.0/24
     upfHost: oai-upf
@@ -242,7 +242,7 @@ oai-smf:
       gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       # routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
   imagePullSecrets:
     - name: "regcred"
   resources:
@@ -275,7 +275,7 @@ oai-cu:
       # if gatway is commented then it will be removed
       #gateway: "172.21.19.254"
       #routes: 
-      hostInterface: "bond0"  # Interface of the host machine on which this pod will be scheduled
+      hostInterface: "br-ex"  # Interface of the host machine on which this pod will be scheduled
     n2Interface:
       create: false
       ipAdd: "172.21.6.208"
@@ -284,7 +284,7 @@ oai-cu:
       # if gatway is empty then it will be removed
       #gateway: "172.21.7.254"
       #routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
-      hostInterface: "bond0"  # Interface of the host machine on which this pod will be scheduled
+      hostInterface: "br-ex"  # Interface of the host machine on which this pod will be scheduled
     n3Interface:
       create: false
       ipAdd: "192.168.25.24"
@@ -293,7 +293,7 @@ oai-cu:
       # if gatway is commented then it will be removed
       #gateway: "172.21.11.254"
       #routes: 
-      hostInterface: "bond0"  # Interface of the host machine on which this pod will be scheduled
+      hostInterface: "br-ex"  # Interface of the host machine on which this pod will be scheduled
   config:
     timeZone: "Europe/Paris"
     useAdditionalOptions: "--sa --log_config.global_log_options level,nocolor,time"
@@ -340,7 +340,7 @@ oai-du:
       # if gatway is empty then it will be removed
       #gateway: "172.21.7.254"
       #routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
-      hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+      hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
     ruInterface:            #Only needed if using a ethernet based RU/USRP
       create: false
       ipAdd: "192.168.80.90"
@@ -350,7 +350,7 @@ oai-du:
       #gateway: "192.168.80.1"  #In case you don't have a gateway remove it from here
       ## The value must be [0, master's MTU]. If commented it will masters MTU
       #mtu: 9000
-      hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+      hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   config:
     timeZone: "Europe/Paris"
     useAdditionalOptions: "--sa --rfsim --log_config.global_log_options level,nocolor,time"

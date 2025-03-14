@@ -4,13 +4,13 @@ kubernetesDistribution: Openshift  #Vanilla for community kubernetes distributio
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:  # image name either locally present or in a public/private repository
   repository: docker.io/oaisoftwarealliance/oai-amf           ## The image will be pulled from dockerhub
-  version: develop                                  #image tag, develop tag for experimental features 
+  version: develop                                  #image tag, develop tag for experimental features
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
-## good to use when pulling images from docker-hub mention
-#imagePullSecrets:
-#  - name: "regcred"
+# good to use when pulling images from docker-hub mention
+imagePullSecrets:
+  - name: "regcred"
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -27,10 +27,10 @@ podSecurityContext:
   runAsUser: 0
   runAsGroup: 0
 
-# AMF needs two separate interface one for http (for SBI) and other one for SCTP (N1/N2) to communicate with gNB. 
-# But for experimentation only one interface can be used. 
+# AMF needs two separate interface one for http (for SBI) and other one for SCTP (N1/N2) to communicate with gNB.
+# But for experimentation only one interface can be used.
 # When you need multus:
-# 1. you want separate interface for N1/N2 and Namf 
+# 1. you want separate interface for N1/N2 and Namf
 # 2. Your gnB is outside the cluster and the host machine can communicate but pods can not then you can provide ip-address in the same range as your host machine
 # 3. You want static ip-address for N1/N2 interface, Namf can be discovered by its service name
 
@@ -47,10 +47,10 @@ multus:
     ## If you do not want to add any routes in your pod then leave this field empty
     routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}]
     name: 'n2'
-    hostInterface: "bond0" # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex" # Interface of the host machine on which this pod will be scheduled
 
-## Incase the pod is not able to resolve the FQDN of other network 
-## functions example nrf then you can disable useFqdnDns feature this way AMF will talk to other network functions using their ip-address. 
+## Incase the pod is not able to resolve the FQDN of other network
+## functions example nrf then you can disable useFqdnDns feature this way AMF will talk to other network functions using their ip-address.
 ## Debugging section
 
 start:
@@ -69,11 +69,11 @@ tcpdumpimage:
 persistent:
   sharedvolume: false
 
-config: 
+config:
   udrHost: oai-udr
 
-## NF is the network function and tcpdump is the tcpdump container. 
-## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
+## NF is the network function and tcpdump is the tcpdump container.
+## To know more about request and limit it is better to understand that how Kubernetes QoS works.
 ## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
@@ -100,7 +100,5 @@ readinessProbe: true
 livenessProbe: false
 
 terminationGracePeriodSeconds: 5
-
-nodeSelector: {}
 
 nodeName:

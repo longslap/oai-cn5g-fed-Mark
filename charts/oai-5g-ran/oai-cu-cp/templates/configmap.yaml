@@ -3,6 +3,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Chart.Name }}-configmap
+  labels:
+    app: oai-cu-cp
 data:
   cucp.conf: |
       Active_gNBs = ( "{{ .Values.config.cucpName}}");
@@ -70,6 +72,13 @@ data:
           };
         }
       );
+
+       {{- if .Values.config.enableE2 }}
+       e2_agent = {
+         near_ric_ip_addr = "{{ .Values.config.ricHost }}";
+         sm_dir = "/usr/local/lib64/flexric/"
+       }
+       {{- end }}
 
       security = {
         # preferred ciphering algorithms

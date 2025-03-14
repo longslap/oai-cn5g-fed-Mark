@@ -2,8 +2,8 @@ global:
   kubernetesDistribution: Openshift #Openshift/Vanilla Kubernetes for Upstream Kubernetes
   coreNetworkConfigMap: oai-5g-basic
   clusterIpServiceIpAllocation: true #this will allocate ip-address to cluster Ip service
-  waitForNRF: true
-  waitForUDR: true
+  waitForNRF: false # was true
+  waitForUDR: false # was true
   http2Param: "--http2-prior-knowledge"  # if waitForNRF is true and http2 is used for all NF then this param is needed
   timeout: 1
   vpnipaddress: 172.21.6.189/22
@@ -36,7 +36,6 @@ oai-nrf:
     - name: "regcred"
   config:
     logLevel: "debug"   #allowed info/error/debug
-  nodeSelector: {}
 oai-lmf:
   enabled: true
   nfimage:  # image name either locally present or in a public/private repository
@@ -54,7 +53,6 @@ oai-lmf:
     - name: "regcred"
   config:
     logLevel: "debug"   #allowed info/error/debug
-  nodeSelector: {}
 oai-udr:
   enabled: true
   nfimage:  # image name either locally present or in a public/private repository
@@ -73,7 +71,6 @@ oai-udr:
     - name: "regcred"
   config:
     logLevel: "debug"   #allowed info/error/debug
-  nodeSelector: {}
 oai-udm:
   enabled: true
   nfimage:  # image name either locally present or in a public/private repository
@@ -92,7 +89,6 @@ oai-udm:
     - name: "regcred"
   config:
     logLevel: "debug"   #allowed info/error/debug
-  nodeSelector: {}
 oai-ausf:
   enabled: true
   nfimage:  # image name either locally present or in a public/private repository
@@ -111,7 +107,6 @@ oai-ausf:
     - name: "regcred"
   config:
     logLevel: "debug"   #allowed info/error/debug
-  nodeSelector: {}
 oai-amf:
   enabled: true
   nfimage:  # image name either locally present or in a public/private repository
@@ -140,8 +135,7 @@ oai-amf:
       gateway:
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: [{'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
-      hostInterface: "bond0" # Interface of the host machine on which this pod will be scheduled
-  nodeSelector: {}
+      hostInterface: "br-ex" # Interface of the host machine on which this pod will be scheduled
 oai-upf:
   enabled: true
   nfimage:  # image name either locally present or in a public/private repository
@@ -160,7 +154,7 @@ oai-upf:
     - name: "regcred"
   # create an extra interface for N3 incase the gNB is outside the cluster network or there is a need to have dedicated interface for N3
   ## Change these ip-addresses according to your environment
-  ## N4, N6 are optional only if you want that UPF uses different subnets for different 3gpp interfaces. 
+  ## N4, N6 are optional only if you want that UPF uses different subnets for different 3gpp interfaces.
   multus:
     ## If you don't want to add a default route in your pod then replace this field with ""
     defaultGateway: "172.21.7.254"
@@ -173,7 +167,7 @@ oai-upf:
       gateway: ""
       ## If you don't want to add a default route in your pod then replace this field with ""
       routes: [{'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
     ## For n4 it is better to re-use eth0 interface inside the pod (primary CNI of Kubernetes)
     n4Interface:
       create: false
@@ -184,7 +178,7 @@ oai-upf:
       gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: ""
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
     n6Interface:
       create: false
       ipAdd: "192.168.22.2"
@@ -195,9 +189,8 @@ oai-upf:
       Gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: ""
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
-  nodeSelector: {}
 oai-upf-local:
   enabled: false #true
   nfimage:  # image name either locally present or in a public/private repository
@@ -206,13 +199,13 @@ oai-upf-local:
     # pullPolicy: IfNotPresent or Never or Always
     pullPolicy: IfNotPresent
   start:
-    tcpdump: false    
+    tcpdump: false
   includeTcpDumpContainer: false #only for taking pcaps inside network function pod
   imagePullSecrets:
     - name: "regcred"
   # create an extra interface for N3 incase the gNB is outside the cluster network or there is a need to have dedicated interface for N3
   ## Change these ip-addresses according to your environment
-  ## N4, N6 are optional only if you want that UPF uses different subnets for different 3gpp interfaces. 
+  ## N4, N6 are optional only if you want that UPF uses different subnets for different 3gpp interfaces.
   multus:
     ## If you don't want to add a default route in your pod then replace this field with ""
     defaultGateway: ""
@@ -225,7 +218,7 @@ oai-upf-local:
       gateway: ""
       ## If you don't want to add a default route in your pod then replace this field with ""
       routes: [{'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
     ## For n4 it is better to re-use eth0 interface inside the pod (primary CNI of Kubernetes)
     n4Interface:
       create: false
@@ -236,7 +229,7 @@ oai-upf-local:
       gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: ""
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
     n6Interface:
       create: false
       ipAdd: "192.168.22.2"
@@ -246,9 +239,8 @@ oai-upf-local:
       gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: ""
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
   #NOTE: If the interface you selected for n6If is wrong then traffic will not be routed towards internet
-  nodeSelector: {}
 oai-traffic-server:
   enabled: true
   trafficServer:
@@ -261,7 +253,7 @@ oai-traffic-server:
     ipAdd: "172.21.6.188"
     netmask: "22"
     defaultGateway: "172.21.7.254"
-    hostInterface: "bond0"  # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"  # Interface of the host machine on which this pod will be scheduled
   config:
     ueroute: 12.1.1.0/24
     upfHost: oai-upf
@@ -276,7 +268,6 @@ oai-traffic-server:
     requests:
       cpu: 100m
       memory: 128Mi
-  nodeSelector: {}
   nodeName: ""
 oai-smf:
   enabled: true
@@ -304,7 +295,6 @@ oai-smf:
       gateway: ""
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: [{'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
-      hostInterface: "bond0"
+      hostInterface: "br-ex"
   imagePullSecrets:
     - name: "regcred"
-  nodeSelector: {}

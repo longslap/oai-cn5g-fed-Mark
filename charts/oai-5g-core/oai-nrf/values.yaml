@@ -4,12 +4,12 @@ kubernetesDistribution: Openshift  #Vanilla for community kubernetes distributio
 ## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
 nfimage:
   repository: docker.io/oaisoftwarealliance/oai-nrf
-  version: develop #image tag, develop tag for experimental features 
+  version: develop #image tag, develop tag for experimental features
   # pullPolicy: IfNotPresent or Never or Always
   pullPolicy: IfNotPresent
 
-## good to use when pulling images from docker-hub mention 
-#imagePullSecrets: 
+## good to use when pulling images from docker-hub mention
+#imagePullSecrets:
 #  - name: "regcred"
 
 serviceAccount:
@@ -48,8 +48,8 @@ persistent:
   #storageClass: "nfs-client" #If value is "-" default storageClass will be used
   size: 1Gi
 
-## NF is the network function and tcpdump is the tcpdump container. 
-## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
+## NF is the network function and tcpdump is the tcpdump container.
+## To know more about request and limit it is better to understand that how Kubernetes QoS works.
 ## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
 ## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
 resources:
@@ -76,7 +76,5 @@ readinessProbe: true
 livenessProbe: false
 
 terminationGracePeriodSeconds: 5
-
-nodeSelector: {}
 
 nodeName:

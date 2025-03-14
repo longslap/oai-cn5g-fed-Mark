@@ -1,0 +1,170 @@
+version: '3.8'
+services:
+    oai-upf:
+        container_name: "rfsim5g-oai-upf"
+        image: oaisoftwarealliance/oai-upf:v2.0.0
+        environment:
+            - TZ=Europe/Paris
+        volumes:
+            - ./ran-conf/mini-nonrf-config-2slices-engage5g-orange-atalante.yaml:/openair-upf/etc/config.yaml
+        cap_add:
+            - NET_ADMIN
+            - SYS_ADMIN
+        cap_drop:
+            - ALL
+        privileged: true
+        networks:
+            core_net:
+                ipv4_address: 192.168.71.134
+            traffic_net:
+                ipv4_address: 192.168.72.134
+
+    oai-cuup:
+        image: oaisoftwarealliance/oai-nr-cuup:develop
+        privileged: true
+        container_name: rfsim5g-oai-cuup
+        environment:
+            USE_ADDITIONAL_OPTIONS: --sa --log_config.global_log_options level,nocolor,time
+                                    --gNBs.[0].E1_INTERFACE.[0].ipv4_cucp 172.21.6.190
+                                    --gNBs.[0].E1_INTERFACE.[0].ipv4_cuup 192.168.77.3
+                                    --gNBs.[0].local_s_address 192.168.73.2
+                                    --gNBs.[0].remote_s_address 127.0.0.1
+                                    --gNBs.[0].local_s_portd   2153
+                                    --gNBs.[0].remote_s_portd  2153
+            ASAN_OPTIONS: detect_leaks=0
+        networks:
+            core_net:
+                ipv4_address: 192.168.71.161
+            f1u_1_net:
+                ipv4_address: 192.168.73.2
+            e1_net:
+                ipv4_address: 192.168.77.3
+        volumes:
+            - ./ran-conf/cuuplocal.conf:/opt/oai-gnb/etc/gnb.conf
+        healthcheck:
+            test: /bin/bash -c "pgrep nr-cuup"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    oai-du:
+        image: oaisoftwarealliance/oai-gnb:develop
+        privileged: true
+        container_name: rfsim5g-oai-du
+        environment:
+            USE_ADDITIONAL_OPTIONS: --sa --rfsim --log_config.global_log_options level,nocolor,time
+                                    --MACRLCs.[0].local_n_address 192.168.72.3
+                                    --MACRLCs.[0].remote_n_address 172.21.6.190
+                                    --MACRLCs.[0].local_n_address_f1u 192.168.73.3
+                                    --MACRLCs.[0].local_n_portd  2153
+                                    --MACRLCs.[0].remote_n_portd 2153
+            ASAN_OPTIONS: detect_leaks=0
+        depends_on:
+            - oai-cuup
+        networks:
+            f1c_net:
+                ipv4_address: 192.168.72.3
+            f1u_1_net:
+                ipv4_address: 192.168.73.3
+            ue_net:
+                ipv4_address: 192.168.78.2
+        volumes:
+            - ./ran-conf/dulocal.conf:/opt/oai-gnb/etc/gnb.conf
+        healthcheck:
+            test: /bin/bash -c "pgrep nr-softmodem"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    oai-nr-ue:
+        image: oaisoftwarealliance/oai-nr-ue:develop
+        privileged: true
+        container_name: rfsim5g-oai-nr-ue
+        environment:
+            USE_ADDITIONAL_OPTIONS: --sa --rfsim --log_config.global_log_options level,nocolor,time
+                                    -r 106 --numerology 1 -C 3619200000
+                                    --uicc0.imsi 208920000000001
+                                    --uicc0.key "fec86ba6eb707ed08905757b1bb44b8f";
+                                    --uicc0.opc "C42449363BBAD02B66D16BC975D77CC1";
+                                    --uicc0.dnn "internet"
+                                    --uicc0.nssai_sst 1
+                                    --uicc0.nssai_sd 1
+                                    --rfsimulator.serveraddr 192.168.78.2
+        depends_on:
+            - oai-du
+        networks:
+            ue_net:
+                ipv4_address: 192.168.78.5
+        volumes:
+            - ./ran-conf/nr-uelocal.conf:/opt/oai-nr-ue/etc/nr-ue.conf
+        healthcheck:
+            test: /bin/bash -c "pgrep nr-uesoftmodem"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+networks:
+    core_net:
+        driver: bridge
+        name: rfsim5g-oai-core-net
+        ipam:
+            config:
+                - subnet: 192.168.71.128/26
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-core"
+    traffic_net:
+        driver: bridge
+        name: rfsim5g-oai-traffic-net
+        ipam:
+            config:
+                - subnet: 192.168.72.128/26
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-traffic"
+    f1c_net:
+        driver: bridge
+        name: rfsim5g-oai-f1c-net
+        ipam:
+            config:
+                - subnet: 192.168.72.0/28
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-f1c"
+    f1u_1_net:
+        driver: bridge
+        name: rfsim5g-oai-f1u-1-net
+        ipam:
+            config:
+                - subnet: 192.168.73.0/28
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-f1u_1"
+    f1u_2_net:
+        driver: bridge
+        name: rfsim5g-oai-f1u-2-net
+        ipam:
+            config:
+                - subnet: 192.168.74.0/28
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-f1u_2"
+    f1u_3_net:
+        driver: bridge
+        name: rfsim5g-oai-f1u-3-net
+        ipam:
+            config:
+                - subnet: 192.168.76.0/28
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-f1u_3"
+    e1_net:
+        driver: bridge
+        name: rfsim5g-oai-e1-net
+        ipam:
+            config:
+                - subnet: 192.168.77.0/28
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-e1"
+    ue_net:
+        driver: bridge
+        name: rfsim5g-oai-ue-net
+        ipam:
+            config:
+                - subnet: 192.168.78.0/28
+        driver_opts:
+            com.docker.network.bridge.name: "rfsim5g-ue"

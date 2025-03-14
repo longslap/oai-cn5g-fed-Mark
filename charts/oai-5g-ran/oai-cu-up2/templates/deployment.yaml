@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Chart.Name }}
   labels:
+    app: oai-cu-up2
     {{- include "oai-gnb-cu-up.labels" . | nindent 4 }}
 spec:
   replicas: 1
@@ -16,6 +17,7 @@ spec:
       labels:
         {{- include "oai-gnb-cu-up.selectorLabels" . | nindent 8 }}
         app: oai-gnb-cu-up2
+        oai: ran
     {{- if .Values.multus.e1Interface.create }}
       annotations:
         k8s.v1.cni.cncf.io/networks: >-
@@ -124,6 +126,8 @@ spec:
             value: {{ .Values.config.timeZone }}
           - name: USE_ADDITIONAL_OPTIONS
             value: {{ .Values.config.useAdditionalOptions }}
+          - name: OAI_GDBSTACKS
+            value: "1"
           - name: CU_CP_HOST
             value: {{ .Values.config.cuCpHost }}
           - name: N3_IF_NAME

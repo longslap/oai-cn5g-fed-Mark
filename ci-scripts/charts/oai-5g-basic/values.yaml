@@ -59,7 +59,7 @@ oai-amf:
     n2IPadd: "172.21.6.200"
     n2Netmask: "22"
     n2Gateway: "172.21.7.254"
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   config:
     http2Param: "--http2-prior-knowledge"
   nodeSelector:     #Using dedicated nodeName in the chart directly
@@ -77,7 +77,7 @@ oai-upf:
     n3Ip: "172.21.6.201"
     n3Netmask: "22"
     n6Gw: "172.21.7.254"
-    hostInterface: "bond0"
+    hostInterface: "br-ex"
   nodeSelector: 
     worker: "telcort"
   config:
@@ -95,7 +95,7 @@ oai-traffic-server:
     n3Ip: "172.21.6.202"
     n3Netmask: "22"
     n6Gw: "172.21.7.254"
-    hostInterface: "bond0"
+    hostInterface: "br-ex"
   config:
     ueroute: 12.1.1.0/24
     upfIpadd: 172.21.6.201

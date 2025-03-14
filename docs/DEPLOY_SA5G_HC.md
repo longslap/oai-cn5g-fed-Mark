@@ -194,7 +194,7 @@ multus:
     ## If you do not want to add any routes in your pod then leave this field empty
     routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}]
     name: 'n2'
-    hostInterface: "bond0" # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex" # Interface of the host machine on which this pod will be scheduled
 ```
 
 #### 3.1.2 Use Single Interface

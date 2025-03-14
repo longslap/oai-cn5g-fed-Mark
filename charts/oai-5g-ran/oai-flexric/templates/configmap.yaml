@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-configmap
+  labels:
+    app: oai-flexric
+data:
+  flexric.conf: |
+      [NEAR-RIC]
+      NEAR_RIC_IP = {{ .Values.multus.e2Interface.IPadd }}
+      [XAPP]
+      DB_DIR = /flexric/
+      DB_NAME = xapp_db

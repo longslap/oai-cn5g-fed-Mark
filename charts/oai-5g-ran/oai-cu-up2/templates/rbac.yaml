@@ -4,6 +4,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ .Chart.Name }}-{{ .Release.Namespace }}-role
+  labels:
+    app: oai-cu-up2
 rules:
 - apiGroups:
   - security.openshift.io
@@ -18,6 +20,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ .Chart.Name }}-{{ .Release.Namespace }}-binding
+  labels:
+    app: oai-cu-up2
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.serviceAccount.name }}
@@ -34,7 +38,7 @@ metadata:
   name: {{ .Chart.Name }}-{{ .Release.Namespace }}-imagepull-binding
   namespace: {{ .Release.Namespace }}
   labels:
-    app: oai-cu-cp
+    app: oai-cu-up2
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.serviceAccount.name }}

@@ -39,8 +39,8 @@ multus:
     name: "e1"
     # if gatway is empty then it will be removed
     #gateway: ""
-    #routes: [{'dst': '172.21.6.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    routes: [{'dst': '172.21.16.0/24','gw': '172.21.6.189'}, {'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   n3Interface:
     create: false
     ipAdd: "172.21.6.192"
@@ -49,7 +49,7 @@ multus:
     # if gatway is empty then it will be removed
     #gateway: ""
     #routes: []
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   f1uInterface:
     create: false
     ipAdd: "172.21.6.192"
@@ -58,7 +58,7 @@ multus:
     # if gatway is empty then it will be removed
     #gateway: ""
     #routes: []
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
 
 ## configuration file is in template/config.yaml 
 ## It is taken from https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/ci-scripts/conf_files/gnb-cuup.sa.f1.conf
@@ -79,6 +79,9 @@ config:
   f1cuPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
   f1duPort: "2153"   #2153 if using same interface for f1 and n3 else standard port 2152 should be use if f1 and n3 interface are different
   f1uDuIpAddress: "172.21.6.193"
+  enableE2: true
+  ricHost: "172.21.6.198"
+
 ## Debugging section
 podSecurityContext:
   runAsUser: 0
@@ -129,6 +132,6 @@ affinity: {}
 terminationGracePeriodSeconds: 5
 
 nodeSelector:
-  worker: telco
+   worker: "telcort"
 
 nodeName: 

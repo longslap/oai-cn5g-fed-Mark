@@ -4,6 +4,8 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition 
 metadata:
   name: {{ .Chart.Name }}-e1
+  labels:
+    app: oai-cu-up2
 spec:
   config: '{ 
       "cniVersion": "0.3.1",
@@ -32,6 +34,8 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition 
 metadata:
   name: {{ .Chart.Name }}-n3
+  labels:
+    app: oai-cu-up2
 spec:
   config: '{ 
       "cniVersion": "0.3.1",
@@ -60,6 +64,8 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition 
 metadata:
   name: {{ .Chart.Name }}-f1u
+  labels:
+    app: oai-cu-up2
 spec:
   config: '{ 
       "cniVersion": "0.3.1",

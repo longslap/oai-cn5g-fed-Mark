@@ -25,7 +25,7 @@ multus:
   IPadd: "172.21.6.202"
   Netmask: "22"
   Gateway: "172.21.7.254"
-  hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+  hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
 
 config:
   ueroute: 12.1.1.0/24

@@ -1,0 +1,107 @@
+################################################################################
+# Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The OpenAirInterface Software Alliance licenses this file to You under
+# the OAI Public License, Version 1.1  (the "License"); you may not use this file
+# except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.openairinterface.org/?page_id=698
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#-------------------------------------------------------------------------------
+# For more information about the OpenAirInterface (OAI) Software Alliance:
+#      contact@openairinterface.org
+################################################################################
+
+# OAI CN Configuration File
+### This file can be used by all OAI NFs
+### Some fields are specific to an NF and will be ignored by other NFs
+
+## NOTE ON YAML ANCHORS ##
+# We use YAML anchors to ease the configuration and to avoid duplicating parts of the configuration.
+# This is especially true for the SNSSAIs, as we have to define them for multiple NFs.
+# Please note that the use of anchors is not mandatory, and you can define the SNSSAI in each NF yourself.
+# You can read more about anchors here: https://yaml.org/spec/1.2.2/#anchors-and-aliases
+
+############# Common configuration
+
+# Log level for all the NFs
+log_level:
+  general: debug
+
+# If you enable registration, the other NFs will use the NRF discovery mechanism
+register_nf:
+  general: yes
+
+http_version: 2
+
+############## SBI Interfaces
+### Each NF takes its local SBI interfaces and remote interfaces from here, unless it gets them using NRF discovery mechanisms
+nfs:
+  upf:
+    host: oai-upf
+    sbi:
+      port: 80
+      api_version: v1
+      interface_name: eth0
+    n3:
+      interface_name: eth0
+      port: 2152
+    n4:
+      interface_name: eth0
+      port: 8805
+    n6:
+      interface_name: eth1
+    n9:
+      interface_name: eth0
+      port: 2152
+  nrf:
+    host: 172.21.5.10
+    sbi:
+      port: 80
+      api_version: v1
+      interface_name: eth0
+
+## general single_nssai configuration
+## Defines YAML anchors, which are reused in the config file
+snssais:
+  - &embb_slice1_1
+    sst: 1
+    sd: 000001
+  - &embb_slice2_1
+    sst: 2
+    sd: 000001
+
+############## NF-specific configuration
+upf:
+  support_features:
+    enable_bpf_datapath: no    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
+    enable_snat: yes           # If "on": Source natting is done for UE, DEFAULT= off
+  remote_n6_gw: "127.0.0.1"      # Dummy host since simple-switch does not use N6 GW
+  upf_info:
+    sNssaiUpfInfoList:
+      - sNssai: *embb_slice1_1
+        dnnUpfInfoList:
+          - dnn: "internet"
+      - sNssai: *embb_slice2_1
+        dnnUpfInfoList:
+          - dnn: "ims"
+
+## DNN configuration
+dnns:
+  - dnn: "oai"
+    pdu_session_type: "IPV4"
+    ipv4_subnet: "12.1.1.0/24"
+  - dnn: "internet"
+    pdu_session_type: "IPV4"
+    ipv4_subnet: "12.1.2.0/24"
+  - dnn: "ims"
+    pdu_session_type: "IPV4"
+    ipv4_subnet: "14.1.1.0/24"
+    

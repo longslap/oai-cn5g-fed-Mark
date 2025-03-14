@@ -41,7 +41,7 @@ multus:
     # if gatway is empty then it will be removed
     #gateway: ""
     #routes: [{'dst': '10.8.0.0/24','gw': '172.21.7.254'}, {'dst': '10.9.0.0/24','gw': '172.21.7.254'}]
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   n2Interface:
     create: true
     ipAdd: "172.21.6.190"
@@ -49,8 +49,8 @@ multus:
     name: "n2"
     # if gatway is empty then it will be removed
     gateway: ""
-    routes: [{'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    routes: [{'dst': '172.21.16.0/24','gw': '172.21.6.189'}, {'dst': '192.168.51.0/24','gw': '172.21.6.189'}, {'dst': '192.168.66.0/24','gw': '172.21.6.189'}]
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
   f1cInterface:
     create: false
     ipAdd: "192.168.20.12"
@@ -59,7 +59,7 @@ multus:
     # if gatway is empty then it will be removed
     #gateway: ""
     #routes: 
-    hostInterface: "bond0"      # Interface of the host machine on which this pod will be scheduled
+    hostInterface: "br-ex"      # Interface of the host machine on which this pod will be scheduled
 
 ## configuration file is in template/config.yaml 
 ## It is taken from https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/develop/ci-scripts/conf_files/gnb-cucp.sa.f1.conf
@@ -82,7 +82,9 @@ config:
   e1CuUpIpAddress: "172.21.6.191"  ## CU-UP ip-address 
   #Normally you don't have to set this but at the moment it is required
   f1DuIpAddress: "172.21.6.193"
- 
+  enableE2: true
+  ricHost: "172.21.6.198"
+   
 # Debugging section
 podSecurityContext:
   runAsUser: 0

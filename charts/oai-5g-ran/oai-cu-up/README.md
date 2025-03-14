@@ -147,6 +147,7 @@ Only needed if you are doing advanced debugging
   - [OAI 5G Core Mini](../../oai-5g-mini/README.md)
   - Check properly that the n2 and n3 ip-address are configured via multus interface because we need multiple interfaces for cu-cp and cu-up deployment. 
 1. Configure the `parent` interface for `n3`, `e1` and `f1` based on your Kubernetes cluster worker nodes. 
+2. If you want to disable ric you can select config.enableE2 false in values.yaml
 
 Make sure `oai-cu-cp` is running before starting the `cu-up`
 
