@@ -1,0 +1,337 @@
+services:
+    gnb:
+        privileged: true
+        init: true
+        container_name: gnb
+        image: phinetech/ueransim:v3.2.6  
+        command: nr-gnb -c /home/config-gnb.yaml
+        volumes:
+            - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+            - ./conf/oai-cn5g-ue1.yaml:/home/config-ue.yaml
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.141
+            n3_net:
+                ipv4_address: 192.168.71.141
+        # healthcheck:
+        #     test: /bin/bash -c "ifconfig uesimtun0"
+        #     interval: 10s
+        #     timeout: 5s
+        #     retries: 5
+
+    ue1:
+        privileged: true
+        init: true
+        container_name: ue1
+        image: phinetech/ueransim:v3.2.6 #rohankharade/ueransim:latest
+        # nr-ue -c /home/config-ue.yaml
+        # ping -I uesimtun0 8.8.8.8
+        cap_add:
+        - NET_ADMIN
+        - SYS_ADMIN
+        - SYS_RESOURCE # setrlimit
+        command: 
+        - bash
+        - -c
+        - |
+            nr-ue -c /home/config-ue.yaml;
+        volumes:
+            - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+            - ./conf/oai-cn5g-ue1.yaml:/home/config-ue.yaml
+        depends_on:
+          - gnb
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.142
+        healthcheck:
+            test: /bin/bash -c "ifconfig uesimtun0"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    ue2:
+        privileged: true
+        init: true
+        container_name: ue2
+        image: phinetech/ueransim:v3.2.6
+        # nr-ue -c /home/config-ue.yaml
+        # ping -I uesimtun0 8.8.8.8
+        cap_add:
+        - NET_ADMIN
+        - SYS_ADMIN
+        - SYS_RESOURCE # setrlimit
+        command: 
+        - bash
+        - -c
+        - |
+            nr-ue -c /home/config-ue.yaml;
+        volumes:
+            - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+            - ./conf/oai-cn5g-ue2.yaml:/home/config-ue.yaml
+        depends_on:
+          - gnb
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.143
+        healthcheck:
+            test: /bin/bash -c "ifconfig uesimtun0"
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # ue3:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue3
+    #     image: phinetech/ueransim:v3.2.6 
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         # INTERFACE_IP=$(ip -4 -brief addr show eth0 | awk '{print $3}' | cut -d'/' -f1)
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue3.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.144
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5
+
+    # ue4:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue4
+    #     image: phinetech/ueransim:v3.2.6 
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         # INTERFACE_IP=$(ip -4 -brief addr show eth0 | awk '{print $3}' | cut -d'/' -f1)
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue4.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.145
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5
+            
+    # ue5:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue5
+    #     image: phinetech/ueransim:v3.2.6 
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         # INTERFACE_IP=$(ip -4 -brief addr show eth0 | awk '{print $3}' | cut -d'/' -f1)
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue5.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.146
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5        
+
+    # ue6:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue6
+    #     image: phinetech/ueransim:v3.2.6 #rohankharade/ueransim:latest
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue6.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.147
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5
+
+
+    # ue7:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue7
+    #     image: phinetech/ueransim:v3.2.6
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue7.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.148
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5
+
+    # ue8:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue8
+    #     image: phinetech/ueransim:v3.2.6 
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         # INTERFACE_IP=$(ip -4 -brief addr show eth0 | awk '{print $3}' | cut -d'/' -f1)
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue8.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.149
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5
+            
+    # ue9:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue9
+    #     image: phinetech/ueransim:v3.2.6 
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         # INTERFACE_IP=$(ip -4 -brief addr show eth0 | awk '{print $3}' | cut -d'/' -f1)
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue9.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.150
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5
+            
+    # ue10:
+    #     privileged: true
+    #     init: true
+    #     container_name: ue10
+    #     image: phinetech/ueransim:v3.2.6 
+    #     # nr-ue -c /home/config-ue.yaml
+    #     # ping -I uesimtun0 8.8.8.8
+    #     cap_add:
+    #     - NET_ADMIN
+    #     - SYS_ADMIN
+    #     - SYS_RESOURCE # setrlimit
+    #     command: 
+    #     - bash
+    #     - -c
+    #     - |
+    #         # INTERFACE_IP=$(ip -4 -brief addr show eth0 | awk '{print $3}' | cut -d'/' -f1)
+    #         nr-ue -c /home/config-ue.yaml;
+    #     volumes:
+    #         - ./conf/oai-cn5g-gnb.yaml:/home/config-gnb.yaml
+    #         - ./conf/oai-cn5g-ue10.yaml:/home/config-ue.yaml
+    #     depends_on:
+    #       - gnb
+    #     networks:
+    #         public_net:
+    #             ipv4_address: 192.168.70.151
+    #     healthcheck:
+    #         test: /bin/bash -c "ifconfig uesimtun0"
+    #         interval: 10s
+    #         timeout: 5s
+    #         retries: 5                
+    
+networks:
+    public_net:
+      name: demo-oai-public-net
+      external: true
+            
+    n3_net:
+      name: demo-oai-n3-net
+      external: true
+   
