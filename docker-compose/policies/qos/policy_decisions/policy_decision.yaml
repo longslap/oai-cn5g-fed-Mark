@@ -2,11 +2,28 @@ decision_supi1:
   supi_imsi: "208950000000031"
   pcc_rules:
     - non-gbr-rule-5qi-5
+    - gbr-rule-5qi-1
+    - gbr-rule-5qi-2
+    - gbr-rule-5qi-3
+    - gbr-rule-5qi-4
+    - gbr-rule-5qi-65
+    - gbr-rule-5qi-66
+    - gbr-rule-5qi-67
+    - gbr-rule-5qi-75
+    - gbr-rule-5qi-71
+    - gbr-rule-5qi-72
+    - gbr-rule-5qi-73
+    - gbr-rule-5qi-74
+    - gbr-rule-5qi-76
 
 decision_supi2:
   supi_imsi: "208950000000032"
   pcc_rules:
     - gbr-rule-5qi-1
+    # - non-gbr-rule-5qi-9
+    # - non-gbr-rule-5qi-6
+    # - gbr-rule-5qi-65
+    # - gbr-rule-5qi-67
     
 decision_supi3:
   supi_imsi: "208950000000033"
@@ -17,57 +34,58 @@ decision_supi4:
   supi_imsi: "208950000000034"
   pcc_rules:
     - non-gbr-rule-5qi-6
-    - non-gbr-rule-5qi-8
+    # - non-gbr-rule-5qi-8
 
 decision_supi5:
   supi_imsi: "208950000000035"
   pcc_rules:
     - gbr-rule-5qi-66
-    - gbr-rule-5qi-75
+    # - gbr-rule-5qi-75
 
 decision_supi6:
   supi_imsi: "208950000000036"
   pcc_rules:
     - delay-critical-gbr-rule-5qi-84
-    - delay-critical-gbr-rule-5qi-83
+    # - delay-critical-gbr-rule-5qi-83
 
 decision_supi7:
   supi_imsi: "208950000000037"
   pcc_rules:
     - gbr-rule-5qi-73
-    - non-gbr-rule-5qi-7
-    - delay-critical-gbr-rule-5qi-86
+    # - non-gbr-rule-5qi-7
+    # - delay-critical-gbr-rule-5qi-86
 
 decision_supi8:
   supi_imsi: "208950000000038"
   pcc_rules:
     - gbr-rule-5qi-1
-    - gbr-rule-5qi-3
-    - non-gbr-rule-5qi-7
-    - gbr-rule-5qi-72
-    - gbr-rule-5qi-4
+    # - gbr-rule-5qi-3
+    # - non-gbr-rule-5qi-7
+    # - gbr-rule-5qi-72
+    # - gbr-rule-5qi-4
+
 decision_supi9:
   supi_imsi: "208950000000039"
   pcc_rules:
-   - gbr-rule-5qi-66
-    - gbr-rule-5qi-75
-    - non-gbr-rule-5qi-79
-    - gbr-rule-5qi-75
-    - gbr-rule-5qi-3
-    - non-gbr-rule-5qi-69
-    - delay-critical-gbr-rule-5qi-86
+    - gbr-rule-5qi-66
+    # - gbr-rule-5qi-75
+    # - non-gbr-rule-5qi-79
+    # - gbr-rule-5qi-75
+    # - gbr-rule-5qi-3
+    # - non-gbr-rule-5qi-69
+    # - delay-critical-gbr-rule-5qi-86
 
 decision_supi10:
   supi_imsi: "208950000000040"
   pcc_rules:
     - gbr-rule-5qi-66
-    - gbr-rule-5qi-5
-    - non-gbr-rule-5qi-80
-    - gbr-rule-5qi-74
-    - gbr-rule-5qi-76
-    - non-gbr-rule-5qi-69
-    - delay-critical-gbr-rule-5qi-84
-    - delay-critical-gbr-rule-5qi-83
+    # - gbr-rule-5qi-5
+    # - non-gbr-rule-5qi-80
+    # - gbr-rule-5qi-74
+    # - gbr-rule-5qi-76
+    # - non-gbr-rule-5qi-69
+    # - delay-critical-gbr-rule-5qi-84
+    # - delay-critical-gbr-rule-5qi-83
 
 decision_supi11:
   supi_imsi: "208950000000041"
