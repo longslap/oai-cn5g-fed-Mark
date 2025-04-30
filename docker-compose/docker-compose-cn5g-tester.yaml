@@ -1,16 +1,8 @@
 version: '3.8'
 services:
-    gnb-emu:
-        container_name: "gnb-emu"
+    cn5g-tester:
+        container_name: "cn5g-tester"
         image: phinetech/cn5g-tester:latest
-        environment:
-            - TZ=Europe/Paris
-        command:
-            - /bin/bash
-            - -c
-            - |
-                # ./eth-pdu.py --gnb_ip=192.168.70.143 --gtp_ip=192.168.71.143 --amf_ip=192.168.70.132
-                tail -f /dev/null
         networks:
             public_net:
                 ipv4_address: 192.168.70.143

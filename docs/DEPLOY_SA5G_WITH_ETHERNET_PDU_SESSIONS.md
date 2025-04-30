@@ -36,7 +36,7 @@ First, we need to configure the subscriber database to support Ethernet PDU sess
 
 ```sql
 INSERT INTO `SessionManagementSubscriptionData` (`ueid`, `servingPlmnid`, `singleNssai`, `dnnConfigurations`) VALUES
-('208950000000001', '20895', '{\"sst\": 222, \"sd\": \"00007B"}','{\"default\":{\"pduSessionTypes\":{ \"defaultSessionType\": \"ETHERNET\"},\"sscModes\": {\"defaultSscMode\": \"SSC_MODE_1\"},\"5gQosProfile\": {\"5qi\": 6,\"arp\":{\"priorityLevel\": 1,\"preemptCap\": \"NOT_PREEMPT\",\"preemptVuln\":\"NOT_PREEMPTABLE\"},\"priorityLevel\":1},\"sessionAmbr\":{\"uplink\":\"150Mbps\", \"downlink\":\"150Mbps\"}}, \"ethernet\":{\"pduSessionTypes\":{ \"defaultSessionType\": \"ETHERNET\"},\"sscModes\": {\"defaultSscMode\": \"SSC_MODE_1\"},\"5gQosProfile\": {\"5qi\": 6,\"arp\":{\"priorityLevel\": 1,\"preemptCap\": \"NOT_PREEMPT\",\"preemptVuln\":\"NOT_PREEMPTABLE\"},\"priorityLevel\":1},\"sessionAmbr\":{\"uplink\":\"150Mbps\", \"downlink\":\"150Mbps\"}}}');
+('208950000000035', '20895', '{\"sst\": 222, \"sd\": \"00007B"}','{\"default\":{\"pduSessionTypes\":{ \"defaultSessionType\": \"ETHERNET\"},\"sscModes\": {\"defaultSscMode\": \"SSC_MODE_1\"},\"5gQosProfile\": {\"5qi\": 6,\"arp\":{\"priorityLevel\": 1,\"preemptCap\": \"NOT_PREEMPT\",\"preemptVuln\":\"NOT_PREEMPTABLE\"},\"priorityLevel\":1},\"sessionAmbr\":{\"uplink\":\"150Mbps\", \"downlink\":\"150Mbps\"}}, \"ethernet\":{\"pduSessionTypes\":{ \"defaultSessionType\": \"ETHERNET\"},\"sscModes\": {\"defaultSscMode\": \"SSC_MODE_1\"},\"5gQosProfile\": {\"5qi\": 6,\"arp\":{\"priorityLevel\": 1,\"preemptCap\": \"NOT_PREEMPT\",\"preemptVuln\":\"NOT_PREEMPTABLE\"},\"priorityLevel\":1},\"sessionAmbr\":{\"uplink\":\"150Mbps\", \"downlink\":\"150Mbps\"}}}');
 ```
 
 ## 4. UPF Configuration
@@ -70,7 +70,7 @@ In the previous tutorial we explain how to deploy the core network using our [py
 As a first timer, we recommend to first run without any PCAP capture.
 
 ``` console
-docker-compose-host $: python3 core-network.py --type start-basic --scenario 1
+docker-compose-host $: python3 core-network.py --type start-basic-ebpf --scenario 1
 ```
 
 For CI purposes, we are deploying with an automated PCAP capture on the docker network.
@@ -78,11 +78,10 @@ For CI purposes, we are deploying with an automated PCAP capture on the docker n
 **REMEMBER: if you are planning to run your CN5G deployment for a long time, the PCAP file can become huge!**
 
 ``` shell
-docker-compose-host $: python3 core-network.py --type start-basic --scenario 1 --capture /tmp/oai/ethernet-pdu-sessions/ethernet-pdu-sessions.pcap
+docker-compose-host $: python3 core-network.py --type start-basic-ebpf --scenario 1 --capture /tmp/oai/ethernet-pdu-sessions/ethernet-pdu-sessions.pcap
 ```
 <details>
 <summary>The output will look like this:</summary>
-
 
 </details>
 
@@ -112,7 +111,7 @@ docker-compose-host $: docker-compose -f docker-compose-cn5g-tester.yaml up -d
 2. Run the Ethernet PDU test script within the tester container:
 
 ```shell
-docker-compose-host $: docker exec -it cn5g-tester /bin/bash -c "python3 /eth-pdu.py --gnb_ip=192.168.70.143 --gtp_ip=192.168.71.143 --amf_ip=192.168.70.132"
+docker-compose-host $: docker exec -it cn5g-tester /bin/bash -c "python3 ip-pdu.py --gnb_ip=192.168.70.143 --gtp_ip=192.168.71.143 --amf_ip=192.168.70.132"
 ```
 
 If the test is successful, the script will exit with code 0 and display success messages. Otherwise, it will exit with an error code and display error messages.
@@ -158,7 +157,7 @@ docker-compose-host $: docker logs gnbsim > /tmp/oai/ethernet-pdu-sessions/gnbsi
 ### 8.1. Undeploy the ran emulator
 
 ``` shell
-docker-compose-host $: docker-compose -f docker-compose-gnbsim.yaml down -t 0
+docker-compose-host $: docker-compose -f docker-compose-cn5g-tester.yaml down -t 0
 ```
 <details>
 <summary>The output will look like this:</summary>
@@ -174,7 +173,7 @@ Network demo-oai-public-net is external, skipping
 ### 8.2. Undeploy the core network
 
 ``` shell
-docker-compose-host $: python3 core-network.py --type stop-basic --scenario 1
+docker-compose-host $: python3 core-network.py --type stop-basic-ebpf --scenario 1
 ```
 <details>
 <summary>The output will look like this:</summary>
