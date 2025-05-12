@@ -175,7 +175,6 @@ pipeline {
           }
           sh "oc describe pod &> archives/describe-pods.logs"
           sh "oc get pods -o wide"
-          sleep 60
           sh "oc describe pod &>> archives/describe-pods.logs"
           sh "oc get pods -o wide"
           CollectLogsFromPods()
@@ -266,7 +265,6 @@ pipeline {
             sh "sudo chmod 666 /tmp/oai-gnb-l2-trace.* || true"
             dir ('ci-scripts/docker-compose/gnb-ci-testbed') {
               sh "docker-compose stop -t 3 || true"
-              sleep 2
               sh "docker logs sa-b210-gnb > oai-gnb.logs 2>&1 || true"
               sh "cp /tmp/oai-gnb-l2-trace.* . || true"
               sh "sudo rm -f /tmp/oai-gnb-l2-trace.*"
