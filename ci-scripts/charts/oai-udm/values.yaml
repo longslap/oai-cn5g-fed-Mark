@@ -80,7 +80,7 @@ readinessProbe: true
 
 livenessProbe: false
 
-terminationGracePeriodSeconds: 60
+terminationGracePeriodSeconds: 5
 
 nodeSelector: {}
 

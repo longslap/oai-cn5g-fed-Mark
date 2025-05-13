@@ -4,6 +4,8 @@ mysql:
   oai5gdatabase: basic
   persistence:
     enabled: false
+  nodeSelector:
+    node-role.kubernetes.io/ran-build: ""
 oai-nrf:
   enabled: true
   kubernetesType: Openshift #Openshift/Vanilla Vanilla for Upstream Kubernetes

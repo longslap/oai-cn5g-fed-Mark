@@ -73,7 +73,7 @@ resources:
       cpu: 500m
       memory: 512Mi
 
-terminationGracePeriodSeconds: 60
+terminationGracePeriodSeconds: 5
 
 readinessProbe: true
 
