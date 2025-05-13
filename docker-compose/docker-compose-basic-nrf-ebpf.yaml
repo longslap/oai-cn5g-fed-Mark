@@ -114,7 +114,7 @@ services:
             - "oai-upf:192.168.70.129"
     oai-upf:
         container_name: "oai-upf"
-        image: tariromukute/oai-upf:eth-pdu-97
+        image: tariromukute/oai-upf:eth-pdu-debug
         expose:
             - 2152/udp
             - 8805/udp

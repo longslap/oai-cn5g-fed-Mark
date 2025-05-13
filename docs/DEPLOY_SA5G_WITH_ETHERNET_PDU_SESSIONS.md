@@ -88,7 +88,7 @@ docker-compose-host $: python3 core-network.py --type start-basic-ebpf --scenari
 If you want to use docker compose directly to deploy OAI 5G Core
 
 ```console
-docker-compose -f docker-compose-basic-nrf-ebpf-eth-pdu.yaml up -d
+docker-compose -f docker-compose-basic-nrf-ebpf.yaml up -d
 ```
 
 Verify that all containers are running correctly:
@@ -111,7 +111,7 @@ docker-compose-host $: docker-compose -f docker-compose-cn5g-tester.yaml up -d
 2. Run the Ethernet PDU test script within the tester container:
 
 ```shell
-docker-compose-host $: docker exec -it cn5g-tester /bin/bash -c "python3 ip-pdu.py --gnb_ip=192.168.70.143 --gtp_ip=192.168.71.143 --amf_ip=192.168.70.132"
+docker-compose-host $: docker exec -it cn5g-tester /bin/bash -c "python3 eth-pdu.py --gnb_ip=192.168.70.143 --gtp_ip=192.168.71.143 --amf_ip=192.168.70.132"
 ```
 
 If the test is successful, the script will exit with code 0 and display success messages. Otherwise, it will exit with an error code and display error messages.
