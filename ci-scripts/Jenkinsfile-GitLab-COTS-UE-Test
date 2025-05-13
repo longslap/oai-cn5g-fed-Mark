@@ -378,7 +378,6 @@ pipeline {
             // helm default timeout is 5mins
             sh 'helm uninstall $(helm list -aq) --wait'
             // Let's do later a script to check.
-            sleep 20
             sh "oc get pods -o wide"
             deployedCore = false
           }
@@ -437,7 +436,6 @@ pipeline {
           dir ('ci-scripts/charts/oai-5g-basic') {
             // helm default timeout is 5mins
             sh 'helm uninstall $(helm list -aq) --wait'
-            sleep 20
           }
         }
         if (logoutToDo) {
