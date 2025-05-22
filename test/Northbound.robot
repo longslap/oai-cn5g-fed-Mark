@@ -47,11 +47,11 @@ Check SMF Traffic Notification
     Start Iperf3 Server     ${EXT_DN1_NAME}
     FOR     ${ue}   IN    @{UEs}   
         ${ip}=   Get UE IP Address   ${ue}
-        ${imsi}=   Get UE IMSI    ${ue}
+        ${supi}=   Get UE SUPI    ${ue}
         Start Iperf3 Client     ${ue}  ${ip}  ${EXT_DN1_IP_N3}  bandwidth=3
         Run Keyword And Ignore Error   Wait and Verify Iperf3 Result    ${ue}  ${3}  #for bandwidth check, not important
         ${result_Iperf}=    Get Iperf3 Results   ${ue}
-        Wait Until Keyword Succeeds  60s  6s   Check Ue Traffic Notification   ${result_Iperf}  ${imsi}
+        Wait Until Keyword Succeeds  60s  6s   Check Ue Traffic Notification   ${result_Iperf}  ${supi}
     END
 
 Check AMF Deregistration Notification
