@@ -371,7 +371,7 @@ def check_AMF_location_mobility_report_callback():
         logger.error(f"Failed to check mobility data: {e}")
         raise e
     
-def get_traffic_data_from_handler(ue_supi):
+def get_traffic_data_from_handler(ue_supi):                      
     smf_traffic_collection = mongo_access("smf traffic report")
     query = {
         'eventNotifs.supi': ue_supi,

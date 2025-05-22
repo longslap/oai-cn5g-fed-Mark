@@ -253,4 +253,13 @@ class RfSimLib:
                 imsi = parts[10]
                 return str(imsi)
         raise Exception(f"IMSI not found for {container}")
+        
+    def get_ue_SUPI(self, container):
+        log = self.docker_api.get_log(container)
+        for line in log.split("\n"):
+            if "--uicc0.imsi" in line.lower():
+                parts = line.split(" ")
+                imsi = parts[10]
+                return "imsi-" + str(imsi)
+        raise Exception(f"IMSI not found for {container}")        
             
