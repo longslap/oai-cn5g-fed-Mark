@@ -121,6 +121,7 @@ services:
             - 8080/tcp
         volumes:
             - ./conf/basic_nrf_config_ebpf.yaml:/openair-upf/etc/config.yaml
+            - /sys/fs/bpf:/sys/fs/bpf
         environment:
             - TZ=Europe/Paris
         depends_on:
