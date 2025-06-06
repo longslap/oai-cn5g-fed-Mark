@@ -60,7 +60,7 @@ spec:
         {{- if .Values.multus.n3Interface.routes }}
         ,"routes":  {{- .Values.multus.n3Interface.routes | toJson }}
         {{- end }}
-      {{- end }}	
+      {{- end }}
       }
     }'
 {{- end }}
