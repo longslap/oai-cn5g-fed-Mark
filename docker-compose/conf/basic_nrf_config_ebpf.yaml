@@ -156,11 +156,11 @@ amf:
         - *embb_slice2
         - *custom_slice
   supported_integrity_algorithms:
-    - "NIA0"
+    # - "NIA0"
     - "NIA1"
     - "NIA2"
   supported_encryption_algorithms:
-    - "NEA0"
+    # - "NEA0"
     - "NEA1"
     - "NEA2"
 
@@ -195,6 +195,7 @@ smf:
       - sNssai: *custom_slice
         dnnSmfInfoList:
           - dnn: "default"
+          - dnn: "ethernet"
   local_subscription_infos:
     - single_nssai: *embb_slice1
       dnn: "oai"
@@ -210,6 +211,12 @@ smf:
         session_ambr_dl: "200Mbps"
     - single_nssai: *custom_slice
       dnn: "default"
+      qos_profile:
+        5qi: 9
+        session_ambr_ul: "50Mbps"
+        session_ambr_dl: "100Mbps"
+    - single_nssai: *custom_slice
+      dnn: "ethernet"
       qos_profile:
         5qi: 9
         session_ambr_ul: "50Mbps"
@@ -230,6 +237,7 @@ upf:
       - sNssai: *custom_slice
         dnnUpfInfoList:
           - dnn: "default"
+          - dnn: "ethernet"
 
 ## DNN configuration
 dnns:
@@ -245,3 +253,6 @@ dnns:
   - dnn: "ims"
     pdu_session_type: "IPV4V6"
     ipv4_subnet: "14.1.1.2/24"
+  - dnn: "ethernet"
+    pdu_session_type: "ETHERNET"
+    ipv4_subnet: "12.1.1.0/26"
