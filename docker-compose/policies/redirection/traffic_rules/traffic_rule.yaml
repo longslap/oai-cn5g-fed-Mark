@@ -1,8 +1,9 @@
-redirection-scenario:
-  redirectInfo:
-    redirectEnabled: true
-    redirectAddressType: URL
-    redirectServerAddress: facebook.com
+steering-scenario-primary:
   routeToLocs:
     - dnai: access
-    - dnai: internet
+    - dnai: internet-primary
+
+steering-scenario-secondary:
+  routeToLocs:
+    - dnai: access
+    - dnai: internet-secondary
