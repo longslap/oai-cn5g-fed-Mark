@@ -112,9 +112,25 @@ services:
                 ipv4_address: 192.168.70.133
         extra_hosts:
             - "oai-upf:192.168.70.129"
+    oai-pcf:
+        container_name: "oai-pcf"
+        image: oaisoftwarealliance/oai-pcf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+        volumes:
+            - ./policies/qos:/openair-pcf/policies
+            - ./conf/basic_nrf_config_ebpf.yaml:/openair-pcf/etc/config.yaml
+        environment:
+            - TZ=Europe/Paris
+        depends_on:
+            - oai-nrf
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.139
     oai-upf:
         container_name: "oai-upf"
-        image: oaisoftwarealliance/oai-upf:develop
+        image: phinetech/oai-upf:qos
         expose:
             - 2152/udp
             - 8805/udp
@@ -122,6 +138,8 @@ services:
         volumes:
             - ./conf/basic_nrf_config_ebpf.yaml:/openair-upf/etc/config.yaml
             - /sys/fs/bpf:/sys/fs/bpf
+            - /sys/kernel/debug:/sys/kernel/debug:rw
+        # command: /openair-upf/bin/oai_upf -c /openair-upf/etc/config.yaml -o
         environment:
             - TZ=Europe/Paris
         depends_on:
