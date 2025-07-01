@@ -56,7 +56,7 @@ run_vpp_upf = true
 run_slicing_w_nssf = true
 run_ulcl_pcf = true
 run_mongo_db = true
-
+run_qos = true
 //-------------------------------------------------------------------------------
 // Pipeline start
 pipeline {
@@ -139,6 +139,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = false
                 run_mongo_db = false
+                run_qos = true
               }
             }
             if (ii == AMF) {
@@ -153,6 +154,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = true
                 run_mongo_db = false
+                run_qos = true
               }
             }
             if (ii == SMF) {
@@ -167,6 +169,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = true
                 run_mongo_db = false
+                run_qos = true
               }
             }
             if (ii == UPF) {
@@ -181,6 +184,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = false
                 run_mongo_db = false
+                run_qos = true
               }
             }
             if (ii == AUSF) {
@@ -195,6 +199,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = false
                 run_mongo_db = false
+                run_qos = true
               }
             }
             if (ii == UDM) {
@@ -209,6 +214,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = false
                 run_mongo_db = false
+                run_qos = true
               }
             }
             if (ii == UDR) {
@@ -223,6 +229,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = false
                 run_mongo_db = true
+                run_qos = true
               }
             }
             if (ii == NSSF) {
@@ -237,6 +244,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = false
                 run_mongo_db = false
+                run_qos = false
               }
             }
             if (ii == UPF_VPP) {
@@ -251,6 +259,7 @@ pipeline {
                 run_slicing_w_nssf = true
                 run_ulcl_pcf = true
                 run_mongo_db = false
+                run_qos = false
               }
             }
             if (ii == PCF) {
@@ -265,6 +274,7 @@ pipeline {
                 run_slicing_w_nssf = false
                 run_ulcl_pcf = true
                 run_mongo_db = false
+                run_qos = true
               }
             }
           }
@@ -431,6 +441,28 @@ pipeline {
           }
           archivesArtifacts('docker-compose/docker-compose-basic-nrf-mongodb.yaml', 'mongodb-test')
           cleanUpDockerCompose('docker-compose/docker-compose-basic-nrf-mongodb.yaml')
+        }
+      }
+    }
+      stage ('Check QoS Tutorial') {
+      when { expression {run_qos} }
+      steps {
+        script {
+          updateDockerCompose('docker-compose/docker-compose-basic-nrf-qos.yaml', ranTag)
+          dir ('ci-scripts') {
+            // Tee will make the command always pass
+            // Please use the same log name as the folder used in the tutorial
+            sh './checkTutorial.py --tutorial DEPLOY_SA5G_WITH_QOS.md | tee ../archives/qos-testing.log'
+          }
+          try {
+            sh 'grep -l "is PASS" archives/qos-testing.log > /dev/null'
+            echo "QoS Tutorial PASSED"
+          } catch (Exception e) {
+            currentBuild.result = 'FAILURE'
+            echo "QoS Tutorial FAILED"
+          }
+          archivesArtifacts('docker-compose/docker-compose-basic-nrf-qos.yaml', 'qos-testing')
+          cleanUpDockerCompose('docker-compose/docker-compose-basic-nrf-qos.yaml')
         }
       }
     }

@@ -22,9 +22,12 @@
 # OAI CN Configuration File
 ### This file can be used by all OAI NFs
 ### Some fields are specific to an NF and will be ignored by other NFs
-### The {{ env['ENV_NAME'] }} syntax lets you define these values in a docker-compose file
-### If you intend to mount this file or use a bare-metal deployment, please refer to README.md
-### The README.md also defines default values and allowed values for each configuration parameter
+
+## NOTE ON YAML ANCHORS ##
+# We use YAML anchors to ease the configuration and to avoid duplicating parts of the configuration.
+# This is especially true for the SNSSAIs, as we have to define them for multiple NFs.
+# Please note that the use of anchors is not mandatory, and you can define the SNSSAI in each NF yourself.
+# You can read more about anchors here: https://yaml.org/spec/1.2.2/#anchors-and-aliases
 
 ############# Common configuration
 
@@ -100,6 +103,12 @@ nfs:
       port: 8080
       api_version: v1
       interface_name: eth0
+  pcf:
+    host: oai-pcf
+    sbi:
+      port: 8080
+      api_version: v1
+      interface_name: eth0
 
 #### Common for UDR and AMF
 database:
@@ -156,8 +165,8 @@ amf:
         - *embb_slice2
         - *custom_slice
   supported_integrity_algorithms:
-    - "NIA0"
     - "NIA1"
+    - "NIA0"
     - "NIA2"
   supported_encryption_algorithms:
     - "NEA0"
@@ -167,13 +176,14 @@ amf:
 smf:
   ue_mtu: 1500
   support_features:
-    use_local_subscription_info: yes # Use infos from local_subscription_info or from UDM
-    use_local_pcc_rules: yes # Use infos from local_pcc_rules or from PCF
+    use_local_subscription_info: no # Use infos from local_subscription_info or from UDM
+    use_local_pcc_rules: no # Use infos from local_pcc_rules or from PCF
   # we resolve from NRF, this is just to configure usage_reporting
   upfs:
-    - host: oai-upf
+    - host: 192.168.70.129
       config:
         enable_usage_reporting: no
+        enable_qers: yes
   ue_dns:
     primary_ipv4: "172.21.3.100"
     primary_ipv6: "2001:4860:4860::8888"
@@ -218,6 +228,7 @@ smf:
 upf:
   support_features:
     enable_bpf_datapath: yes    # If "on": BPF is used as datapath else simpleswitch is used, DEFAULT= off
+    enable_qos: yes
   remote_n6_gw: oai-ext-dn
   upf_info:
     sNssaiUpfInfoList:
@@ -245,3 +256,10 @@ dnns:
   - dnn: "ims"
     pdu_session_type: "IPV4V6"
     ipv4_subnet: "14.1.1.2/24"
+
+pcf:
+  local_policy:
+    policy_decisions_path: /openair-pcf/policies/policy_decisions
+    pcc_rules_path: /openair-pcf/policies/pcc_rules
+    traffic_rules_path: /openair-pcf/policies/traffic_rules
+    qos_data_path: /openair-pcf/policies/qos_data
