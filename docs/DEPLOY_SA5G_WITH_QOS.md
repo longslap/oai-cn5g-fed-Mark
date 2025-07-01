@@ -217,7 +217,7 @@ services:
       - ./policies/qos/qos_data:/openair-pcf/policies/qos_data
 ```
 
-We will use `docker-compose-basic-nrf-ebpf.yaml` which already has the volume mounts applied.
+We will use `docker-compose-basic-nrf-qos.yaml` which already has the volume mounts applied.
 
 ## 6. Network Function Deployment
 
@@ -228,7 +228,7 @@ In the previous tutorial we explain how to deploy the core network using our [py
 As a first timer, we recommend to first run without any PCAP capture.
 
 ``` console
-docker-compose-host $: python3 core-network.py --type start-basic-ebpf --scenario 1
+docker-compose-host $: python3 core-network.py --type start-basic-qos --scenario 1
 ```
 
 For CI purposes, we are deploying with an automated PCAP capture on the docker network.
@@ -236,14 +236,14 @@ For CI purposes, we are deploying with an automated PCAP capture on the docker n
 **REMEMBER: if you are planning to run your CN5G deployment for a long time, the PCAP file can become huge!**
 
 ``` shell
-docker-compose-host $: python3 core-network.py --type start-basic-ebpf --scenario 1 --capture /tmp/oai/qos-testing/qos-testing.pcap
+docker-compose-host $: python3 core-network.py --type start-basic-qos --scenario 1 --capture /tmp/oai/qos-testing/qos-testing.pcap
 ```
 <details>
 <summary>The output will look like this:</summary>
 
 ```
 [2023-08-10 15:43:22,365] root:DEBUG:  Starting 5gcn components...
-[2023-08-10 15:43:22,365] root:DEBUG: docker-compose -f docker-compose-basic-nrf-ebpf.yaml up -d
+[2023-08-10 15:43:22,365] root:DEBUG: docker-compose -f docker-compose-basic-nrf-qos.yaml up -d
 Creating network "demo-oai-public-net" with the default driver
 Creating mysql ...
 Creating oai-nrf ...
@@ -271,7 +271,7 @@ Creating oai-pcf ... done
 If you want to use docker compose directly to deploy OAI 5G Core
 
 ```console
-docker-compose-host $: docker-compose -f docker-compose-basic-nrf-ebpf.yaml up -d
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf-qos.yaml up -d
 ```
 
 Verify that all containers are running correctly:
@@ -330,7 +330,7 @@ docker-compose-host $: docker exec oai-ext-dn iperf3 -t 4 -c 12.1.1.10 -B 192.16
 <!---
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: jq -e '.end.sum_sent and .end.sum_sent.bits_per_second' /tmp/oai/qos-testing/iperf_result_ue-5qi-1.json > /dev/null 2>&1 && jq -r '.end.sum_sent.bits_per_second / 1000000' /tmp/oai/qos-testing/iperf_result_ue-5qi-1.json | awk '{if($1>=2.5 && $1<=3.5){print "PASS: Max bitrate "$1" Mbps is within range (2.5-3.5)"; exit 0}else{print "FAIL: Max bitrate "$1" Mbps is outside range (2.5-3.5)"; exit 1}}' || { echo "FAIL: Required fields .end.sum_sent or .end.sum_sent.bits_per_second not found"; exit 1; }
+docker-compose-host $: jq -e '.end.sum_sent and .end.sum_sent.bits_per_second' /tmp/oai/qos-testing/iperf_result_ue-5qi-1.json > /dev/null 2>&1 && jq -r '.end.sum_sent.bits_per_second / 1000000' /tmp/oai/qos-testing/iperf_result_ue-5qi-1.json | awk '{if($1>=2.5 && $1<=3.5){print "Max bitrate "$1" Mbps is within range (2.5-3.5)"; exit 0}else{print "Max bitrate "$1" Mbps is outside range (2.5-3.5)"; exit 1}}' || { echo "Required fields .end.sum_sent or .end.sum_sent.bits_per_second not found"; exit 1; }
 ```
 -->
 
@@ -379,7 +379,7 @@ docker-compose-host $: docker exec oai-ext-dn iperf3 -t 4 -c 12.1.1.9 -B 192.168
 <!---
 For CI purposes please ignore this line
 ``` shell
-docker-compose-host $: jq -e '.end.sum_sent and .end.sum_sent.bits_per_second' /tmp/oai/qos-testing/iperf_result_ue-5qi-3.json > /dev/null 2>&1 && jq -r '.end.sum_sent.bits_per_second / 1000000' /tmp/oai/qos-testing/iperf_result_ue-5qi-3.json | awk '{if($1>=95 && $1<=105){print "PASS: Max bitrate "$1" Mbps is within range (95-105)"; exit 0}else{print "FAIL: Max bitrate "$1" Mbps is outside range (95-105)"; exit 1}}' || { echo "FAIL: Required fields .end.sum_sent or .end.sum_sent.bits_per_second not found"; exit 1; }
+docker-compose-host $: jq -e '.end.sum_sent and .end.sum_sent.bits_per_second' /tmp/oai/qos-testing/iperf_result_ue-5qi-3.json > /dev/null 2>&1 && jq -r '.end.sum_sent.bits_per_second / 1000000' /tmp/oai/qos-testing/iperf_result_ue-5qi-3.json | awk '{if($1>=95 && $1<=105){print "Max bitrate "$1" Mbps is within range (95-105)"; exit 0}else{print "Max bitrate "$1" Mbps is outside range (95-105)"; exit 1}}' || { echo "Required fields .end.sum_sent or .end.sum_sent.bits_per_second not found"; exit 1; }
 ```
 -->
 
@@ -409,7 +409,7 @@ iperf Done.
 For CI purposes please ignore these lines
 ``` shell
 docker-compose-host $: docker-compose -f docker-compose-ueransim-qos.yaml stop -t 2
-docker-compose-host $: docker-compose -f docker-compose-basic-nrf-ebpf.yaml stop -t 30
+docker-compose-host $: docker-compose -f docker-compose-basic-nrf-qos.yaml stop -t 30
 ```
 -->
 
@@ -458,14 +458,14 @@ Network demo-oai-public-net is external, skipping
 ### 9.2. Undeploy the core network
 
 ``` shell
-docker-compose-host $: python3 core-network.py --type stop-basic-ebpf --scenario 1
+docker-compose-host $: python3 core-network.py --type stop-basic-qos --scenario 1
 ```
 <details>
 <summary>The output will look like this:</summary>
 
 ``` console
 [2023-08-10 16:05:54,271] root:DEBUG:  UnDeploying OAI 5G core components....
-[2023-08-10 16:05:54,272] root:DEBUG: docker-compose -f docker-compose-basic-nrf-ebpf-qos.yaml down
+[2023-08-10 16:05:54,272] root:DEBUG: docker-compose -f docker-compose-basic-nrf-qos-qos.yaml down
 Stopping oai-pcf    ...
 Stopping oai-upf    ...
 Stopping oai-smf    ...

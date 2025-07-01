@@ -26,7 +26,7 @@ services:
             - 80/tcp
             - 8080/tcp
         volumes:
-            - ./conf/basic_nrf_config_ebpf.yaml:/openair-udr/etc/config.yaml
+            - ./conf/basic_nrf_config_qos.yaml:/openair-udr/etc/config.yaml
         environment:
             - TZ=Europe/Paris
         depends_on:
@@ -42,7 +42,7 @@ services:
             - 80/tcp
             - 8080/tcp
         volumes:
-            - ./conf/basic_nrf_config_ebpf.yaml:/openair-udm/etc/config.yaml
+            - ./conf/basic_nrf_config_qos.yaml:/openair-udm/etc/config.yaml
         environment:
             - TZ=Europe/Paris
         depends_on:
@@ -57,7 +57,7 @@ services:
             - 80/tcp
             - 8080/tcp
         volumes:
-            - ./conf/basic_nrf_config_ebpf.yaml:/openair-ausf/etc/config.yaml
+            - ./conf/basic_nrf_config_qos.yaml:/openair-ausf/etc/config.yaml
         environment:
             - TZ=Europe/Paris
         depends_on:
@@ -72,7 +72,7 @@ services:
             - 80/tcp
             - 8080/tcp
         volumes:
-            - ./conf/basic_nrf_config_ebpf.yaml:/openair-nrf/etc/config.yaml
+            - ./conf/basic_nrf_config_qos.yaml:/openair-nrf/etc/config.yaml
         environment:
             - TZ=Europe/Paris
         networks:
@@ -86,7 +86,7 @@ services:
             - 8080/tcp
             - 38412/sctp
         volumes:
-            - ./conf/basic_nrf_config_ebpf.yaml:/openair-amf/etc/config.yaml
+            - ./conf/basic_nrf_config_qos.yaml:/openair-amf/etc/config.yaml
         environment:
             - TZ=Europe/Paris
         depends_on:
@@ -102,7 +102,7 @@ services:
             - 8080/tcp
             - 8805/udp
         volumes:
-            - ./conf/basic_nrf_config_ebpf.yaml:/openair-smf/etc/config.yaml
+            - ./conf/basic_nrf_config_qos.yaml:/openair-smf/etc/config.yaml
         environment:
             - TZ=Europe/Paris
         depends_on:
@@ -112,6 +112,22 @@ services:
                 ipv4_address: 192.168.70.133
         extra_hosts:
             - "oai-upf:192.168.70.129"
+    oai-pcf:
+        container_name: "oai-pcf"
+        image: oaisoftwarealliance/oai-pcf:develop
+        expose:
+            - 80/tcp
+            - 8080/tcp
+        volumes:
+            - ./policies/qos:/openair-pcf/policies
+            - ./conf/basic_nrf_config_qos.yaml:/openair-pcf/etc/config.yaml
+        environment:
+            - TZ=Europe/Paris
+        depends_on:
+            - oai-nrf
+        networks:
+            public_net:
+                ipv4_address: 192.168.70.139
     oai-upf:
         container_name: "oai-upf"
         image: oaisoftwarealliance/oai-upf:develop
@@ -120,8 +136,9 @@ services:
             - 8805/udp
             - 8080/tcp
         volumes:
-            - ./conf/basic_nrf_config_ebpf.yaml:/openair-upf/etc/config.yaml
+            - ./conf/basic_nrf_config_qos.yaml:/openair-upf/etc/config.yaml
             - /sys/fs/bpf:/sys/fs/bpf
+            - /sys/kernel/debug:/sys/kernel/debug:rw
         environment:
             - TZ=Europe/Paris
         depends_on:
