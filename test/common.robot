@@ -125,8 +125,6 @@ Launch Northbound Test CN
     Prepare RAN     ${1}   ${3}
     ${replace_list} =  Create List  rfsimulator
     Replace In gNB Config    ${replace_list}  { serveraddr = "server"; };  add
-    ${replace_list} =  Create List  ra_ResponseWindow
-    Replace In gNB Config    ${replace_list}  ${5}  replace
     ${replace_list} =  Create List  ulsch_max_frame_inactivity
     Replace In gNB Config    ${replace_list}  None  delete
     ${replace_list} =  Create List  amf_ip_address
