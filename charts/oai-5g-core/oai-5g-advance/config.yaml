@@ -165,6 +165,7 @@ smf:
       - sNssai: *embb_slice1
         dnnSmfInfoList:
           - dnn: "@DNN0@"
+          - dnn: "ims"
       - sNssai: *embb_slice2
         dnnSmfInfoList:
           - dnn: "@DNN1@"
@@ -172,13 +173,19 @@ smf:
     - single_nssai: *embb_slice1
       dnn: "@DNN0@"
       qos_profile:
-        5qi: @SLICE1_5QI@ #5
+        5qi: @SLICE1_5QI@ 
+        session_ambr_ul: "@SLICE1_UPLINK@" # "200Mbps"
+        session_ambr_dl: "@SLICE1_DOWNLINK@" # "400Mbps"
+    - single_nssai: *embb_slice1
+      dnn: "ims"
+      qos_profile:
+        5qi: @SLICE1_5QI@ 
         session_ambr_ul: "@SLICE1_UPLINK@" # "200Mbps"
         session_ambr_dl: "@SLICE1_DOWNLINK@" # "400Mbps"
     - single_nssai: *embb_slice2
       dnn: "@DNN1@"
       qos_profile:
-        5qi: @SLICE2_5QI@ #2
+        5qi: @SLICE2_5QI@ 
         session_ambr_ul: "@SLICE2_UPLINK@" # "100Mbps"
         session_ambr_dl: "@SLICE2_DOWNLINK@" # "200Mbps"
 
@@ -206,10 +213,11 @@ upf:
     sNssaiUpfInfoList:
     - sNssai: *embb_slice1
       dnnUpfInfoList:
-        - dnn: @DNN0@
+        - dnn: "@DNN0@"
+        - dnn: "ims"
     - sNssai: *embb_slice2
       dnnUpfInfoList:
-        - dnn: @DNN1@
+        - dnn: "@DNN1@"
 
 ## DNN configuration
 dnns:
@@ -219,3 +227,7 @@ dnns:
   - dnn: "@DNN1@"
     pdu_session_type: "@DNN1_PDU_TYPE@"
     ipv4_subnet: "14.1.1.0/24"
+  - dnn: "ims"
+    pdu_session_type: "IPV4V6"
+    ipv4_subnet: "16.1.1.0/24"
+    ipv6_prefix: "2001:1:2::/64"
