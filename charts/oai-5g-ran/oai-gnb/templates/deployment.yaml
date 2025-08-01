@@ -119,17 +119,21 @@ spec:
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
         volumeMounts:
+        {{- if .Values.includeMetricsParser }}
+        - name: gnb-log-volume
+          mountPath: /shared-logs
+        {{- end}}
+        - name: configuration
+          subPath: gnb.conf
         {{- if eq .Values.config.usrp "aw2s" }}
-          - mountPath: /opt/oai-gnb-aw2s/etc/gnb.conf
+          mountPath: /opt/oai-gnb-aw2s/etc/gnb.conf
         {{- else }}
-          - mountPath: /opt/oai-gnb/etc/gnb.conf
+          mountPath: /opt/oai-gnb/etc/gnb.conf
         {{- end }}
-            name: configuration
-            subPath: gnb.conf
           # USRP B210/B200 Mini
         {{- if eq .Values.config.usrp "b2xx"}}
-          - mountPath: /dev/bus/usb/
-            name: usrp
+        - name: usrp
+          mountPath: /dev/bus/usb/
         {{- end}}
         {{- if .Values.resources.define}}
         resources:
@@ -151,6 +155,10 @@ spec:
         args:
          -  AMF_IP_ADDRESS=$(getent hosts $AMF_HOST | awk '{print $1}');
             AMF_IP_ADDRESS=$(if [[ $AMF_IP_ADDRESS ]]; then echo $AMF_IP_ADDRESS; else echo $AMF_HOST;fi)
+          {{- if .Values.includeFlexRIC }}
+            FLEXRIC_IP=$(getent hosts $FLEXRIC_HOST | awk '{print $1}');
+            FLEXRIC_IP=$(if [[ $FLEXRIC_IP ]]; then echo $FLEXRIC_IP; else echo $FLEXRIC_HOST;fi);
+          {{- end}}
             N2_IP_ADDRESS=$(ip -4 addr show $N2_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
             N3_IP_ADDRESS=$(ip -4 addr show $N3_IF_NAME | grep inet | awk '{ print $2 }' | cut -d/ -f1);
             RU1_IP_ADDRESS=$(ip -4 addr show ru1 | grep inet | awk '{ print $2 }' | cut -d/ -f1);
@@ -158,6 +166,9 @@ spec:
                 -e s/@GNB_N2_IP_ADDRESS@/$N2_IP_ADDRESS/g
                 -e s/@GNB_N3_IP_ADDRESS@/$N3_IP_ADDRESS/g
                 -e s/@RU1_IP_ADDRESS@/$RU1_IP_ADDRESS/g
+              {{- if .Values.includeFlexRIC }}
+                -e s/@FLEXRIC_IP@/$FLEXRIC_IP/g
+              {{- end}}
             {{- if eq .Values.config.usrp "aw2s" }}
                 /opt/oai-gnb-aw2s/etc/gnb.conf | tee /tmp/gnb.conf;
             {{- else }}
@@ -170,11 +181,25 @@ spec:
           {{- else if eq .Values.config.usrp "x3xx" }}
             /opt/oai-gnb/bin/uhd_images_downloader.py -t x3xx;
           {{- end }}
+        {{- if .Values.includeMetricsParser }}
+            touch /shared-logs/nrMAC_stats.log;
+            touch /shared-logs/nrL1_stats.log;
+            touch /shared-logs/nrRRC_stats.log;
+          {{- if eq .Values.config.usrp "aw2s" }}
+            ln -s /shared-logs/nrMAC_stats.log /opt/oai-gnb-aw2s/nrMAC_stats.log;
+            ln -s /shared-logs/nrL1_stats.log /opt/oai-gnb-aw2s/nrL1_stats.log;
+            ln -s /shared-logs/nrRRC_stats.log /opt/oai-gnb-aw2s/nrRRC_stats.log;
+          {{- else }}
+            ln -s /shared-logs/nrMAC_stats.log /opt/oai-gnb/nrMAC_stats.log;
+            ln -s /shared-logs/nrL1_stats.log /opt/oai-gnb/nrL1_stats.log;
+            ln -s /shared-logs/nrRRC_stats.log /opt/oai-gnb/nrRRC_stats.log;
+          {{- end }}
+        {{- end}}
         {{- if .Values.start.gnb }}
           {{- if eq .Values.config.usrp "aw2s" }}
-            exec /opt/oai-gnb-aw2s/bin/nr-softmodem -O /tmp/gnb.conf $USE_ADDITIONAL_OPTIONS;
+            exec /opt/oai-gnb-aw2s/bin/nr-softmodem -O /tmp/gnb.conf $USE_ADDITIONAL_OPTIONS 2>&1 | tee /logs/gnb.logs;
           {{- else }}
-            exec /opt/oai-gnb/bin/nr-softmodem -O /tmp/gnb.conf $USE_ADDITIONAL_OPTIONS;
+            exec /opt/oai-gnb/bin/nr-softmodem -O /tmp/gnb.conf $USE_ADDITIONAL_OPTIONS 2>&1 | tee /logs/gnb.logs;
           {{- end }}
         {{- else}}
             /bin/sleep infinity
@@ -186,6 +211,8 @@ spec:
             value: {{ .Values.config.useAdditionalOptions }}
           - name: AMF_HOST
             value: {{ .Values.config.amfHost }}
+          - name: FLEXRIC_HOST
+            value: {{ .Values.config.flexrichost }}
           - name: N2_IF_NAME
             value: {{ .Values.config.n2IfName }}
           - name: N3_IF_NAME
@@ -219,7 +246,29 @@ spec:
           name: oai5g-pv
         {{- end}}
       {{- end }}
+      {{- if .Values.includeMetricsParser }}
+      - name: metrics-parser
+        image: "{{ .Values.metricsParserImage.repository }}:{{ .Values.metricsParserImage.version }}"
+        imagePullPolicy: {{ .Values.metricsParserImage.pullPolicy }}
+        ports:
+          - containerPort: 9090
+            name: metrics
+        volumeMounts:
+        - name: gnb-log-volume
+          mountPath: /oai-gnb-logs
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 50Mi
+      {{- end }}
       volumes:
+      {{- if .Values.includeMetricsParser }} 
+      - name: gnb-log-volume
+        emptyDir: {}
+      {{- end }}
       {{- if .Values.persistent.sharedvolume }}
       - name: oai5g-pv
         persistentVolumeClaim:
