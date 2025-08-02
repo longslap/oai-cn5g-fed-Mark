@@ -6,7 +6,7 @@ nfimage:   # image name either locally present or in a public/private repository
   repository:  @GNB_REPO@
   version:  @GNB_TAG@ # image tag or develop
   # pullPolicy: IfNotPresent or Never or Always
-  pullPolicy: IfNotPresent
+  pullPolicy: @GNB_PULL_POLICY@
 
 # good to use when pulling images from docker-hub mention 
 imagePullSecrets:
@@ -95,8 +95,19 @@ config:
   sst: "1" #currently only 4 standard values are allowed 1,2,3,4 # configured by demo-oai.sh script
   usrp: "@RRU_TYPE@" #allowed values rfsim, b2xx, n3xx or x3xx
   amfHost: "@HOST_AMF@" # amf ip-address or service-name oai-amf-svc
+  flexrichost: "@HOST_FLEXRIC@" # flexric ip-address or service-name
   n2IfName: "@GNB_N2_IF_NAME@" # n2 or eth0 if no multus
   n3IfName: "@GNB_N3_IF_NAME@" # n3 or eth0 if no multus
+
+
+## Monitoring section
+includeMetricsParser: @METRICS_PARSER_CONTAINER@ #If true it will add a prometheus metrics parser container inside the gnb pod for monitoring
+includeFlexRIC: @FLEXRIC@ #If true, FlexRIC related configurations will be added
+
+metricsParserImage:
+  repository: ghcr.io/ziyad-mabrouk/oai-gnb-metrics-parser
+  version: latest
+  pullPolicy: @GNB_PULL_POLICY@
 
 ## Debugging section
 start:

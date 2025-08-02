@@ -1,0 +1,102 @@
+kubernetesDistribution: Vanilla  #Vanilla for community kubernetes distribution else Openshift for Openshift
+
+## In case of using these charts on Openshift then please use UBI images
+## To know more about them follow this tutorial https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/master/openshift
+nfimage:
+  repository: @NRUE_REPO@ # dockehub oaisoftwarealliance/oai-nr-ue
+  version: @NRUE_TAG@ # image tag or develop 
+  # pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "oai-nr-ue2-sa"
+
+# good to use when pulling images from docker-hub mention 
+imagePullSecrets: 
+ - name: "regcred"
+
+## Change these ip-addresses according to your environment
+multus:
+  create: @MULTUS_NRUE2@
+  ipadd: "@IP_NRUE2@" # subnet should be able to reach the gNB
+  netmask: "@NETMASK_NRUE2@"
+  mac: "@MAC_NRUE2@"
+  # if default route is not needed then leave the field empty
+  defaultGateway: "@DEFAULT_GW_NRUE2@"
+  hostInterface: "@IF_NAME_NRUE2@"
+
+config:
+  timeZone: "Europe/Paris"
+  rfSimServer: "oai-ran" 
+  fullImsi: "@RFSIM_IMSI_UE2@" # make sure all the below entries are present in the subscriber database
+  fullKey: "@FULL_KEY_UE2@" 
+  opc: "@OPC_UE2@"
+  dnn: "@DNN_UE2@"
+  sst: "@SST_UE2@" # "1" # configure according to gnb and amf, smf and upf 
+  sd: "@SD_UE2@" # "16777215"
+  usrp: "@NRUE2_USRP@" # allowed rfsim, b2xx, n3xx, x3xx
+  useAdditionalOptions: "@ADD_OPTIONS_NRUE2@" # "--sa --rfsim -r 106 --numerology 1 -C 3619200000 --nokrnmod --log_config.global_log_options level,nocolor,time"
+
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+
+securityContext:
+ capabilities:
+    add:
+     - NET_ADMIN
+     - NET_RAW
+     - SYS_NICE
+    drop:
+     - ALL
+start:
+  nrue: true
+  tcpdump: @START_TCPDUMP@ # if false then started in sleep mode else it will start capturing packets, nr ue will have a lot of packets per sec better avoid this or add a filter in the deployment.yaml
+
+includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #If true it will add a tcpdump container inside network function pod for debugging
+
+tcpdumpimage:
+  repository: docker.io/oaisoftwarealliance/oai-tcpdump-init
+  version: alpine-3.20
+  #pullPolicy: IfNotPresent or Never or Always
+  pullPolicy: IfNotPresent
+
+## NF is the network function and tcpdump is the tcpdump container. 
+## To know more about request and limit it is better to understand that how Kubernetes QoS works. 
+## https://kubernetes.io/docs/concepts/configuration/manage-resources-containers
+## https://kubernetes.io/docs/concepts/workloads/pods/pod-qos
+resources:
+  define: @QOS_NRUE2_DEF@
+  limits:
+    nf:
+      cpu: 1500m
+      memory: 1Gi
+    #If tcpdump container is disabled this value will not be used
+    tcpdump:
+      cpu: 200m
+      memory: 128Mi
+  requests:
+    nf:
+      cpu: 1500m
+      memory: 1Gi
+    #If tcpdump container is disabled this value will not be used
+    tcpdump:
+      cpu: 100m
+      memory: 128Mi
+
+persistent:
+  sharedvolume: @SHAREDVOLUME@
+  volumeName: oai5g-volume
+  size: 1Gi
+
+terminationGracePeriodSeconds: 0
+
+nodeSelector: {}
+
+nodeName: @NODE_NRUE2@
