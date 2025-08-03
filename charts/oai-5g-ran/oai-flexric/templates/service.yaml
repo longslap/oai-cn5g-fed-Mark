@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oai-flexric.fullname" . }}
+  labels:
+    {{- include "oai-flexric.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: oai-flexric
+  type: ClusterIP
+  ports:
+    - name: gnb 
+      port: {{ .Values.service.ports.gnb.port }}
+      targetPort: {{ .Values.service.ports.gnb.targetPort }}
+      protocol: SCTP
+    - name: xapp
+      port: {{ .Values.service.ports.xapp.port }}
+      targetPort: {{ .Values.service.ports.xapp.targetPort }}
+      protocol: SCTP

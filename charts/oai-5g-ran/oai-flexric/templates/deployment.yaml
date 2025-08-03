@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "oai-flexric.fullname" . }}
+  labels:
+    {{- include "oai-flexric.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "oai-flexric.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        {{- include "oai-flexric.labels" . | nindent 8 }}
+        app: oai-flexric
+    spec:
+      containers:
+        - name: oai-flexric
+          image: "{{ .Values.containerImage.repository }}:{{ .Values.containerImage.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.containerImage.pullPolicy }}
+          securityContext:
+            privileged: true
+          command: [ "/bin/bash", "-c" ]
+          args: 
+            - |
+              mkdir /usr/local/etc/flexric/
+              cp /configuration/flexric.conf /usr/local/etc/flexric/flexric.conf
+              sed -i "s/NEAR_RIC_IP = .*/NEAR_RIC_IP = $POD_IP /" /usr/local/etc/flexric/flexric.conf
+              exec stdbuf -o0  /usr/local/bin/nearRT-RIC
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          volumeMounts:
+          - name: configuration
+            mountPath: /configuration/flexric.conf
+            subPath: flexric.conf
+      volumes:
+      - configMap:
+          name: {{ .Chart.Name }}-configmap
+        name: configuration
+      restartPolicy: {{ .Values.restartPolicy }}
