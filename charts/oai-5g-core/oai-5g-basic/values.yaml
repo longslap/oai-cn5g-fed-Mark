@@ -2,8 +2,8 @@ global:
   kubernetesDistribution: Vanilla #Openshift/Vanilla Kubernetes for Upstream Kubernetes
   coreNetworkConfigMap: oai-5g-basic
   clusterIpServiceIpAllocation: true #this will allocate ip-address to cluster Ip service
+  IP_NRF: @IP_NRF@ 
   waitForNRF: true
-  IP_NRF: @IP_NRF@ #172.21.10.203
   waitForUDR: true
   http2Param: "--http2-prior-knowledge"  # if waitForNRF is true and http2 is used for all NF then this param is needed
   timeout: 1
@@ -25,13 +25,13 @@ oai-nrf:
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   ## Only if you want to store all pcaps in persistent volume
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
     #storageClass: "nfs-client" #If value is "-" default storageClass will be used
     storageClass: "-"
     size: 1Gi
   start:
     nrf: true #If false the network function container will run in sleep mode for manually testing
-    tcpdump: false
+    tcpdump: @START_TCPDUMP@
   imagePullSecrets:
     - name: "regcred"
   config:
@@ -46,10 +46,10 @@ oai-lmf:
     pullPolicy: IfNotPresent
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
   start:
     lmf: true #If false the network function container will run in sleep mode for manually testing
-    tcpdump: false
+    tcpdump: @START_TCPDUMP@
   imagePullSecrets:
     - name: "regcred"
   config:
@@ -65,10 +65,10 @@ oai-udr:
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   ## Only if you want to store all pcaps in persistent volume
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
   start:
     udr: true #If false the network function container will run in sleep mode for manually testing
-    tcpdump: false
+    tcpdump: @START_TCPDUMP@
   imagePullSecrets:
     - name: "regcred"
   config:
@@ -84,10 +84,10 @@ oai-udm:
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   ## Only if you want to store all pcaps in persistent volume
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
   start:
     udm: true #If false the network function container will run in sleep mode for manually testing
-    tcpdump: false
+    tcpdump: @START_TCPDUMP@
   imagePullSecrets:
     - name: "regcred"
   config:
@@ -103,7 +103,7 @@ oai-ausf:
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   ## Only if you want to store all pcaps in persistent volume
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
   start:
     ausf: true #If false the network function container will run in sleep mode for manually testing
     tcpdump: @START_TCPDUMP@
@@ -111,8 +111,6 @@ oai-ausf:
     - name: "regcred"
   securityContext:
     privileged: @PRIVILEGED@
-  persistent:
-    sharedvolume: @SHAREDVOLUME@
   config:
     logLevel: "debug"   #allowed info/error/debug
   nodeSelector: {}
@@ -126,7 +124,7 @@ oai-amf:
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   ## Only if you want to store all pcaps in persistent volume
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
   start:
     amf: true #If false the network function container will run in sleep mode for manually testing
     tcpdump: @START_TCPDUMP@
@@ -134,8 +132,6 @@ oai-amf:
     - name: "regcred"
   securityContext:
     privileged: @PRIVILEGED@
-  persistent:
-    sharedvolume: @SHAREDVOLUME@
   multus:
     ## If you don't want to add a default route in your pod then replace this field with ""
     defaultGateway: "@CN_DEFAULT_GW@"
@@ -163,7 +159,7 @@ oai-upf:
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   ## Only if you want to store all pcaps in persistent volume
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
   start:
     upf: true #If false the network function container will run in sleep mode for manually testing
     tcpdump: @START_TCPDUMP@
@@ -171,8 +167,6 @@ oai-upf:
     - name: "regcred"
   securityContext:
     privileged: true # @PRIVILEGED@ # upf fails without privilege mode on rocky
-  persistent:
-    sharedvolume: @SHAREDVOLUME@
   # create an extra interface for N3 incase the gNB is outside the cluster network or there is a need to have dedicated interface for N3
   ## Change these ip-addresses according to your environment
   ## N4, N6 are optional only if you want that UPF uses different subnets for different 3gpp interfaces. 
@@ -237,7 +231,7 @@ oai-traffic-server:
     hostInterface: "@IF_NAME_TS@"  # Interface of the host machine on which this pod will be scheduled
   config:
     ueroute: 12.1.1.0/24
-    upfHost: oai-upf
+    upfHost: @UPF_HOST@
     routeInterface: eth0
     noOfIperf3Server: 2
   resources:
@@ -260,7 +254,7 @@ oai-smf:
   includeTcpDumpContainer: @TCPDUMP_CONTAINER@ #only for taking pcaps inside network function pod
   ## Only if you want to store all pcaps in persistent volume
   persistent:
-    sharedvolume: false
+    sharedvolume: @SHAREDVOLUME@
   start:
     smf: true #If false the network function container will run in sleep mode for manually testing
     tcpdump: @START_TCPDUMP@
@@ -278,12 +272,9 @@ oai-smf:
       ## If you do not want to add any routes in your pod then leave this field empty
       routes: @ROUTES_SMF_N4@
       hostInterface: "@IF_NAME_SMF_N4@"
-  nodeSelector: {}
   imagePullSecrets:
     - name: "regcred"
   securityContext:
     privileged: @PRIVILEGED@
-  persistent:
-    sharedvolume: @SHAREDVOLUME@
   nodeSelector: {}
   nodeName: @NODE_SMF@
