@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-configmap
+data:
+  flexric.conf: |
+      [NEAR-RIC]
+      NEAR_RIC_IP = @FLEXRIC_IP@
+      [XAPP]
+      DB_PATH = /flexric/db/
+      DB_NAME = xapp_rnis_db
+     
