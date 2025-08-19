@@ -411,6 +411,22 @@ pipeline {
           }
           // The python script may return an error
           sh " ./ci-scripts/checkCOTS-UE-Testing.py --job_name ${JOB_NAME} --job_id ${BUILD_ID} --job_url ${BUILD_URL}${OPTIONS}"
+          
+          // Status for UE
+          ue_test_status = true
+          
+          if (testStart0 == false || testStop0 == false || testStart1 == false || testStop1 == false)
+          {
+           ue_test_status = false
+          }
+          if (ue_test_status)
+          {
+          sh "echo 'The value of PostRunAnalysisStageStatus in COTS-UE is OK' >> archives/cots-ue-post-run-status.log"
+          }
+          else 
+          {
+          sh "echo 'The value of PostRunAnalysisStageStatus in COTS-UE is KO' >> archives/cots-ue-post-run-status.log"
+          }
         }
       }
     }
@@ -441,7 +457,11 @@ pipeline {
         if (logoutToDo) {
           sh 'oc logout'
         }
-        sh 'zip -r cn5g_cots_ue_test_logs.zip archives'
+        if (fileExists('archives/cots-ue-post-run-status.log'))
+        {
+          archiveArtifacts artifacts: 'archives/cots-ue-post-run-status.log'
+        }
+        sh 'zip -r cn5g_cots_ue_test_logs.zip archives -x archives/cots-ue-post-run-status.log'
         if (fileExists('cn5g_cots_ue_test_logs.zip')) {
           archiveArtifacts artifacts: 'cn5g_cots_ue_test_logs.zip'
         }
