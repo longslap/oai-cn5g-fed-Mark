@@ -390,7 +390,6 @@ pipeline {
       steps {
         script {
           analysisToDo = false
-          testStart0 = false
           OPTIONS=''
           if (coreDeploy == false) {
             OPTIONS += ' --core_deploy_failed'
