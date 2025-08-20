@@ -390,6 +390,7 @@ pipeline {
       steps {
         script {
           analysisToDo = false
+          testStart0 = false
           OPTIONS=''
           if (coreDeploy == false) {
             OPTIONS += ' --core_deploy_failed'
@@ -410,8 +411,10 @@ pipeline {
             OPTIONS += ' --ue_test1_stop_failed'
           }
           // The python script may return an error
+          try {
           sh " ./ci-scripts/checkCOTS-UE-Testing.py --job_name ${JOB_NAME} --job_id ${BUILD_ID} --job_url ${BUILD_URL}${OPTIONS}"
-          
+          } 
+          finally {
           // Status for UE
           ue_test_status = true
           
@@ -427,6 +430,7 @@ pipeline {
           {
           sh "echo 'The value of PostRunAnalysisStageStatus in COTS-UE is KO' >> archives/cots-ue-post-run-status.log"
           }
+         }
         }
       }
     }
