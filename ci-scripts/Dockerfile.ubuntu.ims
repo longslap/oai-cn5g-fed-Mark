@@ -1,0 +1,14 @@
+ARG BASE_IMAGE=docker.io/ubuntu:focal
+FROM $BASE_IMAGE AS ims
+LABEL org.opencontainers.image.authors="OpenAirInterface <contact@openairinterface.org>" \
+      org.opencontainers.image.title="Asterisk IMS" \
+      org.opencontainers.image.description="Asterisk image only for supporting UEs that require VoNR/VoLTE, it is not used for real IMS."
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+      psmisc \
+      git \
+      asterisk \
+  && rm -rf /var/lib/apt/lists/*
+ENTRYPOINT ["asterisk", "-fp"]
