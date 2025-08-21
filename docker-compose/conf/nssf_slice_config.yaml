@@ -10,46 +10,53 @@ configuration:
       nsiInformationList:
         nrfId: http://192.168.70.136:8080/nnrf-disc/v1/nf-instances
         nsiId: '11'
+        nrfNfMgtUri: http://192.168.70.136:8080/nnrf-nfm/v1/nf-instances
     - snssai:
         sst: 1
       nsiInformationList:
         nrfId: http://192.168.70.136:8080/nnrf-disc/v1/nf-instances
-        nsiId: '12'
+        nsiId: '11'
+        nrfNfMgtUri: http://192.168.70.136:8080/nnrf-nfm/v1/nf-instances
     - snssai:
         sst: 130
         sd: '000082'
       nsiInformationList:
         nrfId: http://192.168.70.137:8080/nnrf-disc/v1/nf-instances
         nsiId: '12'
+        nrfNfMgtUri: http://192.168.70.137:8080/nnrf-nfm/v1/nf-instances
     - snssai:
         sst: 222
         sd: '00007B'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-10.fr:8080/nnrf-disc/v1/nf-instances
-        nsiId: '11'
+        nsiId: '13'
+        nrfNfMgtUri: http://oai-cn5g-nrf-10.fr:8080/nnrf-nfm/v1/nf-instances        
     - snssai:
         sst: 130
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-20.fr:8080/nnrf-disc/v1/nf-instances
         nsiId: '20'
-        nrfNfMgtUri: http://oai-cn5g-nrf-10.fr:8080/nnrf-nfm/v1/nf-instances
+        nrfNfMgtUri: http://oai-cn5g-nrf-20.fr:8080/nnrf-nfm/v1/nf-instances
     - snssai:
         sst: 131
         sd: '000083'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-20.fr:8080/nnrf-disc/v1/nf-instances
         nsiId: '20'
+        nrfNfMgtUri: http://oai-cn5g-nrf-20.fr:8080/nnrf-nfm/v1/nf-instances    
     - snssai:
         sst: 132
         sd: '000084'
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-20.fr:8080/nnrf-disc/v1/nf-instances
         nsiId: '20'
+        nrfNfMgtUri: http://oai-cn5g-nrf-20.fr:8080/nnrf-nfm/v1/nf-instances    
     - snssai:
         sst: 133
       nsiInformationList:
         nrfId: http://oai-cn5g-nrf-20.fr:8080/nnrf-disc/v1/nf-instances
         nsiId: '20'
+        nrfNfMgtUri: http://oai-cn5g-nrf-20.fr:8080/nnrf-nfm/v1/nf-instances    
   taInfoList:
     - tai:
         plmnId:
