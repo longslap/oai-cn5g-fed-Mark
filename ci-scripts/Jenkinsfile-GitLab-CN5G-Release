@@ -1,0 +1,125 @@
+#!/bin/groovy
+/*
+ * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The OpenAirInterface Software Alliance licenses this file to You under
+ * the OAI Public License, Version 1.1  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
+
+
+def ubuntuNode = params.UbuntuBuildNode
+def ubuntuResource = params.UbuntuBuildResource
+
+// CN Release Tag
+// For example, v2.1.10
+def version = params.tagToUse 
+
+// Docker Hub account to push to
+def DH_Account = "oaisoftwarealliance"
+
+// Private Local Registry 
+PrivateRegistryURL = 'selfix.sboai.cs.eurecom.fr'
+PrivateRegistryUsername = 'oaicicd'
+PrivateRegistryPassword = 'oaicicd'
+
+def networkFunctions = [
+        "nrf",
+        "udr",
+        "udm",
+        "ausf",
+        "amf",
+        "pcf",
+        "smf",
+        "upf",
+        "nssf",
+        "lmf"
+      ]
+    
+pipeline {
+  agent {
+    label ubuntuNode
+  }
+  options {
+    ansiColor('xterm')
+    lock(extra: [[resource: ubuntuResource]])
+  }
+  stages {
+    stage ("Verify Parameters") {
+      steps {
+        script {
+          echo '\u2705 \u001B[32mVerify Parameters\u001B[0m'
+          def allParametersPresent = true
+          
+          if (ubuntuNode != null) {
+            echo "Docker Push executor node:  ${ubuntuNode}"
+          }
+          
+          if (!ubuntuResource?.trim() || ubuntuResource == null) {
+            echo '\u26A0 \u001B[33mNo Lock Resources given\u001B[0m'
+            allParametersPresent = false
+          }
+          
+          if (!version?.trim() || version == null) {
+            allParametersPresent = false
+            echo '\u26D4 \u001B[31mPlease enter the CN Release Tag\u001B[0m'
+            error "Stopping pipeline!"
+
+          }
+          
+          if (params.DockerHubCredentials == null || !params.DockerHubCredentials?.trim()) {
+            allParametersPresent = false
+            echo '\u26D4 \u001B[31mNo Credentials to push to DockerHub!\u001B[0m'
+            error "Stopping pipeline!"
+          }
+          
+          if (allParametersPresent) {
+                echo '\u2705 \u001B[32mAll parameters are valid\u001B[0m' 
+            }
+        }
+      }
+    }
+    stage ("Push to DockerHub") {
+       steps {
+         script {
+            // Login to DockerHub and the Registry
+            withCredentials([
+            [$class: 'UsernamePasswordMultiBinding', credentialsId: "${params.DockerHubCredentials}", usernameVariable: 'DH_Username', passwordVariable: 'DH_Password']
+              ]) {
+                sh "echo ${DH_Password} | docker login --username ${DH_Username} --password-stdin"
+              }
+              sh "docker login -u ${PrivateRegistryUsername} -p ${PrivateRegistryPassword} ${PrivateRegistryURL} > /dev/null 2>&1"
+              for (nf in networkFunctions) {
+              echo "\u2705 \u001B[32mProcessing ${nf}\u001B[0m"
+              sh "bash ./ci-scripts/pushCNRelease.sh ${nf} ${version}"
+              }
+         }
+        }
+       }
+    }
+    post {
+     always {
+      script {
+        sh "docker logout ${PrivateRegistryURL} > /dev/null 2>&1"
+        sh "docker logout > /dev/null 2>&1"
+        echo "End of Push to DockerHub"
+      }
+    }
+  }
+}
+
+
+
