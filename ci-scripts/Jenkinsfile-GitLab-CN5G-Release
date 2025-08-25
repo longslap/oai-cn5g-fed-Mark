@@ -18,7 +18,6 @@
  *-------------------------------------------------------------------------------
  * For more information about the OpenAirInterface (OAI) Software Alliance:
  *      contact@openairinterface.org
- * Author: shubhika.garg@openairinterface.org
  */
 
 
@@ -38,6 +37,14 @@ PrivateRegistryUsername = 'oaicicd'
 PrivateRegistryPassword = 'oaicicd'
 
 def networkFunctions = [
+        "nrf",
+        "udr",
+        "udm",
+        "ausf",
+        "amf",
+        "pcf",
+        "smf",
+        "upf",
         "nssf",
         "lmf"
       ]
@@ -97,9 +104,8 @@ pipeline {
               sh "docker login -u ${PrivateRegistryUsername} -p ${PrivateRegistryPassword} ${PrivateRegistryURL} > /dev/null 2>&1"
               for (nf in networkFunctions) {
               echo "\u2705 \u001B[32mProcessing ${nf}\u001B[0m"
-              sh "docker pull ${DH_Account}/oai-${nf}:${version}"
+              sh "bash ./ci-scripts/pushCNRelease.sh ${nf} ${version}"
               }
-              sh "docker pull ${PrivateRegistryURL}/oai-lmf:develop-e394d645"
          }
         }
        }
