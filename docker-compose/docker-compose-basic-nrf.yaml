@@ -19,8 +19,7 @@ services:
             retries: 30
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.131
+                ipv4_address: 192.168.70.131
     oai-udr:
         container_name: "oai-udr"
         image: docker.xuanyuan.run/oaisoftwarealliance/oai-udr:v2.1.0
@@ -36,8 +35,7 @@ services:
             - oai-nrf
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.136
+                ipv4_address: 192.168.70.136
     oai-udm:
         container_name: "oai-udm"
         image: docker.xuanyuan.run/oaisoftwarealliance/oai-udm:v2.1.0
@@ -52,8 +50,7 @@ services:
             - oai-nrf
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.137
+                ipv4_address: 192.168.70.137
     oai-ausf:
         container_name: "oai-ausf"
         image: docker.xuanyuan.run/oaisoftwarealliance/oai-ausf:v2.1.0
@@ -68,8 +65,7 @@ services:
             - oai-nrf
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.138
+                ipv4_address: 192.168.70.138
     oai-nrf:
         container_name: "oai-nrf"
         image: docker.xuanyuan.run/oaisoftwarealliance/oai-nrf:v2.1.0
@@ -82,8 +78,7 @@ services:
             - TZ=Europe/Paris
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.130
+                ipv4_address: 192.168.70.130
     oai-amf:
         container_name: "oai-amf"
         image: docker.xuanyuan.run/oaisoftwarealliance/oai-amf:v2.1.0
@@ -99,8 +94,7 @@ services:
             - oai-nrf
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.132
+                ipv4_address: 192.168.70.132
     oai-smf:
         container_name: "oai-smf"
         image: docker.xuanyuan.run/oaisoftwarealliance/oai-smf:v2.1.0
@@ -116,8 +110,7 @@ services:
             - oai-nrf
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.133
+                ipv4_address: 192.168.70.133
     oai-upf:
         container_name: "oai-upf"
         image: docker.xuanyuan.run/oaisoftwarealliance/oai-upf:v2.1.0
@@ -138,8 +131,7 @@ services:
         privileged: true
         networks:
             public_net:
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.134
+                ipv4_address: 192.168.70.134
     oai-ext-dn:
         privileged: true
         init: true
@@ -163,9 +155,6 @@ services:
             interval: 10s
             timeout: 5s
             retries: 3
-# For CI purposes, we are keeping the line commented
-#                ipv4_address: 192.168.70.135
-
 networks:
     public_net:
         driver: bridge
